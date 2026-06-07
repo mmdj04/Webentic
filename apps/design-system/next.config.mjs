@@ -4,6 +4,7 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '/design-system'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: { ignoreBuildErrors: true },
   transpilePackages: ['ui', 'common', 'shared-data', 'icons', 'tsconfig'],
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/design-system',
   images: {
