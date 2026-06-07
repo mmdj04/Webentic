@@ -1,5 +1,6 @@
 import { NavigationItem } from '@/components/side-navigation-item'
 import { docsConfig } from '@/config/docs'
+import { sortSidebarItems } from '@/lib/sort-nav'
 
 export const SideNavigation = () => {
   return (
@@ -10,13 +11,7 @@ export const SideNavigation = () => {
             {section.title}
           </div>
           {(section.sortOrder === 'alphabetical'
-            ? (() => {
-                const priorityItems = section.items.filter((item) => item.priority)
-                const regularItems = section.items
-                  .filter((item) => !item.priority)
-                  .sort((a, b) => a.title.localeCompare(b.title))
-                return [...priorityItems, ...regularItems]
-              })()
+            ? sortSidebarItems(section.items)
             : section.items
           ).map((item, i) => (
             <NavigationItem item={item} key={`${item.href}-${i}`} />

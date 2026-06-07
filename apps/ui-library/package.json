@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.24.0",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "dev": "next dev --port 3004",
+    "dev": "next dev --turbopack --port 3004",
     "build": "pnpm run content:build && pnpm run build:registry && pnpm run build:llms && pnpm run build:app",
     "build:registry": "rimraf -G public/r/* && tsx ./scripts/build-registry.mts && shadcn build public/r/registry.json && tsx scripts/clean-registry.ts",
     "build:llms": "tsx ./scripts/build-llms-txt.ts",

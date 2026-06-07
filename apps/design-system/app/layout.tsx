@@ -108,6 +108,7 @@ export const metadata: Metadata = {
   applicationName: 'Supabase Design System',
   title: 'Supabase Design System',
   description: 'Design resources for building consistent user experiences at Supabase.',
+  metadataBase: new URL('https://supabase.com'),
   icons: genFaviconData(BASE_PATH),
 }
 
