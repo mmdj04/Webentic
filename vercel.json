@@ -2,9 +2,8 @@
   "git": {
     "lfs": false
   },
-  "installCommand": "corepack enable pnpm && pnpm install",
-  "buildCommand": "pnpm --filter ui-library build",
-  "nodeVersion": "22.x",
-  "outputDirectory": "apps/ui-library/.next",
-  "framework": "nextjs"
+  "installCommand": "npm install -g pnpm@10.24.0 && pnpm install",
+  "buildCommand": "cd apps/ui-library && pnpm run build:app",
+  "framework": "nextjs",
+  "nodeVersion": "22.x"
 }
