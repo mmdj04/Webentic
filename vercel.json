@@ -1,9 +1,0 @@
-{
-  "git": {
-    "lfs": false
-  },
-  "installCommand": "npm install -g pnpm@10.24.0 && pnpm install",
-  "buildCommand": "cd apps/ui-library && pnpm run build:app",
-  "framework": "nextjs",
-  "nodeVersion": "22.x"
-}
