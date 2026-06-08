@@ -67,15 +67,7 @@ export default function AboutPage() {
       >
         <h2 style={{ paddingTop: 60 }}>
           <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
-            Full-Stack
-          </strong>
-          <br />
-          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
-            Developer
-          </strong>
-          <br />
-          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
-            <em style={{ fontStyle: 'normal', color: '#888' }}>Open</em>Source
+            WEBENTIC
           </strong>
         </h2>
       </section>
