@@ -4,28 +4,118 @@ import Link from 'next/link'
 import { Textarea } from 'ui'
 import { cn } from 'ui'
 
-const LOGO = [
-  '██╗    ██╗███████╗██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗',
-  '██║    ██║██╔════╝██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝',
-  '██║ █╗ ██║█████╗  ██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║██║     ',
-  '██║███╗██║██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║██║     ',
-  '╚███╔███╔╝███████╗██████╔╝███████╗██║ ╚████║   ██║   ██║╚██████╗',
-  ' ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝',
-]
+const FONT: Record<string, boolean[][]> = {
+  W: [
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, false, true, false, true],
+    [true, false, true, false, true],
+    [true, true, false, true, true],
+    [true, true, false, true, true],
+    [false, true, false, true, false],
+  ],
+  E: [
+    [true, true, true, true, true],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, true, true, true, false],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, true, true, true, true],
+  ],
+  B: [
+    [true, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, true, true, true, false],
+  ],
+  N: [
+    [true, false, false, false, true],
+    [true, true, false, false, true],
+    [true, true, false, false, true],
+    [true, false, true, false, true],
+    [true, false, false, true, true],
+    [true, false, false, true, true],
+    [true, false, false, false, true],
+  ],
+  T: [
+    [true, true, true, true, true],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+  ],
+  I: [
+    [true, true, true, true, true],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [true, true, true, true, true],
+  ],
+  C: [
+    [false, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, false, false, false, true],
+    [false, true, true, true, false],
+  ],
+}
+
+const ROWS = 7
+const COLS = 5
+const PX = 8
+const GAP = 1
+const LETTER_GAP = 5
 
 function PixelText({ className }: { className?: string }) {
+  const letters = 'WEBENTIC'.split('')
+
+  const letterWidth = COLS * PX + (COLS - 1) * GAP
+  const svgWidth = letters.reduce((w, _, i) => w + (i > 0 ? LETTER_GAP : 0) + letterWidth, 0)
+  const svgHeight = ROWS * PX + (ROWS - 1) * GAP
+
+  let cursor = 0
+
   return (
-    <pre
-      className={cn(
-        'font-mono leading-tight text-foreground select-none',
-        'text-[clamp(6px,1.5vw,14px)] sm:text-[clamp(8px,1.8vw,18px)]',
-        className
-      )}
+    <svg
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      className={cn('text-foreground shrink-0 w-full', className)}
+      fill="currentColor"
     >
-      {LOGO.map((line, i) => (
-        <div key={i}>{line}</div>
-      ))}
-    </pre>
+      {letters.map((char, li) => {
+        const def = FONT[char]
+        if (!def) return null
+        const x = cursor
+        cursor += letterWidth + LETTER_GAP
+        return (
+          <g key={li}>
+            {def.map((row, r) =>
+              row.map((pixel, c) =>
+                pixel ? (
+                  <rect
+                    key={`${r}-${c}`}
+                    x={x + c * (PX + GAP)}
+                    y={r * (PX + GAP)}
+                    width={PX}
+                    height={PX}
+                    rx={1}
+                  />
+                ) : null
+              )
+            )}
+          </g>
+        )
+      })}
+    </svg>
   )
 }
 
@@ -34,23 +124,21 @@ const MODES = [
     id: 'ui-library',
     label: 'UI Library',
     href: '/docs/getting-started/quickstart',
-    description: 'Componentes e blocos React para projetos Supabase',
   },
   {
     id: 'design-system',
     label: 'Design System',
     href: 'https://supabase-design-system-kohl.vercel.app/design-system',
-    description: 'Recursos de design para experiências consistentes',
   },
 ] as const
 
 export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
         <PixelText className="mb-6" />
 
-        <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden">
+        <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden w-full">
           <div className="flex items-center gap-1.5 p-2 pb-0">
             {MODES.map((mode) => (
               <Link
@@ -66,16 +154,12 @@ export default function HomePage() {
           </div>
 
           <div className="p-4 pt-3">
-            <div className="relative">
-              <Textarea
-                placeholder="Type a message..."
-                className="min-h-[100px] font-mono text-sm resize-none"
-                rows={3}
-              />
-            </div>
+            <Textarea
+              placeholder="Type a message..."
+              className="min-h-[100px] font-mono text-sm resize-none"
+              rows={3}
+            />
           </div>
-
-
         </div>
       </div>
     </div>
