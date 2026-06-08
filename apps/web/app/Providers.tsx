@@ -15,7 +15,7 @@ export function Providers({ children }: PropsWithChildren) {
   const queryClient = useRootQueryClient()
 
   return (
-    <AuthProvider>
+    <AuthProvider alwaysLoggedIn>
       <QueryClientProvider client={queryClient}>
         <JotaiProvider>
           <ThemeProvider>

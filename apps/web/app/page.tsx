@@ -46,13 +46,14 @@ export default function HomePage() {
           ))}
         </div>
 
-        <h1
-          className={cn(
-            'text-foreground select-none text-center font-bold tracking-tight',
-            'text-6xl sm:text-7xl md:text-8xl lg:text-9xl mb-14'
-          )}
-        >
-          Webentic
+        <h1 className="text-center font-bold tracking-tight select-none mb-14">
+          <strong className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none text-foreground uppercase">
+            WEBENTIC
+          </strong>
+          <br />
+          <strong className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none text-foreground uppercase">
+            <em className="not-italic text-foreground-muted">OPEN</em>-SOURCE
+          </strong>
         </h1>
 
         <div className="relative w-full">
