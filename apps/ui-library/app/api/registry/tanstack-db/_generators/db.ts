@@ -7,7 +7,7 @@ export function generateDbContent(definitions: Record<string, OpenAPIDefinition>
 
   const lines: string[] = [
     "import { supabaseCollectionOptions } from 'supa-tdb-collection'",
-    "import { createClient } from '@/lib/supabase/client'",
+    "import { createClient } from '@/lib/webentic/client'",
     'import {',
     ...tableNames.map((name) => `  ${toCamelCase(sanitizeIdentifier(name))}Schema,`),
     "} from './schemas'",
