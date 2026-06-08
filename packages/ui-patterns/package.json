@@ -796,7 +796,7 @@
     }
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.1.1",
+    "@hookform/resolvers": "^4.1.3",
     "@monaco-editor/react": "^4.6.0",
     "@std/toml": "jsr:^1.0.11",
     "@supabase/sql-to-rest": "^0.1.6",

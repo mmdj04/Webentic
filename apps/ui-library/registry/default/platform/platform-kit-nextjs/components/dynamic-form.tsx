@@ -35,7 +35,7 @@ interface DynamicFormProps<T extends z.ZodRawShape = z.ZodRawShape> {
 }
 
 const getZodDef = (schema: ZodTypeAny): Record<string, any> =>
-  (schema as any)._def || (schema as any).def
+  (schema as any).def
 
 const unwrapZodType = (fieldSchema: ZodTypeAny): ZodTypeAny => {
   if (
@@ -47,30 +47,26 @@ const unwrapZodType = (fieldSchema: ZodTypeAny): ZodTypeAny => {
       `unwrapZodType received an invalid Zod schema object. Check the console for the problematic schema/key.`
     )
   }
-  let currentSchema = fieldSchema
+  let current: any = fieldSchema
 
-  // Support both old (typeName) and new (type) Zod formats
-  const getTypeName = (def: Record<string, any>) => def.typeName || def.type
-
-  while (
-    getTypeName(getZodDef(currentSchema)) === 'ZodOptional' ||
-    getTypeName(getZodDef(currentSchema)) === 'optional' ||
-    getTypeName(getZodDef(currentSchema)) === 'ZodDefault' ||
-    getTypeName(getZodDef(currentSchema)) === 'default' ||
-    getTypeName(getZodDef(currentSchema)) === 'ZodNullable' ||
-    getTypeName(getZodDef(currentSchema)) === 'nullable' ||
-    getTypeName(getZodDef(currentSchema)) === 'ZodEffects' ||
-    getTypeName(getZodDef(currentSchema)) === 'effects'
-  ) {
-    const typeName = getTypeName(getZodDef(currentSchema))
-    if (typeName === 'ZodEffects' || typeName === 'effects') {
-      // For ZodEffects, get the schema inside the effect
-      currentSchema = getZodDef(currentSchema).schema
+  while (current && typeof current.def === 'object') {
+    const type = current.type
+    if (type === 'optional' || type === 'nullable' || type === 'default' || type === 'readonly') {
+      current = current.unwrap()
+    } else if (type === 'pipe') {
+      const pipeDef = current.def
+      if (pipeDef.in && typeof pipeDef.in.type === 'string') {
+        current = pipeDef.in
+      } else if (pipeDef.out && typeof pipeDef.out.type === 'string') {
+        current = pipeDef.out
+      } else {
+        break
+      }
     } else {
-      currentSchema = getZodDef(currentSchema).innerType
+      break
     }
   }
-  return currentSchema
+  return current
 }
 
 export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
@@ -99,7 +95,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
         getTypeName(getZodDef(originalFieldSchema)) === 'ZodDefault' ||
         getTypeName(getZodDef(originalFieldSchema)) === 'default'
       ) {
-        acc[key] = getZodDef(originalFieldSchema).defaultValue()
+        acc[key] = getZodDef(originalFieldSchema).defaultValue
         return acc
       }
 

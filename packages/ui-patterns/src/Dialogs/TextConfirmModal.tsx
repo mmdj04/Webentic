@@ -92,10 +92,10 @@ export const TextConfirmModal = forwardRef<
     const [showCopied, setShowCopied] = useState(false)
 
     const formSchema = z.object({
-      confirmValue: z.preprocess(
-        (val) => (typeof val === 'string' ? val.trim() : val),
+      confirmValue: z.pipe(
+        z.custom((val: unknown) => (typeof val === 'string' ? val.trim() : val)),
         z.literal(confirmString.trim(), {
-          errorMap: () => ({ message: errorMessage }),
+          error: () => ({ message: errorMessage }),
         })
       ),
     })

@@ -133,8 +133,8 @@ export const authEmailProviderSchema = z
         'Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.'
       ),
     password_required_characters: z
-      .preprocess(
-        (val) => (val === '' || val === null || val === undefined ? NO_REQUIRED_CHARACTERS : val),
+      .pipe(
+        z.custom((val: unknown) => val === '' || val === null || val === undefined ? NO_REQUIRED_CHARACTERS : val),
         z.enum([
           NO_REQUIRED_CHARACTERS,
           'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:0123456789',
@@ -266,9 +266,9 @@ export const authGoogleProviderSchema = authGoogleProviderObject
 export type AuthGoogleProviderSchema = z.infer<typeof authGoogleProviderSchema>
 
 export const authConfigUpdateSchema = authGeneralSettingsSchema
-  .merge(authEmailProviderSchema)
-  .merge(authPhoneProviderSchema)
-  .merge(authGoogleProviderObject)
+  .extend(authEmailProviderSchema.shape)
+  .extend(authPhoneProviderSchema.shape)
+  .extend(authGoogleProviderObject.shape)
 
 export type AuthConfigUpdateSchema = z.infer<typeof authConfigUpdateSchema>
 
