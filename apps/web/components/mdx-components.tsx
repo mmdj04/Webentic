@@ -5,15 +5,27 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, cn } from
 import { BlockItem } from './block-item'
 import { BlockPreview } from './block-preview'
 import { Callout } from './callout'
+import { CodeBlockWrapper } from './code-block-wrapper'
+import { CodeFragment } from './code-fragment'
+import { ColorPalette } from './color-palette'
+import { Colors } from './colors'
+import { ComponentExample } from './component-example'
 import { ComponentPreview } from './component-preview'
+import { ComponentProps } from './component-props'
+import { ComponentSource } from './component-source'
 import { CopyButton } from './copy-button'
 import { DualRealtimeChat } from './dual-realtime-chat'
 import { DualRealtimeFlow } from './dual-realtime-flow'
 import { DualRealtimeMonaco } from './dual-realtime-monaco'
+import { Icons } from './icons'
 import { RegistryBlock } from './registry-block'
+import { SonnerExpandConfig } from './sonner-expand-config'
+import { SonnerPositionConfig } from './sonner-expand-position'
 import { StyleWrapper } from './style-wrapper'
+import { ThemeSettings } from './theme-settings'
 import TanStackBeta from './tanstack-beta'
 import { TanstackDBGenerator } from './tanstack-db-generator'
+import { Admonition } from 'ui-patterns/admonition'
 import type { Style } from '@/registry/styles'
 
 const components = {
@@ -150,9 +162,18 @@ const components = {
       {...props}
     />
   ),
+  Admonition,
   Callout,
+  CodeBlockWrapper,
+  CodeFragment,
+  ColorPalette,
+  Colors,
+  ComponentExample,
   ComponentPreview,
+  ComponentProps,
+  ComponentSource,
   CopyButton,
+  Icons,
   TanStackBeta,
   Card: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <div
@@ -177,6 +198,9 @@ const components = {
   DualRealtimeChat,
   DualRealtimeFlow,
   DualRealtimeMonaco,
+  SonnerExpandConfig,
+  SonnerPositionConfig,
+  ThemeSettings,
   TanstackDBGenerator,
 }
 
