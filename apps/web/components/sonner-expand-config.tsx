@@ -1,3 +1,5 @@
+'use client'
+
 import { Switch } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 
