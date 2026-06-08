@@ -33,3 +33,5 @@ catalog:
   vitest: ^4.1.8
   zod: ^3.25.76
 
+onlyBuiltDependencies:
+  - esbuild
