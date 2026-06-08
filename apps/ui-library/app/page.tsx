@@ -4,118 +4,28 @@ import Link from 'next/link'
 import { Textarea } from 'ui'
 import { cn } from 'ui'
 
-const FONT: Record<string, boolean[][]> = {
-  W: [
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, false, true, false, true],
-    [true, false, true, false, true],
-    [true, true, false, true, true],
-    [true, true, false, true, true],
-    [false, true, false, true, false],
-  ],
-  E: [
-    [true, true, true, true, true],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, true, true, true, false],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, true, true, true, true],
-  ],
-  B: [
-    [true, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, true, true, true, false],
-  ],
-  N: [
-    [true, false, false, false, true],
-    [true, true, false, false, true],
-    [true, true, false, false, true],
-    [true, false, true, false, true],
-    [true, false, false, true, true],
-    [true, false, false, true, true],
-    [true, false, false, false, true],
-  ],
-  T: [
-    [true, true, true, true, true],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-  ],
-  I: [
-    [true, true, true, true, true],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [true, true, true, true, true],
-  ],
-  C: [
-    [false, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, false, false, false, true],
-    [false, true, true, true, false],
-  ],
-}
-
-const ROWS = 7
-const COLS = 5
-const PX = 8
-const GAP = 1
-const LETTER_GAP = 5
+const LOGO = [
+  '██╗    ██╗███████╗██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗',
+  '██║    ██║██╔════╝██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝',
+  '██║ █╗ ██║█████╗  ██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║██║     ',
+  '██║███╗██║██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║██║     ',
+  '╚███╔███╔╝███████╗██████╔╝███████╗██║ ╚████║   ██║   ██║╚██████╗',
+  ' ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝',
+]
 
 function PixelText({ className }: { className?: string }) {
-  const letters = 'WEBENTIC'.split('')
-
-  const letterWidth = COLS * PX + (COLS - 1) * GAP
-  const svgWidth = letters.reduce((w, _, i) => w + (i > 0 ? LETTER_GAP : 0) + letterWidth, 0)
-  const svgHeight = ROWS * PX + (ROWS - 1) * GAP
-
-  let cursor = 0
-
   return (
-    <svg
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      className={cn('text-foreground shrink-0 w-full', className)}
-      fill="currentColor"
+    <pre
+      className={cn(
+        'font-mono leading-tight text-foreground select-none text-center',
+        'text-[clamp(6px,1.5vw,14px)] sm:text-[clamp(8px,1.8vw,18px)]',
+        className
+      )}
     >
-      {letters.map((char, li) => {
-        const def = FONT[char]
-        if (!def) return null
-        const x = cursor
-        cursor += letterWidth + LETTER_GAP
-        return (
-          <g key={li}>
-            {def.map((row, r) =>
-              row.map((pixel, c) =>
-                pixel ? (
-                  <rect
-                    key={`${r}-${c}`}
-                    x={x + c * (PX + GAP)}
-                    y={r * (PX + GAP)}
-                    width={PX}
-                    height={PX}
-                    rx={1}
-                  />
-                ) : null
-              )
-            )}
-          </g>
-        )
-      })}
-    </svg>
+      {LOGO.map((line, i) => (
+        <div key={i}>{line}</div>
+      ))}
+    </pre>
   )
 }
 
