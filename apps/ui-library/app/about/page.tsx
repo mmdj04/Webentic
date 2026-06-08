@@ -11,7 +11,7 @@ const NAV_LINKS = [
 export default function AboutPage() {
   return (
     <div
-      className="min-h-dvh"
+      className="min-h-dvh overflow-x-hidden"
       style={{ backgroundColor: '#202020', color: '#fefefe' }}
     >
       <header
@@ -29,7 +29,7 @@ export default function AboutPage() {
           <Link
             href="/"
             style={{ fontSize: 24, color: '#fefefe' }}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center shrink-0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-flex', width: '1em', height: '1em' }}>
               <path d="M11.4286 2.3158H5.74576C3.41404 2.3158 1.52381 4.0124 1.52381 6.10527C1.52381 8.19814 3.41404 9.89474 5.74576 9.89474H10.6667" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
@@ -66,28 +66,32 @@ export default function AboutPage() {
         }}
       >
         <h2 style={{ paddingTop: 60 }}>
-          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
+          <strong
+            className="text-[52px] sm:text-[72px] md:text-[105px]"
+            style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}
+          >
             WEBENTIC
           </strong>
         </h2>
       </section>
 
       <section style={{ paddingBottom: 100 }}>
-        <div className="mx-auto flex items-center" style={{ gap: 32, maxWidth: 1000, width: '90%' }}>
+        <div className="mx-auto flex flex-col md:flex-row items-center md:items-start" style={{ gap: 32, maxWidth: 1000, width: '90%' }}>
           <div
+            className="w-full md:w-auto"
             style={{
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'start',
               justifyContent: 'space-between',
-              minWidth: 300,
-              minHeight: 400,
-              aspectRatio: '3/4',
+              maxWidth: 300,
+              minHeight: 300,
               padding: 36,
               borderRadius: 20,
               border: '2px solid #ccc',
               backgroundColor: '#202020',
+              aspectRatio: '3/4',
             }}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ fontSize: 20, color: '#ddd', width: '1em', height: '1em' }}>
@@ -102,22 +106,22 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div style={{ flex: 1 }}>
-            <h3 style={{ fontSize: 32, fontWeight: 600, lineHeight: 1.3, color: '#fefefe', maxWidth: 620 }}>
+          <div className="w-full md:flex-1">
+            <h3 className="text-2xl sm:text-3xl md:text-[32px]" style={{ fontWeight: 600, lineHeight: 1.3, color: '#fefefe', maxWidth: 620 }}>
               Building developer tools, design systems, and full-stack apps.
             </h3>
-            <h4 style={{ fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: '#888', maxWidth: 620, marginTop: '1rem' }}>
+            <h4 className="text-2xl sm:text-3xl md:text-[32px]" style={{ fontWeight: 500, lineHeight: 1.3, color: '#888', maxWidth: 620, marginTop: '1rem' }}>
               Open-source enthusiast.
             </h4>
-            <pre style={{ margin: '24px 0', padding: '18px 24px', borderRadius: 8, background: '#111', fontSize: 15, color: '#888', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+            <pre className="overflow-x-auto" style={{ margin: '24px 0', padding: '18px 24px', borderRadius: 8, background: '#111', fontSize: 15, color: '#888', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
               <code>{'import '}</code><code style={{ color: '#fefefe' }}>about</code><code>{' from '}</code><code>"</code><code style={{ color: '#fefefe' }}>https://webentic.dev/about</code><code>"</code>
             </pre>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center" style={{ gap: 16 }}>
               <a
                 href="https://github.com/mmdj04"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group"
+                className="group shrink-0"
                 style={{
                   display: 'inline-block',
                   position: 'relative',
@@ -153,7 +157,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section style={{ padding: '120px 0 160px' }}>
+      <section style={{ padding: '80px 0 120px' }}>
         <div className="mx-auto" style={{ width: '90%', maxWidth: 1200 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -175,7 +179,7 @@ export default function AboutPage() {
               { name: 'Docker', desc: 'DevOps' },
               { name: 'Tailwind CSS', desc: 'Styling' },
             ].map((skill) => (
-              <div key={skill.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center' }}>
+              <div key={skill.name} className="w-[140px]" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center' }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#fefefe' }}>
                   {skill.name.charAt(0)}
                 </div>
@@ -200,7 +204,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <footer style={{ padding: '140px 0 50px' }}>
+      <footer style={{ padding: '100px 0 50px' }}>
         <div className="mx-auto" style={{ width: 30, height: 1, marginBottom: 8, backgroundColor: '#888' }} />
         <p style={{ color: '#888', textAlign: 'center' }}>
           &copy; {new Date().getFullYear()} Webentic. Built with Next.js.
