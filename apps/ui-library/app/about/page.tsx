@@ -8,28 +8,44 @@ const NAV_LINKS = [
   { label: 'Email', href: 'mailto:hello@webentic.dev' },
 ]
 
-const SKILLS = [
-  { category: 'Frontend', items: 'React, Next.js, TypeScript, Tailwind, Vue' },
-  { category: 'Backend', items: 'Node.js, Python, Postgres, Supabase' },
-  { category: 'Tools', items: 'Docker, Vercel, Turborepo, Git' },
-]
-
 export default function AboutPage() {
   return (
-    <div className="min-h-dvh bg-default text-foreground">
-      <header className="sticky top-0 z-50 bg-default/80 backdrop-blur-sm border-b border-default">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="font-mono text-sm tracking-tight hover:text-brand-link transition-colors">
-            WEBENTIC
+    <div
+      className="min-h-dvh"
+      style={{ backgroundColor: '#202020', color: '#fefefe' }}
+    >
+      <header
+        className="fixed top-0 left-0 z-50 w-full"
+        style={{
+          height: 100,
+          backgroundColor: 'rgba(32,32,32,.95)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          className="mx-auto flex items-center justify-between h-full"
+          style={{ width: '90%', maxWidth: 1200 }}
+        >
+          <Link
+            href="/"
+            style={{ fontSize: 24, color: '#fefefe' }}
+            className="flex items-center justify-center"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-flex', width: '1em', height: '1em' }}>
+              <path d="M11.4286 2.3158H5.74576C3.41404 2.3158 1.52381 4.0124 1.52381 6.10527C1.52381 8.19814 3.41404 9.89474 5.74576 9.89474H10.6667" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              <path d="M5.33334 6.10526H10.2542C12.586 6.10526 14.4762 7.80187 14.4762 9.89474C14.4762 11.9876 12.586 13.6842 10.2542 13.6842H4.84034" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center" style={{ gap: 36 }}>
             {NAV_LINKS.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-foreground-light hover:text-foreground transition-colors"
+                style={{ color: '#ddd', transition: 'color .2s ease-out', lineHeight: '36px', height: 36, display: 'inline-flex', alignItems: 'center' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#fefefe'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#ddd'}
               >
                 {link.label}
               </a>
@@ -38,90 +54,166 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <main>
-        <section className="max-w-5xl mx-auto px-6 pt-24 pb-16">
-          <div className="flex flex-col items-start gap-1 mb-12">
-            <p className="text-sm text-foreground-lighter font-mono">// about.me</p>
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-              <span className="font-light">Full-Stack</span>
-              <br />
-              <span className="font-extrabold">Developer</span>
-            </h1>
-            <p className="text-lg text-foreground-light mt-4 max-w-xl">
-              Building developer tools, design systems, and open-source projects.
-            </p>
+      <section
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100vh',
+          minHeight: 680,
+        }}
+      >
+        <h2 style={{ paddingTop: 60 }}>
+          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
+            Full-Stack
+          </strong>
+          <br />
+          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
+            Developer
+          </strong>
+          <br />
+          <strong style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontSize: 105, lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}>
+            <em style={{ fontStyle: 'normal', color: '#888' }}>Open</em>Source
+          </strong>
+        </h2>
+      </section>
+
+      <section style={{ paddingBottom: 100 }}>
+        <div className="mx-auto flex items-center" style={{ gap: 32, maxWidth: 1000, width: '90%' }}>
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'start',
+              justifyContent: 'space-between',
+              minWidth: 300,
+              minHeight: 400,
+              aspectRatio: '3/4',
+              padding: 36,
+              borderRadius: 20,
+              border: '2px solid #ccc',
+              backgroundColor: '#202020',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ fontSize: 20, color: '#ddd', width: '1em', height: '1em' }}>
+              <path fillRule="evenodd" clipRule="evenodd" d="M0 5.25143C0 4.3552 0.356318 3.58403 1.06897 2.93791C1.75863 2.31263 2.62069 2 3.65517 2C4.71265 2 5.5862 2.31263 6.27586 2.93791L7.34483 3.87582C7.41379 3.93835 7.41379 4.00088 7.34483 4.06341L6.65517 4.65742C6.58621 4.71994 6.52874 4.71994 6.48276 4.65742L5.41379 3.7195C4.90804 3.30265 4.32184 3.09423 3.65517 3.09423C3.01149 3.09423 2.43678 3.30265 1.93104 3.7195C1.47126 4.13636 1.24138 4.64699 1.24138 5.25143C1.24138 5.85586 1.47126 6.3665 1.93104 6.78335C2.43678 7.2002 3.01149 7.40862 3.65517 7.40862C4.32184 7.40862 4.90804 7.2002 5.41379 6.78335L9.72414 2.93791C10.4138 2.31263 11.2874 2 12.3448 2C13.3793 2 14.2414 2.31263 14.931 2.93791C15.6437 3.58403 16 4.3552 16 5.25143C16 6.14766 15.6437 6.91882 14.931 7.56494C14.7464 7.73238 14.5493 7.8774 14.3399 8C14.5493 8.1226 14.7464 8.26762 14.931 8.43506C15.6437 9.08118 16 9.85234 16 10.7486C16 11.6448 15.6437 12.416 14.931 13.0621C14.2414 13.6874 13.3793 14 12.3448 14C11.2874 14 10.4138 13.6874 9.72414 13.0621L8.65517 12.1242C8.58621 12.0616 8.58621 11.9991 8.65517 11.9366L9.34483 11.3426C9.41379 11.2801 9.47126 11.2801 9.51724 11.3426L10.5862 12.2805C11.092 12.6973 11.6782 12.9058 12.3448 12.9058C12.9885 12.9058 13.5632 12.6973 14.069 12.2805C14.5517 11.8428 14.7931 11.3322 14.7931 10.7486C14.7931 10.165 14.5517 9.65435 14.069 9.21665C13.5632 8.7998 12.9885 8.59138 12.3448 8.59138C11.6782 8.59138 11.092 8.7998 10.5862 9.21665L6.27586 13.0621C5.5862 13.6874 4.72414 14 3.68966 14C2.65517 14 1.79311 13.6874 1.10345 13.0621C0.367812 12.3951 0 11.624 0 10.7486C0 9.85234 0.356318 9.08118 1.06897 8.43506C1.25874 8.263 1.46157 8.11462 1.67745 7.98991C1.47442 7.86946 1.28309 7.72781 1.10345 7.56494C0.367814 6.89798 0 6.12681 0 5.25143Z" fill="currentColor"/>
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 20, fontWeight: 500, lineHeight: 1.05, color: '#888' }}>
+              <div>over</div>
+              <div style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', fontWeight: 700, fontSize: 38, color: '#fefefe' }}>
+                50+
+              </div>
+              <div>projects shipped</div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-8 mb-16">
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: 32, fontWeight: 600, lineHeight: 1.3, color: '#fefefe', maxWidth: 620 }}>
+              Building developer tools, design systems, and full-stack apps.
+            </h3>
+            <h4 style={{ fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: '#888', maxWidth: 620, marginTop: '1rem' }}>
+              Open-source enthusiast.
+            </h4>
+            <pre style={{ margin: '24px 0', padding: '18px 24px', borderRadius: 8, background: '#111', fontSize: 15, color: '#888', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+              <code>{'import '}</code><code style={{ color: '#fefefe' }}>about</code><code>{' from '}</code><code>"</code><code style={{ color: '#fefefe' }}>https://webentic.dev/about</code><code>"</code>
+            </pre>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <a
+                href="https://github.com/mmdj04"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+                style={{
+                  display: 'inline-block',
+                  position: 'relative',
+                  padding: '8px 24px',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                }}
+              >
+                <span
+                  className="group-hover:scale-100"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(300deg,#9933FF 33.26%,#FF6666 46.51%,#FACA30 59.77%,#00CD99 73.03%,#00CCFF 86.29%)',
+                    transform: 'scale(1.2)',
+                    transition: 'transform .25s ease-in-out',
+                  }}
+                />
+                <strong style={{ position: 'relative', color: '#fefefe', fontSize: 16, fontWeight: 600, userSelect: 'none' }}>
+                  See my work
+                </strong>
+              </a>
+              <code style={{ fontSize: 14, fontWeight: 500, color: '#888', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+                <strong style={{ fontWeight: 500, color: '#ddd' }}>10+</strong> years building
+              </code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '120px 0 160px' }}>
+        <div className="mx-auto" style={{ width: '90%', maxWidth: 1200 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.6875 3.24951C14.7542 3.24951 13.0592 4.25201 12 5.77451C10.9408 4.25201 9.24583 3.24951 7.3125 3.24951C4.6075 3.24951 2 5.54451 2 8.87451C2 12.437 4.55667 15.4137 6.85667 17.397C8.30137 18.6318 9.86968 19.7142 11.5367 20.627L11.56 20.6412L11.5667 20.6437L11.5658 20.6462C11.7017 20.717 11.8508 20.7512 12 20.7503C12.1492 20.7512 12.2983 20.7162 12.4342 20.6462L12.4333 20.6437L12.44 20.6412L12.4633 20.627C14.1303 19.7142 15.6986 18.6318 17.1433 17.397C19.4433 15.4137 22 12.437 22 8.87451C22 5.54451 19.3925 3.24951 16.6875 3.24951ZM15.9217 15.9787C14.7045 17.0202 13.3924 17.9454 12.0025 18.742L11.9992 18.7403L11.9958 18.742C10.6065 17.9446 9.29442 17.0195 8.07667 15.9787C5.84583 14.0562 3.87083 11.5637 3.87083 8.87618C3.87083 6.58118 5.63833 5.12618 7.30833 5.12618C9.025 5.12618 10.57 6.35868 11.095 8.19618C11.2142 8.60868 11.5917 8.86035 12 8.85951C12.4083 8.86035 12.7858 8.60785 12.9042 8.19618C13.4292 6.35868 14.9742 5.12618 16.6908 5.12618C18.3608 5.12618 20.1283 6.58118 20.1283 8.87618C20.1283 11.5637 18.1533 14.0562 15.9217 15.9787Z" fill="#2BBD54"/>
+            </svg>
+            <h2 style={{ position: 'relative', textAlign: 'center', fontSize: 27, fontWeight: 700, lineHeight: 1, color: '#fefefe' }}>
+              Skills
+            </h2>
+            <h3 style={{ textAlign: 'center', color: '#888', lineHeight: 1, fontSize: 18, fontWeight: 400 }}>
+              Technologies I work with.
+            </h3>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 36, justifyContent: 'center', alignItems: 'center', paddingTop: 45 }}>
             {[
-              { value: '10+', label: 'years building' },
-              { value: '50+', label: 'projects shipped' },
-              { value: '100%', label: 'open source' },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <p className="text-4xl sm:text-5xl font-bold text-foreground tabular-nums">{stat.value}</p>
-                <p className="text-sm text-foreground-lighter mt-1">{stat.label}</p>
+              { name: 'React / Next.js', desc: 'Frontend' },
+              { name: 'TypeScript', desc: 'Language' },
+              { name: 'Node.js', desc: 'Backend' },
+              { name: 'Postgres', desc: 'Database' },
+              { name: 'Docker', desc: 'DevOps' },
+              { name: 'Tailwind CSS', desc: 'Styling' },
+            ].map((skill) => (
+              <div key={skill.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#fefefe' }}>
+                  {skill.name.charAt(0)}
+                </div>
+                <h4 style={{ fontSize: 16, fontWeight: 500, color: '#fefefe', margin: 0 }}>{skill.name}</h4>
+                <p style={{ fontSize: 14, color: '#888', margin: 0 }}>{skill.desc}</p>
               </div>
             ))}
           </div>
-
-          <div className="border border-default rounded-lg bg-surface-100 overflow-hidden mb-16">
-            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-default bg-surface-200">
-              <span className="size-2.5 rounded-full bg-destructive" />
-              <span className="size-2.5 rounded-full bg-warning" />
-              <span className="size-2.5 rounded-full bg-brand" />
-              <span className="text-xs text-foreground-lighter font-mono ml-2">~/webentic</span>
-            </div>
-            <pre className="p-4 sm:p-6 text-sm font-mono text-foreground-light leading-relaxed overflow-x-auto">
-              <span className="text-foreground-lighter"># about.json</span>
-              {`
-{`}
-              <span className="text-brand-link">  "name"</span>: <span className="text-foreground">"Marco"</span>,
-              <span className="text-brand-link">  "role"</span>: <span className="text-foreground">"Full-Stack Developer"</span>,
-              <span className="text-brand-link">  "location"</span>: <span className="text-foreground">"Remote"</span>,
-              <span className="text-brand-link">  "stack"</span>: [
-              <span className="text-foreground">    "React", "Next.js", "TypeScript", "Node.js"</span>
-              <span className="text-foreground">    "Postgres", "Docker", "Tailwind"</span>
-              ],
-              <span className="text-brand-link">  "openSource"</span>: <span className="text-foreground">true</span>
-              {`}`}
-            </pre>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, paddingTop: 45 }}>
+            <a
+              href="mailto:hello@webentic.dev"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '0 20px', borderRadius: 8, height: 36, lineHeight: 1, fontWeight: 500, color: '#202020', backgroundColor: '#ddd', cursor: 'pointer', textDecoration: 'none', transition: 'background-color .2s ease-in-out' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fefefe'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ddd'}
+            >
+              <span>Contact me</span>
+              <svg width="10" height="10" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 1L1 10M10 1L2.65233 1M10 1L10 8.3477" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </a>
           </div>
+        </div>
+      </section>
 
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-foreground mb-2">About</h2>
-            <p className="text-foreground-light leading-relaxed max-w-2xl">
-              I build developer tools, component libraries, and full-stack applications.
-              Focused on creating polished, accessible user experiences with modern
-              web technologies. Open-source enthusiast and design system builder.
-            </p>
-          </div>
-
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Skills</h2>
-            <div className="grid sm:grid-cols-3 gap-4">
-              {SKILLS.map((skill) => (
-                <div
-                  key={skill.category}
-                  className="border border-default rounded-lg p-4 bg-surface-100"
-                >
-                  <h3 className="text-sm font-medium text-foreground mb-1.5">{skill.category}</h3>
-                  <p className="text-sm text-foreground-light leading-relaxed">{skill.items}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-default pt-8 pb-16">
-            <p className="text-sm text-foreground-lighter font-mono mb-2"># contact</p>
-            <p className="text-foreground">
-              <a href="mailto:hello@webentic.dev" className="text-brand-link hover:underline">
-                hello@webentic.dev
-              </a>
-            </p>
-          </div>
-        </section>
-      </main>
+      <footer style={{ padding: '140px 0 50px' }}>
+        <div className="mx-auto" style={{ width: 30, height: 1, marginBottom: 8, backgroundColor: '#888' }} />
+        <p style={{ color: '#888', textAlign: 'center' }}>
+          &copy; {new Date().getFullYear()} Webentic. Built with Next.js.
+        </p>
+      </footer>
     </div>
   )
 }
