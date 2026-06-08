@@ -23,11 +23,11 @@ catalog:
   radix-ui: ^1.5.0
   react: ^19.2.7
   react-dom: ^19.2.7
-  recharts: ^2.15.4
+  recharts: ^3.8.1
   tailwindcss: ^4.3.0
   tsx: ^4.22.4
   typescript: ^6.0.3
-  valtio: ^1.12.0
+  valtio: ^2.3.2
   vite: ^8.0.16
   vite-tsconfig-paths: ^6.1.1
   vitest: ^4.1.8
