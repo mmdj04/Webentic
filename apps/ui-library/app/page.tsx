@@ -1,9 +1,106 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Textarea } from 'ui'
 import { cn } from 'ui'
+
+const FONT: Record<string, boolean[][]> = {
+  W: [
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, false, true, false, true],
+    [true, false, true, false, true],
+    [true, true, false, true, true],
+    [true, true, false, true, true],
+    [false, true, false, true, false],
+  ],
+  E: [
+    [true, true, true, true, true],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, true, true, true, false],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, true, true, true, true],
+  ],
+  B: [
+    [true, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, true],
+    [true, true, true, true, false],
+  ],
+  N: [
+    [true, false, false, false, true],
+    [true, true, false, false, true],
+    [true, true, false, false, true],
+    [true, false, true, false, true],
+    [true, false, false, true, true],
+    [true, false, false, true, true],
+    [true, false, false, false, true],
+  ],
+  T: [
+    [true, true, true, true, true],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+  ],
+  I: [
+    [true, true, true, true, true],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [false, false, true, false, false],
+    [true, true, true, true, true],
+  ],
+  C: [
+    [false, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, false, false, false, false],
+    [true, false, false, false, true],
+    [false, true, true, true, false],
+  ],
+}
+
+function PixelText({ text, className }: { text: string; className?: string }) {
+  const letters = useMemo(() => text.split(''), [text])
+
+  return (
+    <div className={cn('flex items-center justify-center gap-3', className)}>
+      {letters.map((char, i) => {
+        const def = FONT[char]
+        if (!def) return null
+        return (
+          <div key={i} className="grid" style={{ gridTemplateRows: `repeat(${def.length}, 1fr)` }}>
+            {def.map((row, r) => (
+              <div key={r} className="flex" style={{ gap: '1px' }}>
+                {row.map((pixel, c) => (
+                  <div
+                    key={c}
+                    className={cn(
+                      'transition-colors',
+                      pixel ? 'bg-foreground' : 'bg-transparent'
+                    )}
+                    style={{ width: 'clamp(4px, 1.2vw, 10px)', height: 'clamp(4px, 1.2vw, 10px)' }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 const MODES = [
   {
@@ -26,9 +123,7 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-4 text-center px-4">
-          Webentic
-        </h1>
+        <PixelText text="WEBENTIC" className="mb-6" />
 
         <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden">
           <div className="flex items-center gap-1.5 p-2 pb-0">
