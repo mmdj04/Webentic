@@ -222,6 +222,55 @@ echo "==> Simplifying landing page nav for public repo..."
 sed -i '/id: .ui-library.,/,/},/d' apps/web/app/page.tsx
 sed -i '/id: .design-system.,/,/},/d' apps/web/app/page.tsx
 
+echo "==> Updating pnpm-workspace.yaml for public repo..."
+cat > pnpm-workspace.yaml << 'WORKSPACE_EOF'
+packages:
+  - apps/web
+  - packages/api-types
+  - packages/common
+  - packages/config
+  - packages/tsconfig
+  - packages/ui
+
+catalog:
+  '@supabase/auth-js': ^2.107.0
+  '@supabase/postgrest-js': ^2.107.0
+  '@supabase/realtime-js': ^2.107.0
+  '@supabase/ssr': ^0.10.2
+  '@supabase/supabase-js': ^2.107.0
+  '@types/node': ^22.0.0
+  '@types/react': ^19.2.17
+  '@types/react-dom': ^19.2.3
+  '@vitejs/plugin-react': ^6.0.2
+  '@vitest/coverage-v8': ^4.1.8
+  '@vitest/ui': ^4.1.8
+  lodash: ^4.18.1
+  lodash-es: ^4.18.1
+  next: ^16.2.7
+  next-themes: ^0.4.6
+  postcss: ^8.5.15
+  radix-ui: ^1.5.0
+  react: ^19.2.7
+  react-dom: ^19.2.7
+  recharts: ^3.8.1
+  tailwindcss: ^4.3.0
+  tsx: ^4.22.4
+  typescript: ^6.0.3
+  valtio: ^2.3.2
+  vite: ^8.0.16
+  vite-tsconfig-paths: ^6.1.1
+  vitest: ^4.1.8
+  zod: ^4.4.3
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - '@next/swc-linux-x64-gnu'
+  - '@next/swc-linux-x64-musl'
+  - '@next/swc-darwin-x64'
+  - '@next/swc-darwin-arm64'
+WORKSPACE_EOF
+
 echo "==> Creating public .gitignore..."
 cat > .gitignore << 'GITIGNORE_EOF'
 # dependencies
