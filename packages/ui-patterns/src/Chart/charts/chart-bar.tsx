@@ -12,7 +12,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { CategoricalChartState } from 'recharts/types/chart/types'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, cn } from 'ui'
 
 const CHART_COLORS = {
@@ -47,7 +46,7 @@ export interface ChartBarProps {
   data: ChartBarTick[]
   dataKey: string
   config?: ChartConfig
-  onBarClick?: (datum: ChartBarTick, tooltipData?: CategoricalChartState) => void
+  onBarClick?: (datum: ChartBarTick, tooltipData?: any) => void
   DateTimeFormat?: string
   isFullHeight?: boolean
   className?: string

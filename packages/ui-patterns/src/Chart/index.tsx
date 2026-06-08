@@ -12,7 +12,6 @@ import {
   Bar,
   BarChart,
   Tooltip as RechartsTooltip,
-  TooltipProps as RechartsTooltipProps,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -533,7 +532,7 @@ const ChartValueDifferential = React.forwardRef<HTMLDivElement, ChartValueDiffer
 )
 ChartValueDifferential.displayName = 'ChartValueDifferential'
 
-const ChartSparklineTooltip = ({ active, payload, label }: RechartsTooltipProps<any, any>) => {
+const ChartSparklineTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null
 
   const formatTimestamp = (timestamp: string) => {

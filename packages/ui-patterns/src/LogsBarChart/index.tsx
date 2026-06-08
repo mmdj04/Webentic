@@ -3,7 +3,6 @@
 import dayjs from 'dayjs'
 import { ReactNode, useState } from 'react'
 import { Bar, Cell, BarChart as RechartBarChart, XAxis, YAxis } from 'recharts'
-import type { CategoricalChartState } from 'recharts/types/chart/types'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, cn } from 'ui'
 
 const CHART_COLORS = {
@@ -36,7 +35,7 @@ export const LogsBarChart = ({
   hideXAxis = false,
 }: {
   data: LogsBarChartDatum[]
-  onBarClick?: (datum: LogsBarChartDatum, tooltipData?: CategoricalChartState) => void
+  onBarClick?: (datum: LogsBarChartDatum, tooltipData?: any) => void
   EmptyState?: ReactNode
   DateTimeFormat?: string
   isFullHeight?: boolean
