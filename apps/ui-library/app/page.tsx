@@ -39,7 +39,7 @@ const MODES = [
   {
     id: 'design-system',
     label: 'Design System',
-    href: 'https://supabase-design-system-kohl.vercel.app/design-system',
+    href: 'https://webentic-ds.vercel.app/design-system',
   },
 ] as const
 
