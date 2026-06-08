@@ -2,7 +2,7 @@
 
 import { ScrollArea, Sheet, SheetContent, SheetTitle } from 'ui'
 
-import { SideNavigation } from '@/components/side-navigation'
+import SideNavigation from '@/components/side-navigation'
 import { useMobileSidebar } from '@/hooks/use-mobile-sidebar'
 
 export function MobileSidebarSheet() {
