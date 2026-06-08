@@ -108,8 +108,8 @@ export default function HomePage() {
                     <ArrowUpRight className="size-3 ml-auto text-foreground-muted" />
                   </Link>
                 ))}
-              </PopoverContent_Shadcn_>
-            </Popover_Shadcn_>
+              </PopoverContent>
+            </Popover>
           </InputGroupAddon>
 
           <InputGroupInput
