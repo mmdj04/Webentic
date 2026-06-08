@@ -70,7 +70,21 @@ export default function AboutPage() {
             className="text-[52px] sm:text-[72px] md:text-[105px]"
             style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}
           >
-            WEBENTIC
+            Full-Stack
+          </strong>
+          <br />
+          <strong
+            className="text-[52px] sm:text-[72px] md:text-[105px]"
+            style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}
+          >
+            Developer
+          </strong>
+          <br />
+          <strong
+            className="text-[52px] sm:text-[72px] md:text-[105px]"
+            style={{ fontFamily: 'Gotham, ui-sans-serif, system-ui, sans-serif', lineHeight: 1, fontWeight: 700, textTransform: 'uppercase', color: '#fefefe' }}
+          >
+            <em style={{ fontStyle: 'normal', color: '#888' }}>Open</em>Source
           </strong>
         </h2>
       </section>

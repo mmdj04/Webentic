@@ -5,28 +5,17 @@ import Link from 'next/link'
 import { Textarea } from 'ui'
 import { cn } from 'ui'
 
-const LOGO = [
-  '██╗    ██╗███████╗██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗',
-  '██║    ██║██╔════╝██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝',
-  '██║ █╗ ██║█████╗  ██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║██║     ',
-  '██║███╗██║██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║██║     ',
-  '╚███╔███╔╝███████╗██████╔╝███████╗██║ ╚████║   ██║   ██║╚██████╗',
-  ' ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝',
-]
-
-function PixelText({ className }: { className?: string }) {
+function Logo({ className }: { className?: string }) {
   return (
-    <pre
+    <h1
       className={cn(
-        'font-mono leading-tight text-foreground select-none text-center',
-        'text-[clamp(6px,1.5vw,14px)] sm:text-[clamp(8px,1.8vw,18px)]',
+        'text-foreground select-none text-center font-bold tracking-tight',
+        'text-4xl sm:text-5xl md:text-6xl',
         className
       )}
     >
-      {LOGO.map((line, i) => (
-        <div key={i}>{line}</div>
-      ))}
-    </pre>
+      WEBENTIC
+    </h1>
   )
 }
 
@@ -54,7 +43,7 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
-        <PixelText className="mb-6" />
+        <Logo className="mb-6" />
 
         <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden w-full">
           <div className="flex items-center gap-1.5 p-2 pb-0">
