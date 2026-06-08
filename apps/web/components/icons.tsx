@@ -1,3 +1,5 @@
+'use client'
+
 import { Index } from 'icons/__registry__/index'
 import { Copy } from 'lucide-react'
 import {
