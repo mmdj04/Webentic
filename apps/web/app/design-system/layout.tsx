@@ -1,7 +1,7 @@
 import { ScrollArea } from 'ui'
 
 import { MobileSidebarSheet } from '@/components/mobile-sidebar-sheet'
-import { SideNavigation } from '@/components/side-navigation'
+import SideNavigation from '@/components/side-navigation'
 import { SiteFooter } from '@/components/site-footer'
 import { TopNavigation } from '@/components/top-navigation'
 
