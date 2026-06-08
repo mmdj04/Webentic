@@ -2,23 +2,18 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "content:build", "build:registry", "build:llms"],
-      "outputs": [".next/**", "dist/**", "public/r/**", "public/llms.txt", ".contentlayer/**"],
+      "dependsOn": ["^build", "content:build", "build:registry"],
+      "outputs": [".next/**", "dist/**", "public/r/**", ".contentlayer/**"],
       "inputs": ["$TURBO_DEFAULT$", "!*.test.*"]
     },
-    "build:app": {
-      "dependsOn": ["^build", "content:build"],
-      "outputs": [".next/**"],
-      "inputs": ["$TURBO_DEFAULT$", "!*.test.*"]
+    "build:llms": {
+      "outputs": ["public/llms.txt"]
     },
     "content:build": {
       "outputs": [".contentlayer/**"]
     },
     "build:registry": {
       "outputs": ["public/r/**"]
-    },
-    "build:llms": {
-      "outputs": ["public/llms.txt"]
     },
     "dev": {
       "cache": false

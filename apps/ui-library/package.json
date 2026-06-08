@@ -7,8 +7,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "next dev --turbopack --port 3004",
-    "build": "next build --turbopack",
-    "build:all": "pnpm run content:build && pnpm run build:registry && pnpm run build:llms && next build --turbopack",
+    "build": "pnpm run content:build && pnpm run build:registry && pnpm run build:llms && next build --turbopack",
     "build:registry": "rimraf -G public/r/* && tsx ./scripts/build-registry.mts && shadcn build public/r/registry.json && tsx scripts/clean-registry.ts",
     "build:llms": "tsx ./scripts/build-llms-txt.ts",
     "build:app": "next build --turbopack",

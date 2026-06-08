@@ -1,104 +1,32 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Textarea } from 'ui'
 import { cn } from 'ui'
 
-const FONT: Record<string, boolean[][]> = {
-  W: [
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, false, true, false, true],
-    [true, false, true, false, true],
-    [true, true, false, true, true],
-    [true, true, false, true, true],
-    [false, true, false, true, false],
-  ],
-  E: [
-    [true, true, true, true, true],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, true, true, true, false],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, true, true, true, true],
-  ],
-  B: [
-    [true, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, true],
-    [true, true, true, true, false],
-  ],
-  N: [
-    [true, false, false, false, true],
-    [true, true, false, false, true],
-    [true, true, false, false, true],
-    [true, false, true, false, true],
-    [true, false, false, true, true],
-    [true, false, false, true, true],
-    [true, false, false, false, true],
-  ],
-  T: [
-    [true, true, true, true, true],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-  ],
-  I: [
-    [true, true, true, true, true],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [false, false, true, false, false],
-    [true, true, true, true, true],
-  ],
-  C: [
-    [false, true, true, true, false],
-    [true, false, false, false, true],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, false, false, false, false],
-    [true, false, false, false, true],
-    [false, true, true, true, false],
-  ],
-}
+const LOGO = [
+  '██╗    ██╗███████╗██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗',
+  '██║    ██║██╔════╝██╔══██╗██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝',
+  '██║ █╗ ██║█████╗  ██████╔╝█████╗  ██╔██╗ ██║   ██║   ██║██║     ',
+  '██║███╗██║██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║   ██║   ██║██║     ',
+  '╚███╔███╔╝███████╗██████╔╝███████╗██║ ╚████║   ██║   ██║╚██████╗',
+  ' ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝',
+]
 
-function PixelText({ text, className }: { text: string; className?: string }) {
-  const letters = useMemo(() => text.split(''), [text])
-
+function PixelText({ className }: { className?: string }) {
   return (
-    <div className={cn('flex items-center justify-center gap-3', className)}>
-      {letters.map((char, i) => {
-        const def = FONT[char]
-        if (!def) return null
-        return (
-          <div key={i} className="grid" style={{ gridTemplateRows: `repeat(${def.length}, 1fr)` }}>
-            {def.map((row, r) => (
-              <div key={r} className="flex" style={{ gap: '1px' }}>
-                {row.map((pixel, c) => (
-                  <div
-                    key={c}
-                    className={cn(
-                      'transition-colors',
-                      pixel ? 'bg-foreground' : 'bg-transparent'
-                    )}
-                    style={{ width: 'clamp(4px, 1.2vw, 10px)', height: 'clamp(4px, 1.2vw, 10px)' }}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        )
-      })}
-    </div>
+    <pre
+      className={cn(
+        'font-mono leading-tight text-foreground select-none',
+        'text-[clamp(6px,1.5vw,14px)] sm:text-[clamp(8px,1.8vw,18px)]',
+        className
+      )}
+    >
+      {LOGO.map((line, i) => (
+        <div key={i}>{line}</div>
+      ))}
+    </pre>
   )
 }
 
@@ -123,7 +51,7 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto">
-        <PixelText text="WEBENTIC" className="mb-6" />
+        <PixelText className="mb-6" />
 
         <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden">
           <div className="flex items-center gap-1.5 p-2 pb-0">
