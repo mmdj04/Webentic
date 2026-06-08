@@ -41,6 +41,11 @@ const MODES = [
     label: 'Design System',
     href: 'https://webentic-ds.vercel.app/design-system',
   },
+  {
+    id: 'about',
+    label: 'About Me',
+    href: '/about',
+  },
 ] as const
 
 export default function HomePage() {
