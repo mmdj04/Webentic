@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Textarea } from 'ui'
+import { cn } from 'ui'
 
-const ACTIONS = [
+const MODES = [
   {
     id: 'ui-library',
     label: 'UI Library',
@@ -19,91 +21,107 @@ const ACTIONS = [
 ] as const
 
 export default function HomePage() {
+  const [activeMode, setActiveMode] = useState<string | null>(null)
+
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto">
-        <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-muted">
-            <span className="size-2.5 rounded-full bg-red-500" />
-            <span className="size-2.5 rounded-full bg-amber-500" />
-            <span className="size-2.5 rounded-full bg-green-500" />
-            <span className="ml-2 text-xs font-mono text-foreground-light">
-              Supabase UI — ~/projects
-            </span>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            Supabase UI
+          </h1>
+          <p className="mt-2 text-sm text-foreground-light">
+            Select a workspace to get started
+          </p>
+        </div>
+
+        <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-1.5 p-2 pb-0">
+            {MODES.map((mode) => (
+              <Link
+                key={mode.id}
+                href={mode.href}
+                target={mode.href.startsWith('http') ? '_blank' : undefined}
+                onMouseEnter={() => setActiveMode(mode.id)}
+                onMouseLeave={() => setActiveMode(null)}
+                className={cn(
+                  'relative px-4 py-1.5 text-sm font-medium rounded-t-md transition-colors',
+                  activeMode === mode.id
+                    ? 'text-foreground bg-background border border-b-0 border-muted'
+                    : 'text-foreground-light hover:text-foreground hover:bg-overlay/50'
+                )}
+              >
+                {mode.label}
+              </Link>
+            ))}
+            <div className="flex-1 border-b border-muted self-stretch" />
           </div>
-          <div className="p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-mono font-bold text-foreground tracking-tight">
-                Supabase UI
-              </h1>
-              <p className="mt-2 text-sm text-foreground-light font-mono">
-                Choose a workspace to get started
+
+          <div className="p-4 pt-3">
+            <div className="relative">
+              <Textarea
+                placeholder="Type a message or select a workspace above..."
+                className="min-h-[100px] font-mono text-sm resize-none"
+                rows={3}
+              />
+              <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                <span className="text-[10px] text-foreground-muted font-mono">
+                  {activeMode
+                    ? `Navigate to ${MODES.find((m) => m.id === activeMode)?.label}`
+                    : 'Select a workspace'}
+                </span>
+                <Link
+                  href={
+                    activeMode
+                      ? MODES.find((m) => m.id === activeMode)!.href
+                      : '#'
+                  }
+                  target={
+                    activeMode &&
+                    MODES.find((m) => m.id === activeMode)!.href.startsWith(
+                      'http'
+                    )
+                      ? '_blank'
+                      : undefined
+                  }
+                  className={cn(
+                    'inline-flex items-center justify-center size-8 rounded-lg transition-colors',
+                    activeMode
+                      ? 'bg-foreground text-background hover:opacity-90'
+                      : 'bg-muted text-foreground-muted cursor-not-allowed'
+                  )}
+                >
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 12h14M12 5l7 7-7 7"
+                    />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {activeMode && (
+            <div className="px-4 pb-4">
+              <p className="text-xs text-foreground-light">
+                {MODES.find((m) => m.id === activeMode)?.description}
               </p>
             </div>
+          )}
+        </div>
 
-            <div className="space-y-3">
-              <div className="relative">
-                <Textarea
-                  placeholder="Type a command or select an option below..."
-                  className="min-h-[60px] font-mono text-sm resize-none pr-20"
-                  rows={2}
-                />
-                <div className="absolute bottom-2 right-2 flex gap-1">
-                  <span className="inline-flex items-center rounded border border-muted bg-background px-2 py-1 text-[10px] font-mono text-foreground-light">
-                    Tab
-                  </span>
-                  <span className="inline-flex items-center rounded border border-muted bg-background px-2 py-1 text-[10px] font-mono text-foreground-light">
-                    ↵
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {ACTIONS.map((action) => (
-                  <Link
-                    key={action.id}
-                    href={action.href}
-                    target={action.href.startsWith('http') ? '_blank' : undefined}
-                    className="group relative overflow-hidden rounded-lg border border-muted bg-background p-4 transition-all hover:border-foreground-muted hover:bg-overlay/50 active:scale-[0.98]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-sm font-medium text-foreground group-hover:text-foreground">
-                        {action.label}
-                      </span>
-                      <svg
-                        className="size-4 text-foreground-muted transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </div>
-                    <p className="mt-1 text-xs text-foreground-light">
-                      {action.description}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <p className="mt-6 text-center text-[10px] font-mono text-foreground-muted">
-              Select a workspace above or type a command to continue
-            </p>
-          </div>
-
-          <div className="border-t border-muted px-4 py-2 flex items-center justify-between text-[10px] font-mono text-foreground-muted">
-            <span>build</span>
-            <span className="flex items-center gap-3">
-              <span>Tab · switch mode</span>
-              <span>Ctrl+Q · quit</span>
-            </span>
-          </div>
+        <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-foreground-muted">
+          <span>Hover over a workspace above</span>
+          <span className="w-1 h-1 rounded-full bg-foreground-muted" />
+          <span>Click to navigate</span>
         </div>
       </div>
     </div>
