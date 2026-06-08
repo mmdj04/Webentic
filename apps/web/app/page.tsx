@@ -14,7 +14,7 @@ const MODES = [
   {
     id: 'design-system',
     label: 'Design System',
-    href: 'https://webentic-ds.vercel.app/design-system',
+    href: '/design-system',
   },
   {
     id: 'about',
@@ -68,14 +68,6 @@ export default function HomePage() {
                   activeMode
                     ? MODES.find((m) => m.id === activeMode)!.href
                     : '#'
-                }
-                target={
-                  activeMode &&
-                  MODES.find((m) => m.id === activeMode)!.href.startsWith(
-                    'http'
-                  )
-                    ? '_blank'
-                    : undefined
                 }
                 className={cn(
                   'absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-8 rounded-lg transition-colors',
