@@ -3,16 +3,16 @@ import { type SupabaseClient } from '@supabase/supabase-js'
 import { computed, onMounted, reactive, toRefs, watch } from 'vue'
 
 // @ts-ignore
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/webentic/client'
 
-const supabase = createClient()
+const webentic = createClient()
 
-type SupabaseClientType = typeof supabase
+type WebenticClientType = typeof webentic
 
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
 type Database =
-  SupabaseClientType extends SupabaseClient<infer U>
+  WebenticClientType extends SupabaseClient<infer U>
     ? IfAny<
         U,
         {
@@ -106,7 +106,7 @@ export function useInfiniteQuery<
 
     state.isFetching = true
 
-    let query = supabase
+    let query = webentic
       .from(props.tableName)
       .select(columns.value, { count: 'exact' }) as unknown as SupabaseSelectBuilder<T>
 

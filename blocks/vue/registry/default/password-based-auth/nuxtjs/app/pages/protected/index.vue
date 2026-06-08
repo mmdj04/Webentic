@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 
 const router = useRouter()
-const supabase = createClient()
+const webentic = createClient()
 const email = ref<string | null>(null)
 const loading = ref(true)
 
 onMounted(async () => {
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await webentic.auth.getUser()
 
   if (error || !data?.user) {
     router.replace("/auth/login")
@@ -21,7 +21,7 @@ onMounted(async () => {
 })
 
 const handleLogout = async () => {
-  await supabase.auth.signOut()
+  await webentic.auth.signOut()
   router.replace("/auth/login")
 }
 </script>

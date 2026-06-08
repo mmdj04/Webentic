@@ -4,9 +4,9 @@ import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import { useCurrentUserImage } from './useCurrentUserImage'
 import { useCurrentUserName } from './useCurrentUserName'
 // @ts-ignore
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/webentic/client'
 
-const supabase = createClient()
+const webentic = createClient()
 
 export type RealtimeUser = {
   id: string
@@ -20,12 +20,12 @@ export function useRealtimePresenceRoom(roomName: string) {
 
   const users = ref<Record<string, RealtimeUser>>({})
 
-  let room: ReturnType<typeof supabase.channel> | null = null
+  let room: ReturnType<typeof webentic.channel> | null = null
 
   function setupRoom() {
     if (!roomName) return
 
-    room = supabase.channel(roomName)
+    room = webentic.channel(roomName)
 
     room
       .on('presence', { event: 'sync' }, () => {

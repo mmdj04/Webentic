@@ -1,8 +1,8 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "supabase-client-nuxtjs",
+  "name": "webentic-client-nuxtjs",
   "type": "registry:lib",
-  "title": "Supabase Client for Nuxt.js",
+  "title": "Webentic Client for Nuxt.js",
   "description": "",
   "registryDependencies": [],
   "dependencies": ["@supabase/ssr@latest", "@supabase/supabase-js@latest"],
@@ -13,7 +13,7 @@
   },
   "files": [
     {
-      "path": "registry/default/clients/nuxtjs/lib/supabase/client.ts",
+      "path": "registry/default/clients/nuxtjs/lib/webentic/client.ts",
       "type": "registry:lib"
     },
     {
@@ -27,9 +27,9 @@
       "target": "server/api/profile.get.ts"
     },
     {
-      "path": "registry/default/clients/nuxtjs/server/supabase/client.ts",
+      "path": "registry/default/clients/nuxtjs/server/webentic/client.ts",
       "type": "registry:file",
-      "target": "server/supabase/client.ts"
+      "target": "server/webentic/client.ts"
     }
   ]
 }

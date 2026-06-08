@@ -2,7 +2,7 @@ import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from '@supabase/supab
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
 // @ts-ignore
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/webentic/client'
 
 /**
  * Throttle a callback to a certain delay.
@@ -46,7 +46,7 @@ function useThrottleCallback<Params extends unknown[]>(
   return { run, cancel }
 }
 
-const supabase = createClient()
+const webentic = createClient()
 
 const generateRandomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`
 
@@ -106,7 +106,7 @@ export function useRealtimeCursors({
   )
 
   onMounted(() => {
-    const channel = supabase.channel(roomName)
+    const channel = webentic.channel(roomName)
 
     channel
       .on('system', {}, (payload: CursorEventPayload) => {

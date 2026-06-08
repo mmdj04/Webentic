@@ -2,9 +2,9 @@ import { useDropZone } from '@vueuse/core'
 import { computed, onUnmounted, ref, watch } from 'vue'
 
 // @ts-ignore
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/webentic/client'
 
-const supabase = createClient()
+const webentic = createClient()
 
 export interface FileWithPreview extends File {
   preview?: string
@@ -35,7 +35,7 @@ function validateFileSize(file: File, maxSize: number) {
     : []
 }
 
-export function useSupabaseUpload(options: UseSupabaseUploadOptions) {
+export function useWebenticUpload(options: UseSupabaseUploadOptions) {
   const {
     bucketName,
     path,
@@ -90,7 +90,7 @@ export function useSupabaseUpload(options: UseSupabaseUploadOptions) {
 
       const responses = await Promise.all(
         filesToUpload.map(async (file) => {
-          const { error } = await supabase.storage
+          const { error } = await webentic.storage
             .from(bucketName)
             .upload(path ? `${path}/${file.name}` : file.name, file, {
               cacheControl: cacheControl.toString(),

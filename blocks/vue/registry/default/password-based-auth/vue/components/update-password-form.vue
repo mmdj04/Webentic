@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -17,15 +17,15 @@ const error = ref<string | null>(null)
 const isLoading = ref(false)
 
 const handleUpdatePassword = async () => {
-  const supabase = createClient()
+  const webentic = createClient()
   isLoading.value = true
   error.value = null
 
   try {
-    const { error: supabaseError } = await supabase.auth.updateUser({
+    const { error: webenticError } = await webentic.auth.updateUser({
       password: password.value,
     })
-    if (supabaseError) throw supabaseError
+    if (webenticError) throw webenticError
     // Redirect user after successful password update
     location.href = "/protected"
   } catch (err: unknown) {

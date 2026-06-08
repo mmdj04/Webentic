@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
@@ -17,16 +17,16 @@ const isLoading = ref(false)
 
 const handleSocialLogin = async (e: Event) => {
   e.preventDefault()
-  const supabase = createClient()
+  const webentic = createClient()
   isLoading.value = true
   error.value = null
 
   try {
-    const { error: supabaseError } = await supabase.auth.signInWithOAuth({
+    const { error: webenticError } = await webentic.auth.signInWithOAuth({
       provider: "github",
     })
 
-    if (supabaseError) throw supabaseError
+    if (webenticError) throw webenticError
     window.location.href = "/protected"
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : "An error occurred"

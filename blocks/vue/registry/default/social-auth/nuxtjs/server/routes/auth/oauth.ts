@@ -1,6 +1,6 @@
 import { defineEventHandler, getQuery, getRequestURL, sendRedirect } from 'h3'
 
-import { createSupabaseServerClient } from '@/registry/default/clients/nuxtjs/server/supabase/client'
+import { createWebenticServerClient } from '@/registry/default/clients/nuxtjs/server/webentic/client'
 
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event) // URL object of the current request
@@ -14,8 +14,8 @@ export default defineEventHandler(async (event) => {
   }
 
   if (code) {
-    const supabase = createSupabaseServerClient(event)
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const webentic = createWebenticServerClient(event)
+    const { error } = await webentic.auth.exchangeCodeForSession(code)
 
     if (!error) {
       // Determine origin

@@ -1,12 +1,12 @@
 import { defineEventHandler, sendRedirect } from 'h3'
 
-import { createSupabaseServerClient } from '@/registry/default/clients/nuxtjs/server/supabase/client'
+import { createWebenticServerClient } from '@/registry/default/clients/nuxtjs/server/webentic/client'
 
 export default defineEventHandler(async (event) => {
-  const supabase = createSupabaseServerClient(event)
+  const webentic = createWebenticServerClient(event)
 
   // Get user claims
-  const { data } = await supabase.auth.getClaims()
+  const { data } = await webentic.auth.getClaims()
   const user = data?.claims
 
   const pathname = event.node.req.url || '/'

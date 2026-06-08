@@ -1,7 +1,7 @@
 import { onUnmounted, ref, watch } from 'vue'
 
 // @ts-ignore
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/webentic/client'
 
 interface UseRealtimeChatProps {
   roomName: string
@@ -20,15 +20,15 @@ export interface ChatMessage {
 const EVENT_MESSAGE_TYPE = 'message'
 
 export function useRealtimeChat(props: UseRealtimeChatProps) {
-  const supabase = createClient()
+  const webentic = createClient()
 
   const messages = ref<ChatMessage[]>([])
-  const channel = ref<ReturnType<typeof supabase.channel> | null>(null)
+  const channel = ref<ReturnType<typeof webentic.channel> | null>(null)
   const isConnected = ref(false)
 
   function cleanup() {
     if (channel.value) {
-      supabase.removeChannel(channel.value)
+      webentic.removeChannel(channel.value)
       channel.value = null
     }
   }
@@ -36,7 +36,7 @@ export function useRealtimeChat(props: UseRealtimeChatProps) {
   function setupChannel() {
     if (!props.roomName) return
 
-    const newChannel = supabase.channel(props.roomName)
+    const newChannel = webentic.channel(props.roomName)
 
     newChannel
       .on('broadcast', { event: EVENT_MESSAGE_TYPE }, (payload: { payload: ChatMessage }) => {

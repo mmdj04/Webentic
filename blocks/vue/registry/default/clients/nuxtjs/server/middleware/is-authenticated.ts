@@ -1,17 +1,17 @@
 import { defineNuxtRouteMiddleware, navigateTo, useRequestEvent } from 'nuxt/app'
 
-import { createSupabaseServerClient } from '../supabase/client'
+import { createWebenticServerClient } from '../webentic/client'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const event = useRequestEvent()
 
   // create Supabase SSR client directly here
-  const supabase = createSupabaseServerClient(event)
+  const webentic = createWebenticServerClient(event)
 
   // check current user
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await webentic.auth.getUser()
 
   if (!user && to.path !== '/login') {
     return navigateTo('/login')

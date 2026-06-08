@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button.vue"
@@ -19,19 +19,19 @@ const isLoading = ref(false)
 // GitHub OAuth login handler
 const handleSocialLogin = async (e: Event) => {
   e.preventDefault()
-  const supabase = createClient()
+  const webentic = createClient()
   isLoading.value = true
   error.value = null
 
   try {
-    const { error: supabaseError } = await supabase.auth.signInWithOAuth({
+    const { error: webenticError } = await webentic.auth.signInWithOAuth({
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/api/routes/oauth?next=/protected`,
       },
     })
 
-    if (supabaseError) throw supabaseError
+    if (webenticError) throw webenticError
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : "An error occurred"
     isLoading.value = false

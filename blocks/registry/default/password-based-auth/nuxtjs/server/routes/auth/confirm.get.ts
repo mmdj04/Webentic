@@ -1,7 +1,7 @@
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { defineEventHandler, getQuery, sendRedirect } from 'h3'
 
-import { createSupabaseServerClient } from '@/registry/default/clients/nuxtjs/server/supabase/client'
+import { createWebenticServerClient } from '@/registry/default/clients/nuxtjs/server/webentic/client'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -11,9 +11,9 @@ export default defineEventHandler(async (event) => {
   const next = _next?.startsWith('/') ? _next : '/'
 
   if (token_hash && type) {
-    const supabase = createSupabaseServerClient(event)
+    const webentic = createWebenticServerClient(event)
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { error } = await webentic.auth.verifyOtp({
       type,
       token_hash,
     })

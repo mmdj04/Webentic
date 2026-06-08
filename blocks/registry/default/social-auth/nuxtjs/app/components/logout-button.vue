@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { useRouter } from "vue-router"
 import { Button } from "@/components/ui/button.vue"
 
 const router = useRouter()
 
 const logout = async () => {
-  const supabase = createClient()
-  await supabase.auth.signOut()
+  const webentic = createClient()
+  await webentic.auth.signOut()
   router.push("/auth/login")
 }
 </script>

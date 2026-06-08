@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,7 +20,7 @@ const isLoading = ref(false)
 const success = ref(false)
 
 const handleSignUp = async () => {
-  const supabase = createClient()
+  const webentic = createClient()
   error.value = null
 
   if (password.value !== repeatPassword.value) {
@@ -30,11 +30,11 @@ const handleSignUp = async () => {
 
   isLoading.value = true
   try {
-    const { error: supabaseError } = await supabase.auth.signUp({
+    const { error: webenticError } = await webentic.auth.signUp({
       email: email.value,
       password: password.value,
     })
-    if (supabaseError) throw supabaseError
+    if (webenticError) throw webenticError
     success.value = true
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : "An error occurred"

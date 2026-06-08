@@ -1,8 +1,8 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "supabase-client-vue",
+  "name": "webentic-client-vue",
   "type": "registry:lib",
-  "title": "Supabase Client for Vue",
+  "title": "Webentic Client for Vue",
   "description": "",
   "registryDependencies": [],
   "dependencies": ["@supabase/supabase-js@latest"],
@@ -13,7 +13,7 @@
   },
   "files": [
     {
-      "path": "registry/default/clients/vue/lib/supabase/client.ts",
+      "path": "registry/default/clients/vue/lib/webentic/client.ts",
       "type": "registry:lib"
     }
   ]

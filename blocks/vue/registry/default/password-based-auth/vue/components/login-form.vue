@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/webentic/client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,15 +19,15 @@ const isLoading = ref(false)
 
 const handleForgotPassword = async (e: Event) => {
   e.preventDefault()
-  const supabase = createClient()
+  const webentic = createClient()
   isLoading.value = true
   error.value = null
 
   try {
-    const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email.value, {
+    const { error: webenticError } = await webentic.auth.resetPasswordForEmail(email.value, {
       redirectTo: "http://localhost:3000/update-password",
     })
-    if (supabaseError) throw supabaseError
+    if (webenticError) throw webenticError
     success.value = true
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : "An error occurred"
