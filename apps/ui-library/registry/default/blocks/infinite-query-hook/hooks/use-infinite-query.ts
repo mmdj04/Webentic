@@ -4,19 +4,19 @@ import { PostgrestQueryBuilder, type PostgrestClientOptions } from '@supabase/po
 import { type SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 
-import { createClient } from '@/registry/default/fixtures/lib/supabase/client'
+import { createClient } from '@/registry/default/fixtures/lib/webentic/client'
 
 const supabase = createClient()
 
 // The following types are used to make the hook type-safe. It extracts the database type from the supabase client.
-type SupabaseClientType = typeof supabase
+type WebenticClientType = typeof supabase
 
 // Utility type to check if the type is any
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
 // Extracts the database type from the supabase client. If the supabase client doesn't have a type, it will fallback properly.
 type Database =
-  SupabaseClientType extends SupabaseClient<infer U>
+  WebenticClientType extends SupabaseClient<infer U>
     ? IfAny<
         U,
         {
@@ -40,15 +40,15 @@ type Database =
 type DatabaseSchema = Database['public']
 
 // Extracts the table names from the database type
-type SupabaseTableName = keyof DatabaseSchema['Tables']
+type WebenticTableName = keyof DatabaseSchema['Tables']
 
 // Extracts the table definition from the database type
-type SupabaseTableData<T extends SupabaseTableName> = DatabaseSchema['Tables'][T]['Row']
+type WebenticTableData<T extends WebenticTableName> = DatabaseSchema['Tables'][T]['Row']
 
 // Default client options for PostgrestQueryBuilder
 type DefaultClientOptions = PostgrestClientOptions
 
-type SupabaseSelectBuilder<T extends SupabaseTableName> = ReturnType<
+type WebenticSelectBuilder<T extends WebenticTableName> = ReturnType<
   PostgrestQueryBuilder<
     DefaultClientOptions,
     DatabaseSchema,
@@ -58,11 +58,11 @@ type SupabaseSelectBuilder<T extends SupabaseTableName> = ReturnType<
 >
 
 // A function that modifies the query. Can be used to sort, filter, etc. If .range is used, it will be overwritten.
-type SupabaseQueryHandler<T extends SupabaseTableName> = (
-  query: SupabaseSelectBuilder<T>
-) => SupabaseSelectBuilder<T>
+type WebenticQueryHandler<T extends WebenticTableName> = (
+  query: WebenticSelectBuilder<T>
+) => WebenticSelectBuilder<T>
 
-interface UseInfiniteQueryProps<T extends SupabaseTableName, Query extends string = '*'> {
+interface UseInfiniteQueryProps<T extends WebenticTableName, Query extends string = '*'> {
   // The table name to query
   tableName: T
   // The columns to select, defaults to `*`
@@ -70,7 +70,7 @@ interface UseInfiniteQueryProps<T extends SupabaseTableName, Query extends strin
   // The number of items to fetch per page, defaults to `20`
   pageSize?: number
   // A function that modifies the query. Can be used to sort, filter, etc. If .range is used, it will be overwritten.
-  trailingQuery?: SupabaseQueryHandler<T>
+  trailingQuery?: WebenticQueryHandler<T>
   // Optional key that identifies the current trailing query shape (e.g. filters/sort/search).
   // When this changes, the internal store is recreated so stale paginated rows are discarded.
   trailingQueryKey?: unknown
@@ -88,14 +88,14 @@ interface StoreState<TData> {
 
 type Listener = () => void
 
-interface StoreProps<T extends SupabaseTableName> {
+interface StoreProps<T extends WebenticTableName> {
   tableName: T
   columns?: string
   pageSize?: number
-  getTrailingQuery: () => SupabaseQueryHandler<T> | undefined
+  getTrailingQuery: () => WebenticQueryHandler<T> | undefined
 }
 
-function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTableName>(
+function createStore<TData extends WebenticTableData<T>, T extends WebenticTableName>(
   props: StoreProps<T>
 ) {
   const { tableName, columns = '*', pageSize = 20, getTrailingQuery } = props
@@ -128,7 +128,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
 
     let query = supabase
       .from(tableName)
-      .select(columns, { count: 'exact' }) as unknown as SupabaseSelectBuilder<T>
+      .select(columns, { count: 'exact' }) as unknown as WebenticSelectBuilder<T>
 
     const trailingQuery = getTrailingQuery()
     if (trailingQuery) {
@@ -184,8 +184,8 @@ const initialState: any = {
 }
 
 function useInfiniteQuery<
-  TData extends SupabaseTableData<T>,
-  T extends SupabaseTableName = SupabaseTableName,
+  TData extends WebenticTableData<T>,
+  T extends WebenticTableName = WebenticTableName,
 >(props: UseInfiniteQueryProps<T>) {
   const tableName = props.tableName
   const columns = props.columns ?? '*'
@@ -233,8 +233,8 @@ function useInfiniteQuery<
 
 export {
   useInfiniteQuery,
-  type SupabaseQueryHandler,
-  type SupabaseTableData,
-  type SupabaseTableName,
+  type WebenticQueryHandler,
+  type WebenticTableData,
+  type WebenticTableName,
   type UseInfiniteQueryProps,
 }

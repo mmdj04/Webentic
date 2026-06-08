@@ -605,7 +605,7 @@ export interface paths {
     }
     /**
      * Generate TypeScript types
-     * @description Returns the TypeScript types of your schema for use with supabase-js.
+     * @description Returns the TypeScript types of your schema for use with webentic-js.
      */
     get: operations['v1-generate-typescript-types']
     put?: never
@@ -1727,7 +1727,7 @@ export interface components {
       /**
        * Format: uri
        * @description Template URL used to create the project from the CLI.
-       * @example https://github.com/supabase/supabase/tree/master/examples/slack-clone/nextjs-slack-clone
+       * @example https://github.com/webentic/webentic/tree/master/examples/slack-clone/nextjs-slack-clone
        */
       template_url?: string
     }

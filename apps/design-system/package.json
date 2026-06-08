@@ -23,7 +23,7 @@
     "common": "workspace:*",
     "date-fns": "^2.30.0",
     "dayjs": "1.11.13",
-    "eslint-config-supabase": "workspace:*",
+    "eslint-config-webentic": "workspace:*",
     "icons": "workspace:*",
     "jotai": "^2.8.0",
     "lucide-react": "*",

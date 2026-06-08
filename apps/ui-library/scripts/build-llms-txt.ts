@@ -77,11 +77,11 @@ function getDocFiles(): DocMeta[] {
 
 // Generate the llms.txt content
 const docs = getDocFiles()
-let content = `# Supabase UI Library
+let content = `# Webentic UI Library
 Last updated: ${new Date().toISOString()}
 
 ## Overview
-Library of components for your project. The components integrate with Supabase and are shadcn compatible.
+Library of components for your project. The components integrate with Webentic and are shadcn compatible.
 
 ## Docs
 `

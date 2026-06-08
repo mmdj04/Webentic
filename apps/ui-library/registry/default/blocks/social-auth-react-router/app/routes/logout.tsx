@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs } from 'react-router'
 
-import { createClient } from '@/registry/default/clients/react-router/lib/supabase/server'
+import { createClient } from '@/registry/default/clients/react-router/lib/webentic/server'
 
 export async function loader({ request }: ActionFunctionArgs) {
   const { supabase, headers } = createClient(request)

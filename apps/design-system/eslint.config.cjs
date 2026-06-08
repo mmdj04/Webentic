@@ -1,8 +1,8 @@
 const { defineConfig } = require('eslint/config')
-const supabaseConfig = require('eslint-config-supabase/next')
+const webenticConfig = require('eslint-config-webentic/next')
 
 module.exports = defineConfig([
-  supabaseConfig,
+  webenticConfig,
   {
     files: ['registry/**/*.tsx', '__registry__/**/*.tsx', 'app/**/*.tsx'],
     rules: {

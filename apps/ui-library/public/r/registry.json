@@ -1,13 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "Supabase UI Library",
+  "name": "Webentic UI Library",
   "homepage": "https://supabase.com/ui",
   "items": [
     {
       "name": "password-based-auth-nextjs",
       "type": "registry:block",
-      "title": "Password Based Auth flow for Nextjs and Supabase",
-      "description": "Password Based Auth flow for Nextjs and Supabase",
+      "title": "Password Based Auth flow for Nextjs and Webentic",
+      "description": "Password Based Auth flow for Nextjs and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -85,29 +85,29 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "password-based-auth-react",
       "type": "registry:block",
-      "title": "Password Based Auth flow for React and Supabase",
-      "description": "Password Based Auth flow for React and Supabase",
+      "title": "Password Based Auth flow for React and Webentic",
+      "description": "Password Based Auth flow for React and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -132,24 +132,24 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
       "dependencies": [
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "password-based-auth-react-router",
       "type": "registry:block",
-      "title": "Password Based Auth flow for React Router and Supabase",
-      "description": "Password Based Auth flow for React Router and Supabase",
+      "title": "Password Based Auth flow for React Router and Webentic",
+      "description": "Password Based Auth flow for React Router and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -209,25 +209,25 @@
           "target": "app/routes.ts"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "password-based-auth-tanstack",
       "type": "registry:block",
-      "title": "Password Based Auth flow for tanstack and Supabase",
-      "description": "Password Based Auth flow for tanstack and Supabase",
+      "title": "Password Based Auth flow for tanstack and Webentic",
+      "description": "Password Based Auth flow for tanstack and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -301,29 +301,29 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/blocks/password-based-auth-tanstack/lib/supabase/fetch-user-server-fn.ts",
+          "path": "registry/default/blocks/password-based-auth-tanstack/lib/webentic/fetch-user-server-fn.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "social-auth-nextjs",
       "type": "registry:block",
-      "title": "Social Auth flow for Nextjs and Supabase",
-      "description": "Social Auth flow for Nextjs and Supabase",
+      "title": "Social Auth flow for Nextjs and Webentic",
+      "description": "Social Auth flow for Nextjs and Webentic",
       "registryDependencies": [
         "button",
         "card"
@@ -367,29 +367,29 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "social-auth-react",
       "type": "registry:block",
-      "title": "Social Auth flow for React and Supabase",
-      "description": "Social Auth flow for React and Supabase",
+      "title": "Social Auth flow for React and Webentic",
+      "description": "Social Auth flow for React and Webentic",
       "registryDependencies": [
         "button",
         "card"
@@ -400,24 +400,24 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
       "dependencies": [
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "social-auth-react-router",
       "type": "registry:block",
-      "title": "Social Auth flow for React Router and Supabase",
-      "description": "Social Auth flow for React Router and Supabase",
+      "title": "Social Auth flow for React Router and Webentic",
+      "description": "Social Auth flow for React Router and Webentic",
       "registryDependencies": [
         "button",
         "card"
@@ -460,25 +460,25 @@
           "target": "app/routes.ts"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "name": "social-auth-tanstack",
       "type": "registry:block",
-      "title": "Social Auth flow for TanStack and Supabase",
-      "description": "Social Auth flow for TanStack and Supabase",
+      "title": "Social Auth flow for TanStack and Webentic",
+      "description": "Social Auth flow for TanStack and Webentic",
       "registryDependencies": [
         "button",
         "card"
@@ -493,7 +493,7 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/blocks/social-auth-tanstack/lib/supabase/fetch-user-server-fn.ts",
+          "path": "registry/default/blocks/social-auth-tanstack/lib/webentic/fetch-user-server-fn.ts",
           "type": "registry:lib"
         },
         {
@@ -522,18 +522,18 @@
           "target": "routes/login.tsx"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -541,7 +541,7 @@
       "name": "dropzone-nextjs",
       "type": "registry:component",
       "title": "Dropzone (File Upload)",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -561,22 +561,22 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -584,7 +584,7 @@
       "name": "dropzone-react",
       "type": "registry:component",
       "title": "Dropzone (File Upload)",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -603,14 +603,14 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -618,7 +618,7 @@
       "name": "dropzone-react-router",
       "type": "registry:component",
       "title": "Dropzone (File Upload)",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -638,18 +638,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -657,7 +657,7 @@
       "name": "dropzone-tanstack",
       "type": "registry:component",
       "title": "Dropzone (File Upload)",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -677,18 +677,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -717,22 +717,22 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -760,14 +760,14 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -796,18 +796,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -836,18 +836,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -877,22 +877,22 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -921,14 +921,14 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -958,18 +958,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -999,18 +999,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1049,22 +1049,22 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1102,14 +1102,14 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1148,18 +1148,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1198,18 +1198,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1245,22 +1245,22 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1295,14 +1295,14 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1338,18 +1338,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1385,18 +1385,18 @@
           "type": "registry:hook"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1424,22 +1424,22 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1466,14 +1466,14 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1501,18 +1501,18 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1540,18 +1540,18 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1578,22 +1578,22 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1619,14 +1619,14 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1653,18 +1653,18 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1691,18 +1691,18 @@
           "type": "registry:component"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
@@ -1710,7 +1710,7 @@
       "name": "infinite-query-hook",
       "type": "registry:block",
       "title": "Infinite Query Hook",
-      "description": "React hook for infinite lists, fetching data from Supabase.",
+      "description": "React hook for infinite lists, fetching data from Webentic.",
       "dependencies": [
         "@supabase/supabase-js",
         "@supabase/postgrest-js@*"
@@ -1727,8 +1727,8 @@
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "tanstack-db-nextjs",
       "type": "registry:block",
-      "title": "TanStack DB for Next.js and Supabase",
-      "description": "TanStack DB integration with Supabase collections for type-safe database operations",
+      "title": "TanStack DB for Next.js and Webentic",
+      "description": "TanStack DB integration with Webentic collections for type-safe database operations",
       "registryDependencies": [
         "button",
         "input",
@@ -1745,127 +1745,127 @@
       ],
       "files": [
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       }
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-nextjs",
+      "name": "webentic-client-nextjs",
       "type": "registry:lib",
-      "title": "Supabase Client for Next.js",
+      "title": "Webentic Client for Next.js",
       "description": "",
       "registryDependencies": [],
       "dependencies": [
         "@supabase/ssr@latest",
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NEXT_PUBLIC_WEBENTIC_URL` and `NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NEXT_PUBLIC_SUPABASE_URL": "",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NEXT_PUBLIC_WEBENTIC_URL": "",
+        "NEXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       },
       "files": [
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/client.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/middleware.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/middleware.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/nextjs/lib/supabase/server.ts",
+          "path": "registry/default/clients/nextjs/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ]
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-react",
+      "name": "webentic-client-react",
       "type": "registry:lib",
-      "title": "Supabase Client for React",
+      "title": "Webentic Client for React",
       "description": "",
       "registryDependencies": [],
       "dependencies": [
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       },
       "files": [
         {
-          "path": "registry/default/clients/react/lib/supabase/client.ts",
+          "path": "registry/default/clients/react/lib/webentic/client.ts",
           "type": "registry:lib"
         }
       ]
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-react-router",
+      "name": "webentic-client-react-router",
       "type": "registry:lib",
-      "title": "Supabase Client for React Router",
-      "description": "",
-      "registryDependencies": [],
-      "dependencies": [
-        "@supabase/ssr@latest",
-        "@supabase/supabase-js@latest"
-      ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
-      "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
-      },
-      "files": [
-        {
-          "path": "registry/default/clients/react-router/lib/supabase/client.ts",
-          "type": "registry:lib"
-        },
-        {
-          "path": "registry/default/clients/react-router/lib/supabase/server.ts",
-          "type": "registry:lib"
-        }
-      ]
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-tanstack",
-      "type": "registry:lib",
-      "title": "Supabase Client for TanStack Start",
+      "title": "Webentic Client for React Router",
       "description": "",
       "registryDependencies": [],
       "dependencies": [
         "@supabase/ssr@latest",
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       },
       "files": [
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/client.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/client.ts",
           "type": "registry:lib"
         },
         {
-          "path": "registry/default/clients/tanstack/lib/supabase/server.ts",
+          "path": "registry/default/clients/react-router/lib/webentic/server.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "webentic-client-tanstack",
+      "type": "registry:lib",
+      "title": "Webentic Client for TanStack Start",
+      "description": "",
+      "registryDependencies": [],
+      "dependencies": [
+        "@supabase/ssr@latest",
+        "@supabase/supabase-js@latest"
+      ],
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
+      "envVars": {
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
+      },
+      "files": [
+        {
+          "path": "registry/default/clients/tanstack/lib/webentic/client.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/clients/tanstack/lib/webentic/server.ts",
           "type": "registry:lib"
         }
       ]
@@ -1874,8 +1874,8 @@
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "platform-kit-nextjs",
       "type": "registry:block",
-      "title": "Platform Kit for Nextjs and Supabase",
-      "description": "Platform Kit for Nextjs and Supabase",
+      "title": "Platform Kit for Nextjs and Webentic",
+      "description": "Platform Kit for Nextjs and Webentic",
       "registryDependencies": [
         "alert",
         "badge",
@@ -2049,19 +2049,19 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-nuxtjs",
+      "name": "webentic-client-nuxtjs",
       "type": "registry:lib",
-      "title": "Supabase Client for Nuxt.js",
+      "title": "Webentic Client for Nuxt.js",
       "description": "",
       "registryDependencies": [],
       "dependencies": [
         "@supabase/ssr@latest",
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `NUXT_PUBLIC_WEBENTIC_URL` and `NUXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "NUXT_PUBLIC_SUPABASE_URL": "",
-        "NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "NUXT_PUBLIC_WEBENTIC_URL": "",
+        "NUXT_PUBLIC_WEBENTIC_PUBLISHABLE_KEY": ""
       },
       "files": [
         {
@@ -2087,18 +2087,18 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "supabase-client-vue",
+      "name": "webentic-client-vue",
       "type": "registry:lib",
-      "title": "Supabase Client for Vue",
+      "title": "Webentic Client for Vue",
       "description": "",
       "registryDependencies": [],
       "dependencies": [
         "@supabase/supabase-js@latest"
       ],
-      "docs": "You'll need to set the following environment variables in your project: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.",
+      "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`.",
       "envVars": {
-        "VITE_SUPABASE_URL": "",
-        "VITE_SUPABASE_PUBLISHABLE_KEY": ""
+        "VITE_WEBENTIC_URL": "",
+        "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
       },
       "files": [
         {
@@ -2110,8 +2110,8 @@
     {
       "name": "password-based-auth-nuxtjs",
       "type": "registry:block",
-      "title": "Password Based Auth flow for Nuxt.js and Supabase",
-      "description": "Password Based Auth flow for Nuxt.js and Supabase",
+      "title": "Password Based Auth flow for Nuxt.js and Webentic",
+      "description": "Password Based Auth flow for Nuxt.js and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -2188,8 +2188,8 @@
     {
       "name": "password-based-auth-vue",
       "type": "registry:block",
-      "title": "Password Based Auth flow for Vue and Supabase",
-      "description": "Password Based Auth flow for Vue and Supabase",
+      "title": "Password Based Auth flow for Vue and Webentic",
+      "description": "Password Based Auth flow for Vue and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -2225,8 +2225,8 @@
     {
       "name": "social-auth-vue",
       "type": "registry:block",
-      "title": "Social Auth flow for Vue and Supabase",
-      "description": "Social Auth flow for Vue and Supabase",
+      "title": "Social Auth flow for Vue and Webentic",
+      "description": "Social Auth flow for Vue and Webentic",
       "registryDependencies": [
         "button",
         "card"
@@ -2245,8 +2245,8 @@
     {
       "name": "social-auth-nuxtjs",
       "type": "registry:block",
-      "title": "Social Auth flow for Nuxt and Supabase",
-      "description": "Social Auth flow for Nuxt and Supabase",
+      "title": "Social Auth flow for Nuxt and Webentic",
+      "description": "Social Auth flow for Nuxt and Webentic",
       "registryDependencies": [
         "button",
         "card",
@@ -2298,8 +2298,8 @@
     {
       "name": "dropzone-nuxtjs",
       "type": "registry:block",
-      "title": "Dropzone (File Upload) for Nuxt and Supabase",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "title": "Dropzone (File Upload) for Nuxt and Webentic",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -2334,8 +2334,8 @@
     {
       "name": "dropzone-vue",
       "type": "registry:block",
-      "title": "Dropzone (File Upload) for Vue and Supabase",
-      "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+      "title": "Dropzone (File Upload) for Vue and Webentic",
+      "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
       "registryDependencies": [
         "button"
       ],
@@ -2370,7 +2370,7 @@
     {
       "name": "realtime-cursor-nuxtjs",
       "type": "registry:component",
-      "title": "Realtime Cursor for Nuxt and Supabase",
+      "title": "Realtime Cursor for Nuxt and Webentic",
       "description": "Component which renders realtime cursors from other users in a room.",
       "files": [
         {
@@ -2398,7 +2398,7 @@
     {
       "name": "realtime-cursor-vue",
       "type": "registry:component",
-      "title": "Realtime Cursor for Vue and Supabase",
+      "title": "Realtime Cursor for Vue and Webentic",
       "description": "Component which renders realtime cursors from other users in a room.",
       "files": [
         {
@@ -2636,8 +2636,8 @@
     {
       "name": "infinite-query-composable",
       "type": "registry:component",
-      "title": "Infinite Query for Vue and Supabase",
-      "description": "Vue Composable for infinite lists, fetching data from Supabase.",
+      "title": "Infinite Query for Vue and Webentic",
+      "description": "Vue Composable for infinite lists, fetching data from Webentic.",
       "files": [
         {
           "path": "registry/default/infinite-query/vue/composables/useInfiniteQuery.ts",
@@ -2655,7 +2655,7 @@
       "name": "ai-editor-rules",
       "type": "registry:file",
       "title": "Prompt rules for AI Editors",
-      "description": "Prompts for working with Supabase using AI-powered IDE tools",
+      "description": "Prompts for working with Webentic using AI-powered IDE tools",
       "registryDependencies": [],
       "dependencies": [],
       "files": [

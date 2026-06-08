@@ -13,7 +13,7 @@ export const blockChunkSchema = z.object({
     .optional(),
 })
 
-const backendProviderValues = ['next-auth', 'supabase', 'auth0']
+const backendProviderValues = ['next-auth', 'webentic', 'auth0']
 
 const isBackendProvider = (value: unknown): value is (typeof backendProviderValues)[number] =>
   backendProviderValues.includes(value as string)

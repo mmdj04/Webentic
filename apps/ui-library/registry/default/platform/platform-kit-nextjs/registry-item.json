@@ -2,8 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "platform-kit-nextjs",
   "type": "registry:block",
-  "title": "Platform Kit for Nextjs and Supabase",
-  "description": "Platform Kit for Nextjs and Supabase",
+  "title": "Platform Kit for Nextjs and Webentic",
+  "description": "Platform Kit for Nextjs and Webentic",
   "registryDependencies": [
     "alert",
     "badge",
@@ -48,16 +48,16 @@
       "target": "app/api/ai/sql/route.ts"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/app/api/supabase-proxy/[...path]/route.ts",
+      "path": "registry/default/platform/platform-kit-nextjs/app/api/webentic-proxy/[...path]/route.ts",
       "type": "registry:page",
-      "target": "app/api/supabase-proxy/[...path]/route.ts"
+      "target": "app/api/webentic-proxy/[...path]/route.ts"
     },
     {
       "path": "registry/default/platform/platform-kit-nextjs/components/dynamic-form.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/logo-supabase.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/logo-webentic.tsx",
       "type": "registry:component"
     },
     {
@@ -69,35 +69,35 @@
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/auth.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/auth.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/database.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/database.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/index.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/index.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/logs.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/logs.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/secrets.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/secrets.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/storage.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/storage.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/suggestions.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/suggestions.tsx",
       "type": "registry:component"
     },
     {
-      "path": "registry/default/platform/platform-kit-nextjs/components/supabase-manager/users.tsx",
+      "path": "registry/default/platform/platform-kit-nextjs/components/webentic-manager/users.tsx",
       "type": "registry:component"
     },
     {

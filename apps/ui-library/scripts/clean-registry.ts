@@ -19,7 +19,7 @@ function processJsonFile(filePath: string) {
         "import Link from 'next/link'"
       )
       // Replace the file origin path to exclude the monorepo structure
-      .replaceAll('node_modules/@supabase/vue-blocks/', '')
+      .replaceAll('node_modules/@webentic/vue-blocks/', '')
 
     // Blocks that combine() across all client variants hard-code the nextjs
     // client path in their source. Rewrite that import per-variant so each
@@ -33,8 +33,8 @@ function processJsonFile(filePath: string) {
     for (const [suffix, clientDir] of Object.entries(variantClientMap)) {
       if (baseName.endsWith(`-${suffix}`)) {
         stringified = stringified.replaceAll(
-          '@/registry/default/clients/nextjs/lib/supabase/client',
-          `@/registry/default/clients/${clientDir}/lib/supabase/client`
+          '@/registry/default/clients/nextjs/lib/webentic/client',
+          `@/registry/default/clients/${clientDir}/lib/webentic/client`
         )
         break
       }

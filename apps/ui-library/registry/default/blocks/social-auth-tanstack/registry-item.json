@@ -11,7 +11,7 @@
       "type": "registry:component"
     },
     {
-      "path": "registry/default/blocks/social-auth-tanstack/lib/supabase/fetch-user-server-fn.ts",
+      "path": "registry/default/blocks/social-auth-tanstack/lib/webentic/fetch-user-server-fn.ts",
       "type": "registry:lib"
     },
     {

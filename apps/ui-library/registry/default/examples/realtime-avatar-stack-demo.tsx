@@ -8,7 +8,7 @@ import { Label, Switch } from 'ui'
 import { getRandomUser } from './utils'
 import { AvatarStack } from '@/registry/default/blocks/realtime-avatar-stack/components/avatar-stack'
 import { RealtimeUser } from '@/registry/default/blocks/realtime-avatar-stack/hooks/use-realtime-presence-room'
-import { createClient } from '@/registry/default/clients/nextjs/lib/supabase/client'
+import { createClient } from '@/registry/default/clients/nextjs/lib/webentic/client'
 
 const supabase = createClient()
 const roomName = 'realtime-avatar-stack-demo'

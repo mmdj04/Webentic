@@ -9,7 +9,7 @@ export default function Home() {
     <div className="relative gap-4 px-6 py-6 lg:py-8">
       <div className="mx-auto w-full min-w-0 max-w-4xl flex-1">
         <div className="flex flex-col gap-2 justify-start my-8 w-full">
-          <h1 className="text-2xl lg:text-4xl text-foreground">Supabase Design System</h1>
+          <h1 className="text-2xl lg:text-4xl text-foreground">Webentic Design System</h1>
           <h2 className="md:text-xl text-base text-foreground-light font-light">
             Design resources for building consistent user experiences
           </h2>
@@ -23,7 +23,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-medium text-foreground">Colors</h3>
-                <p className="text-sm text-foreground-light">Custom color palette for Supabase</p>
+                <p className="text-sm text-foreground-light">Custom color palette for Webentic</p>
               </div>
             </div>
           </Link>
@@ -37,7 +37,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-medium text-foreground">Icons</h3>
-                <p className="text-sm text-foreground-light">Custom icons for Supabase</p>
+                <p className="text-sm text-foreground-light">Custom icons for Webentic</p>
               </div>
             </div>
           </Link>

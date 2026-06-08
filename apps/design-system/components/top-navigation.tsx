@@ -27,7 +27,7 @@ export const TopNavigation = () => {
             />
             <Link href="/" className="flex items-center lg:gap-6 gap-4">
               <h1 className="hidden md:flex line-clamp-1 lg:text-2xl text-xl">
-                Supabase Design System
+                Webentic Design System
               </h1>
               <HomepageSvgHandler name="logo" className="h-4 w-auto" />
             </Link>

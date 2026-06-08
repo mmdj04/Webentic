@@ -4,7 +4,7 @@ import { CheckCircle, File, Loader2, Upload, X } from 'lucide-react'
 import { createContext, useCallback, useContext, type PropsWithChildren } from 'react'
 
 import { cn } from '@/lib/utils'
-import { type UseSupabaseUploadReturn } from '@/registry/default/blocks/dropzone/hooks/use-supabase-upload'
+import { type UseWebenticUploadReturn } from '@/registry/default/blocks/dropzone/hooks/use-webentic-upload'
 import { Button } from '@/registry/default/components/ui/button'
 
 export const formatBytes = (
@@ -21,11 +21,11 @@ export const formatBytes = (
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
-type DropzoneContextType = Omit<UseSupabaseUploadReturn, 'getRootProps' | 'getInputProps'>
+type DropzoneContextType = Omit<UseWebenticUploadReturn, 'getRootProps' | 'getInputProps'>
 
 const DropzoneContext = createContext<DropzoneContextType | undefined>(undefined)
 
-type DropzoneProps = UseSupabaseUploadReturn & {
+type DropzoneProps = UseWebenticUploadReturn & {
   className?: string
 }
 

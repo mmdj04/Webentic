@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { createClient } from '@/registry/default/clients/nextjs/lib/supabase/client'
+import { createClient } from '@/registry/default/clients/nextjs/lib/webentic/client'
 
 export const useCurrentUserName = () => {
   const [name, setName] = useState<string | null>(null)

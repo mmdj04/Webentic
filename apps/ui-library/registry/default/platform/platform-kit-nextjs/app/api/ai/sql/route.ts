@@ -20,7 +20,7 @@ const client = createClient<paths>({
 async function getDbSchema(projectRef: string) {
   const token = process.env.SUPABASE_MANAGEMENT_API_TOKEN
   if (!token) {
-    throw new Error('Supabase Management API token is not configured.')
+    throw new Error('Webentic Management API token is not configured.')
   }
 
   const sql = listTablesSql()

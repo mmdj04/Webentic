@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { fetchUser } from '@/registry/default/blocks/social-auth-tanstack/lib/supabase/fetch-user-server-fn'
+import { fetchUser } from '@/registry/default/blocks/social-auth-tanstack/lib/webentic/fetch-user-server-fn'
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: async () => {

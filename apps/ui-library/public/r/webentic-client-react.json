@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "webentic-client-react",
+  "type": "registry:lib",
+  "title": "Webentic Client for React",
+  "description": "",
+  "dependencies": [
+    "@supabase/supabase-js@latest"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/default/clients/react/lib/webentic/client.ts",
+      "content": "import { createClient as createSupabaseClient } from '@supabase/supabase-js'\n\nexport function createClient() {\n  return createSupabaseClient(\n    import.meta.env.VITE_WEBENTIC_URL!,\n    import.meta.env.VITE_WEBENTIC_PUBLISHABLE_KEY!\n  )\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "envVars": {
+    "VITE_WEBENTIC_URL": "",
+    "VITE_WEBENTIC_PUBLISHABLE_KEY": ""
+  },
+  "docs": "You'll need to set the following environment variables in your project: `VITE_WEBENTIC_URL` and `VITE_WEBENTIC_PUBLISHABLE_KEY`."
+}

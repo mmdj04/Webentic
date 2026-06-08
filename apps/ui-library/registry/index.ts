@@ -1,4 +1,4 @@
-import { blocks as vueBlocks } from '@supabase/vue-blocks'
+import { blocks as vueBlocks } from '@webentic/vue-blocks'
 import { type Registry, type RegistryItem } from 'shadcn/schema'
 
 import { blocks } from './blocks'
@@ -8,7 +8,7 @@ import { platform } from './platform'
 import { examples } from '@/registry/examples'
 
 export const registry = {
-  name: 'Supabase UI Library',
+  name: 'Webentic UI Library',
   homepage: 'https://supabase.com/ui',
   items: [
     ...blocks,

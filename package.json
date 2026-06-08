@@ -1,5 +1,5 @@
 {
-  "name": "supabase-ui-workspace",
+  "name": "webentic-workspace",
   "private": true,
   "scripts": {
     "dev:ui-library": "pnpm --filter ui-library dev",

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { useCurrentUserImage } from '@/registry/default/blocks/current-user-avatar/hooks/use-current-user-image'
 import { useCurrentUserName } from '@/registry/default/blocks/current-user-avatar/hooks/use-current-user-name'
-import { createClient } from '@/registry/default/clients/nextjs/lib/supabase/client'
+import { createClient } from '@/registry/default/clients/nextjs/lib/webentic/client'
 
 const supabase = createClient()
 

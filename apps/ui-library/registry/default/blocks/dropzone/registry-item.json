@@ -3,7 +3,7 @@
   "name": "dropzone",
   "type": "registry:component",
   "title": "Dropzone (File Upload)",
-  "description": "Displays a control for easier uploading of files directly to Supabase Storage.",
+  "description": "Displays a control for easier uploading of files directly to Webentic Storage.",
   "registryDependencies": ["button"],
   "dependencies": ["react-dropzone", "lucide-react"],
   "files": [
@@ -12,7 +12,7 @@
       "type": "registry:component"
     },
     {
-      "path": "registry/default/blocks/dropzone/hooks/use-supabase-upload.ts",
+      "path": "registry/default/blocks/dropzone/hooks/use-webentic-upload.ts",
       "type": "registry:hook"
     }
   ]

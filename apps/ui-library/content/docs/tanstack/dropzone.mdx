@@ -1,6 +1,6 @@
 ---
 title: Dropzone (File Upload)
-description: Displays a control for easier uploading of files directly to Supabase Storage
+description: Displays a control for easier uploading of files directly to Webentic Storage
 ---
 
 <ComponentPreview
@@ -13,7 +13,7 @@ description: Displays a control for easier uploading of files directly to Supaba
 
 <BlockItem
   name="dropzone-tanstack"
-  description="Displays a control for easier uploading of files directly to Supabase Storage"
+  description="Displays a control for easier uploading of files directly to Webentic Storage"
 />
 
 ## Folder structure
@@ -43,10 +43,10 @@ The File Upload component makes it easy to add file uploads to your app, with bu
 
 ```tsx
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/dropzone'
-import { useSupabaseUpload } from '@/hooks/use-supabase-upload'
+import { useWebenticUpload } from '@/hooks/use-webentic-upload'
 
 const FileUploadDemo = () => {
-  const props = useSupabaseUpload({
+  const props = useWebenticUpload({
     bucketName: 'test',
     path: 'test',
     allowedMimeTypes: ['image/*'],
@@ -71,7 +71,7 @@ export { FileUploadDemo }
 
 | Prop               | Type       | Default | Description                                          |
 | ------------------ | ---------- | ------- | ---------------------------------------------------- |
-| `bucketName`       | `string`   | `null`  | The name of the Supabase Storage bucket to upload to |
+| `bucketName`       | `string`   | `null`  | The name of the Webentic Storage bucket to upload to |
 | `path`             | `string`   | `null`  | The path or subfolder to upload the file to          |
 | `allowedMimeTypes` | `string[]` | `[]`    | The MIME types to allow for upload                   |
 | `maxFiles`         | `number`   | `1`     | Maximum number of files to upload                    |

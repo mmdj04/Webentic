@@ -105,9 +105,9 @@ const genFaviconData = (basePath: string): Metadata['icons'] => ({
 })
 
 export const metadata: Metadata = {
-  applicationName: 'Supabase Design System',
-  title: 'Supabase Design System',
-  description: 'Design resources for building consistent user experiences at Supabase.',
+  applicationName: 'Webentic Design System',
+  title: 'Webentic Design System',
+  description: 'Design resources for building consistent user experiences at Webentic.',
   metadataBase: new URL('https://supabase.com'),
   icons: genFaviconData(BASE_PATH),
 }

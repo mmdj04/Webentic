@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 
-import { createClient } from '@/registry/default/clients/tanstack/lib/supabase/server'
+import { createClient } from '@/registry/default/clients/tanstack/lib/webentic/server'
 
 const confirmFn = createServerFn({ method: 'GET' })
   .inputValidator((searchParams: unknown) => {

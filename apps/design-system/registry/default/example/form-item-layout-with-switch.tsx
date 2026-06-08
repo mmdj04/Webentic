@@ -30,7 +30,7 @@ export default function FormItemLayoutDemo() {
           render={({ field }) => (
             <FormItemLayout
               afterLabel="Switch"
-              label="Use ./supabase directory for everything"
+              label="Use ./webentic directory for everything"
               description="This is an explanation."
               layout="flex"
             >

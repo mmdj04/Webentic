@@ -1,5 +1,5 @@
 {
-  "name": "@supabase/vue-blocks",
+  "name": "@webentic/vue-blocks",
   "version": "0.1.0",
   "private": true,
   "type": "module",

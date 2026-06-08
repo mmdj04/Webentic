@@ -7,7 +7,7 @@ import { MonacoBinding } from 'y-monaco'
 import { Awareness } from 'y-protocols/awareness'
 import * as Y from 'yjs'
 
-import { createClient } from '@/registry/default/clients/nextjs/lib/supabase/client'
+import { createClient } from '@/registry/default/clients/nextjs/lib/webentic/client'
 
 type UseConnectOnMountOptions = {
   channel: string

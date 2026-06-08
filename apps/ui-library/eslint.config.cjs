@@ -1,4 +1,4 @@
 const { defineConfig } = require('eslint/config')
-const supabaseConfig = require('eslint-config-supabase/next')
+const webenticConfig = require('eslint-config-webentic/next')
 
-module.exports = defineConfig([supabaseConfig])
+module.exports = defineConfig([webenticConfig])

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { createClient } from '@/registry/default/clients/nextjs/lib/supabase/client'
+import { createClient } from '@/registry/default/clients/nextjs/lib/webentic/client'
 
 interface UseRealtimeChatProps {
   roomName: string

@@ -1,6 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { createClient } from '@/registry/default/clients/react-router/lib/supabase/server'
+import { createClient } from '@/registry/default/clients/react-router/lib/webentic/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const requestUrl = new URL(request.url)
