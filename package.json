@@ -10,9 +10,9 @@
     "turbo": "^2.9.16",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@11.5.2",
   "engines": {
-    "pnpm": ">=10.24",
+    "pnpm": ">=11.5",
     "node": ">=22"
   }
 }
