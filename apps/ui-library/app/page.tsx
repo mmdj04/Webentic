@@ -26,14 +26,9 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-            Supabase UI
-          </h1>
-          <p className="mt-2 text-sm text-foreground-light">
-            Select a workspace to get started
-          </p>
-        </div>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-4">
+          Webentic
+        </h1>
 
         <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden">
           <div className="flex items-center gap-1.5 p-2 pb-0">
@@ -116,12 +111,6 @@ export default function HomePage() {
               </p>
             </div>
           )}
-        </div>
-
-        <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-foreground-muted">
-          <span>Hover over a workspace above</span>
-          <span className="w-1 h-1 rounded-full bg-foreground-muted" />
-          <span>Click to navigate</span>
         </div>
       </div>
     </div>
