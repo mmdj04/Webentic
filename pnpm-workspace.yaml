@@ -33,3 +33,12 @@ catalog:
   vitest: ^4.1.8
   zod: ^3.25.76
 
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - contentlayer2
+  - '@next/swc-linux-x64-gnu'
+  - '@next/swc-linux-x64-musl'
+  - '@next/swc-darwin-x64'
+  - '@next/swc-darwin-arm64'
+
