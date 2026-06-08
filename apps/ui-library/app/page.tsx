@@ -2,22 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Textarea } from 'ui'
+import { Input } from 'ui'
 import { cn } from 'ui'
-
-function Logo({ className }: { className?: string }) {
-  return (
-    <h1
-      className={cn(
-        'text-foreground select-none text-center font-bold tracking-tight',
-        'text-4xl sm:text-5xl md:text-6xl',
-        className
-      )}
-    >
-      WEBENTIC
-    </h1>
-  )
-}
 
 const MODES = [
   {
@@ -43,7 +29,14 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
-        <Logo className="mb-6" />
+        <h1
+          className={cn(
+            'text-foreground select-none text-center font-bold tracking-tight',
+            'text-6xl sm:text-7xl md:text-8xl lg:text-9xl mb-8'
+          )}
+        >
+          Webentic
+        </h1>
 
         <div className="relative rounded-xl border border-muted bg-surface-75 shadow-sm overflow-hidden w-full">
           <div className="flex items-center gap-1.5 p-2 pb-0">
@@ -66,10 +59,9 @@ export default function HomePage() {
 
           <div className="p-4 pt-3">
             <div className="relative">
-              <Textarea
+              <Input
                 placeholder="Type a message..."
-                className="min-h-[100px] font-mono text-sm resize-none pr-12"
-                rows={3}
+                className="font-mono text-sm pr-12"
               />
               <Link
                 href={
@@ -86,7 +78,7 @@ export default function HomePage() {
                     : undefined
                 }
                 className={cn(
-                  'absolute bottom-3 right-3 inline-flex items-center justify-center size-8 rounded-lg transition-colors',
+                  'absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-8 rounded-lg transition-colors',
                   activeMode
                     ? 'bg-foreground text-background hover:opacity-90'
                     : 'bg-muted text-foreground-muted cursor-not-allowed pointer-events-none'
