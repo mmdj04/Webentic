@@ -214,6 +214,10 @@ echo "==> Removing contentlayer from next.config.mjs..."
 sed -i '/import { withContentlayer } from .next-contentlayer2./d' apps/web/next.config.mjs
 sed -i 's/export default withContentlayer(nextConfig)/export default nextConfig/' apps/web/next.config.mjs
 
+echo "==> Cleaning turbo.json build deps (content:build & build:registry not in public)..."
+sed -i '/"content:build",/d' turbo.json
+sed -i '/"build:registry",/d' turbo.json
+
 echo "==> Simplifying landing page nav for public repo..."
 sed -i '/id: .ui-library.,/,/},/d' apps/web/app/page.tsx
 sed -i '/id: .design-system.,/,/},/d' apps/web/app/page.tsx

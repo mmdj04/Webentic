@@ -1,3 +1,12 @@
 {
-  "buildCommand": "npx --yes pnpm@10.24.0 run build"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npx --yes pnpm@10.24.0 run build",
+  "installCommand": "npx --yes pnpm@10.24.0 install",
+  "outputDirectory": "apps/web/.next",
+  "ignoreCommand": "npx --yes turbo-ignore",
+  "github": {
+    "silent": true,
+    "autoJobCancelation": true
+  }
 }
