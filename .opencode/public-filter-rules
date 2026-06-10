@@ -1,66 +1,49 @@
-# ─── Whitelist for public repo ───
-# rsync filter rules: only files matching these patterns are published.
-# Used by scripts/publish-public.sh
+# ─── Blacklist for public repo ───
+# Files/directories matching these patterns are EXCLUDED from publish.
+# Used by scripts/publish-public.sh via rsync --exclude-from.
 #
-# Syntax:
-#   + /path - include this file/dir
-#   - /path - exclude this file/dir (overrides earlier includes)
-#   **     - wildcard matching any path (including /)
-#   *      - wildcard matching a single path segment
-#
-# Order matters: first match wins. The script passes --include='*/'
-# (traverse all dirs), --include-from=this file, --exclude='*'
-# (exclude by default).
+# Everything NOT listed here is included by default.
+# Add patterns for anything that should stay in the private repo.
 
-# ── apps/web: app routes ──
-+ /apps/web/app/layout.tsx
-+ /apps/web/app/page.tsx
-+ /apps/web/app/search/**
-+ /apps/web/app/settings/**
-+ /apps/web/app/Providers.tsx
-+ /apps/web/app/toaster.tsx
-+ /apps/web/app/favicon.ico
+# ── Pages (excluded from public) ──
+apps/web/app/\(app\)/**
+apps/web/app/api/**
+apps/web/app/design-system/**
+apps/web/app/example/**
 
-# ── apps/web: config & build ──
-+ /apps/web/package.json
-+ /apps/web/next.config.mjs
-+ /apps/web/postcss.config.cjs
-+ /apps/web/tsconfig.json
-+ /apps/web/components.json
-+ /apps/web/turbo.jsonc
-+ /apps/web/.gitignore
-+ /apps/web/README.md
+# ── Design System components & config ──
+apps/web/components/design-system-side-navigation.tsx
+apps/web/components/mdx-components.tsx
+apps/web/components/mobile-sidebar-sheet.tsx
+apps/web/config/design-system-docs.ts
 
-# ── apps/web: source directories ──
-+ /apps/web/styles/**
-+ /apps/web/lib/**
-+ /apps/web/hooks/**
-+ /apps/web/types/**
-+ /apps/web/context/**
-+ /apps/web/components/**
-+ /apps/web/config/**
-+ /apps/web/public/**
-+ /apps/web/registry/**
+# ── Content & registry examples ──
+apps/web/content/**
+apps/web/contentlayer.config.js
+apps/web/__registry__/**
+apps/web/scripts/**
+apps/web/public/r/**
+apps/web/registry/default/examples/**
 
-# ── Packages ──
-+ /packages/ui/**
-+ /packages/ui-patterns/**
-+ /packages/common/**
-+ /packages/config/**
-+ /packages/tsconfig/**
-+ /packages/api-types/**
+# ── DS-only static assets ──
+apps/web/public/img/design-system-marks/**
+apps/web/public/img/themes/**
+apps/web/public/img/profile-images/**
 
-# ── Root ──
-+ /package.json
-+ /pnpm-workspace.yaml
-+ /turbo.json
-+ /vercel.json
-+ /.gitignore
-+ /README.md
-+ /LICENSE
-+ /AGENTS.md
-+ /opencode.json
+# ── MDX / docs-only CSS ──
+apps/web/styles/mdx.css
+apps/web/styles/code-block-variables.css
 
-# ── Scripts & config ──
-+ /scripts/**
-+ /.opencode/**
+# ── Local dev & linting ──
+apps/web/supabase/**
+apps/web/eslint.config.cjs
+
+# ── Blocks (not used in public) ──
+blocks/**
+
+# ── Packages not needed for public ──
+packages/icons/**
+packages/eslint-config-webentic/**
+
+# ── Old Supabase branding (not used) ──
+packages/common/assets/images/archive/**

@@ -41,12 +41,8 @@ trap 'rm -rf "$TEMP_DIR" "$CLEAN_DIR"' EXIT
 echo "==> Cloning private repo..."
 git clone --depth=1 "$PRIVATE_REPO" "$TEMP_DIR/$REPO_NAME"
 
-echo "==> Applying whitelist via rsync..."
-rsync -a \
-  --include='*/' \
-  --include-from="$FILTER_FILE" \
-  --exclude='*' \
-  "$TEMP_DIR/$REPO_NAME/" "$CLEAN_DIR/"
+echo "==> Excluding blacklisted files via rsync..."
+rsync -a --exclude-from="$FILTER_FILE" "$TEMP_DIR/$REPO_NAME/" "$CLEAN_DIR/"
 
 cd "$CLEAN_DIR"
 
