@@ -56,7 +56,7 @@ export default function DocsPage() {
       {/* ── Hero ── */}
       <section id="hero" className="flex flex-col items-center justify-center w-full" style={{ height: '100vh', minHeight: 680 }}>
         <h2 className="flex flex-col items-center" style={{ paddingTop: 60 }}>
-          <span className="font-bold uppercase leading-none text-[65px] sm:text-[80px] md:text-[105px]" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
+          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold uppercase text-foreground leading-none">
             Documentation
           </span>
         </h2>
