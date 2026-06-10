@@ -1,0 +1,34 @@
+- generic [ref=e2] [box=0,0,780,13523]:
+  - banner [ref=e3] [box=0,0,780,100]:
+    - generic [ref=e4] [box=39,0,702,100]
+  - heading "Fast Smart Global ESM>CDN" [level=2] [ref=e19] [box=121,100,538,480]:
+    - strong [ref=e20] [box=121,153,287,118]: Fast
+    - strong [ref=e21] [box=121,258,385,118]: Smart
+    - strong [ref=e22] [box=121,363,460,118]: Global
+    - strong [ref=e23] [box=121,468,538,118]
+  - generic [ref=e26] [box=39,680,702,555]:
+    - generic [ref=e28] [box=39,680,341,455]
+    - generic [ref=e49] [box=412,750,579,315]
+  - generic [ref=e63] [box=39,1235,702,615]:
+    - generic [ref=e64] [box=39,1355,702,95]
+    - generic [ref=e69] [box=39,1450,702,159]
+    - link "Become our sponsor" [ref=e97] [cursor=pointer] [box=279,1654,223,36]:
+      - /url: https://github.com/sponsors/esm-dev
+  - generic [ref=e102] [box=39,1850,702,7893]:
+    - heading "How to Use" [level=2] [ref=e103] [box=39,1850,702,154]
+    - heading "Get started with JavaScript module syntax." [level=3] [ref=e105] [box=39,2004,702,106]
+    - generic [ref=e106] [box=39,2110,702,7633]
+  - generic [ref=e314] [box=39,9743,702,1391]:
+    - heading "Using Import Maps" [level=2] [ref=e315] [box=39,9743,702,154]
+    - heading "Use bare import specifiers instead of URLs." [level=3] [ref=e317] [box=39,9897,702,106]
+    - generic [ref=e318] [box=39,10003,702,1131]
+  - generic [ref=e348] [box=39,11134,702,1133]:
+    - heading "Using esm.sh/tsx" [level=2] [ref=e349] [box=39,11134,702,155]
+    - heading "TSX just works in browsers." [level=3] [ref=e352] [box=39,11289,702,106]
+    - generic [ref=e353] [box=39,11395,702,872]
+  - generic [ref=e401] [box=39,12291,702,845]:
+    - heading "FAQs" [level=2] [ref=e402] [box=39,12291,702,154]
+    - heading "Frequently asked questions." [level=3] [ref=e404] [box=39,12445,702,106]
+    - generic [ref=e405] [box=39,12551,702,585]
+  - contentinfo [ref=e428] [box=0,13136,780,387]:
+    - generic [ref=e429] [box=39,13276,702,197]

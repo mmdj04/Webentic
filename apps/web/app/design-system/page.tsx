@@ -1,5 +1,5 @@
 import { Auth, Database, Realtime } from 'icons/src/icons'
-import { Paintbrush } from 'lucide-react'
+import { Code, Library, Paintbrush } from 'lucide-react'
 import Link from 'next/link'
 
 import { HomepageSvgHandler } from '@/components/homepage-svg-handler'
@@ -87,6 +87,30 @@ export default function Home() {
               <div>
                 <h3 className="font-medium text-foreground">Atom components</h3>
                 <p className="text-sm text-foreground-light">Building blocks of user interfaces</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/esm" className="h-full flex">
+            <div className="p-6 gap-4 flex flex-col justify-between h-full w-full bg-surface-75 hover:bg-overlay/50 hover:border-foreground-muted cursor-pointer transition-all border rounded-md">
+              <div className="flex items-center justify-start min-h-[24px] text-brand">
+                <Code className="w-6 h-6" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="font-medium text-foreground">ESM CDN</h3>
+                <p className="text-sm text-foreground-light">Import NPM packages as ES modules</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/docs/getting-started/quickstart" className="h-full flex">
+            <div className="p-6 gap-4 flex flex-col justify-between h-full w-full bg-surface-75 hover:bg-overlay/50 hover:border-foreground-muted cursor-pointer transition-all border rounded-md">
+              <div className="flex items-center justify-start min-h-[24px] text-brand">
+                <Library className="w-6 h-6" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="font-medium text-foreground">UI Library</h3>
+                <p className="text-sm text-foreground-light">Component documentation and examples</p>
               </div>
             </div>
           </Link>
