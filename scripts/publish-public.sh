@@ -10,11 +10,14 @@ set -euo pipefail
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <public-repo-url> [branch]"
   echo ""
-  echo "   <public-repo-url>  SSH or HTTPS URL of the public GitHub repo"
-  echo "   [branch]           Branch to push (default: main)"
-  echo ""
-  echo "Example:"
-  echo "   $0 git@github.com:youruser/webentic-ui.git main"
+echo "   <public-repo-url>  SSH or HTTPS URL of the public GitHub repo"
+echo "   [branch]           Branch to push (default: main)"
+echo ""
+echo "Examples:"
+echo "   $0 git@github.com:youruser/webentic-ui.git main"
+echo "   $0 https://youruser:TOKEN@github.com/youruser/webentic-ui.git main"
+echo ""
+echo "NOTE: Cloud Shell Google nao tem SSH keys, use HTTPS com token."
   exit 1
 fi
 

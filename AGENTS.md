@@ -14,7 +14,8 @@
 
 ```bash
 # Publicar alterações no site público (rodar do diretório raiz)
-./scripts/publish-public.sh git@github.com:mmdj04/Webentic.git
+# SEMPRE use HTTPS com token no Cloud Shell (SSH não funciona — sem keys)
+./scripts/publish-public.sh https://mmdj04:TOKEN@github.com/mmdj04/Webentic.git
 
 # Commit e push no privado
 git add -A && git commit -m "..." && git push origin main
@@ -71,3 +72,11 @@ git add -A && git commit -m "..." && git push origin main
 - Cloud Shell Google tem <5 GB — não rodar `pnpm install` ou `pnpm dev`
 - O `.gitignore` padrão já exclui `node_modules/`, `.next/`, `.turbo/`, `.vercel/`
 - O repo público `mmdj04/Webentic` é open-source e deploya em https://webentic-ui.vercel.app
+
+## Learnings (Evitar Erros Recorrentes)
+
+### Build Vercel: `next-themes` ausente em `packages/ui`
+- **Erro**: Build falhou no Vercel porque `packages/ui/src/components/ThemeProvider/ThemeProvider.tsx` importava `next-themes`, mas a dependência só existia em `apps/web/package.json`, não em `packages/ui/package.json`
+- **Sintoma**: Erro de módulo não encontrado durante o build no Vercel (funcionava local porque o pnpm workspace hoistava)
+- **Correção**: Adicionar `"next-themes": "catalog:"` em `packages/ui/package.json:dependencies`
+- **Regra**: Toda dependência usada por `packages/ui` precisa estar declarada no seu próprio `package.json`, mesmo que já exista em `apps/web` — o pnpm workspace hoist pode mascarar a falta

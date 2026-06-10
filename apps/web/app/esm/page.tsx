@@ -52,49 +52,50 @@ export default function EsmPage() {
 
       <div style={{ paddingTop: 100 }}>
         <section className="flex flex-col justify-center items-center w-full" style={{ minHeight: 600, padding: '80px 24px 40px', textAlign: 'center' }}>
-          <h2 className="pt-[60px] text-center">
-            <strong className="text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
-              Webentic
-            </strong>
-            <br />
-            <strong className="text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
-              <em className="not-italic text-foreground-muted">Open</em>-Source
-            </strong>
-          </h2>
+          <div style={{ maxWidth: 640, width: '100%' }}>
+            <h2 className="text-center">
+              <strong className="block text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
+                Webentic
+              </strong>
+              <strong className="block text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
+                <em className="not-italic text-foreground-muted">Open</em>-Source
+              </strong>
+            </h2>
 
-          <div className="flex items-center justify-center gap-2 mt-12 mb-4">
-            <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Fast</span>
-            <span className="text-sm" style={{ color: 'var(--foreground-default)' }}>Smart</span>
-            <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Global</span>
-            <span className="text-sm" style={{ color: 'var(--foreground-light)' }}>ESM&gt;CDN</span>
-          </div>
+            <div className="flex items-center justify-center gap-2 mt-12 mb-4">
+              <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Fast</span>
+              <span className="text-sm" style={{ color: 'var(--foreground-default)' }}>Smart</span>
+              <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Global</span>
+              <span className="text-sm" style={{ color: 'var(--foreground-light)' }}>ESM&gt;CDN</span>
+            </div>
 
-          <div className="font-semibold leading-tight mx-auto" style={{ fontSize: 32, marginBottom: 8, maxWidth: 640, color: 'var(--foreground-default)' }}>
-            Create modern (es2015+) web apps easily with NPM packages in browser/Deno.
-          </div>
-          <div className="text-lg mb-6" style={{ color: 'var(--foreground-muted)' }}>
-            No build tools needed!
-          </div>
+            <div className="font-semibold leading-tight mt-24 mb-4" style={{ fontSize: 32, color: 'var(--foreground-default)' }}>
+              Create modern (es2015+) web apps easily with NPM packages in browser/Deno.
+            </div>
+            <div className="text-lg mb-6" style={{ color: 'var(--foreground-muted)' }}>
+              No build tools needed!
+            </div>
 
-          <div className="inline-flex justify-center mb-4">
-            <CodeBlock
-              language="js"
-              className="language-js"
-              value={`import confetti from "https://esm.sh/canvas-confetti@1.6.0"`}
-            />
-          </div>
+            <div className="inline-flex justify-center mb-4">
+              <CodeBlock
+                language="js"
+                className="language-js"
+                value={`import confetti from "https://esm.sh/canvas-confetti@1.6.0"`}
+              />
+            </div>
 
-          <div className="text-center">
-            <button
-              className="bg-transparent border-none rounded-lg cursor-pointer font-normal"
-              style={{
-                color: 'var(--foreground-default)',
-                padding: '8px 24px',
-                fontSize: 14,
-              }}
-            >
-              Import &amp; Run &rarr;
-            </button>
+            <div className="text-center">
+              <button
+                className="bg-transparent border-none rounded-lg cursor-pointer font-normal"
+                style={{
+                  color: 'var(--foreground-default)',
+                  padding: '8px 24px',
+                  fontSize: 14,
+                }}
+              >
+                Import &amp; Run &rarr;
+              </button>
+            </div>
           </div>
         </section>
 
