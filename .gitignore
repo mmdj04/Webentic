@@ -17,6 +17,16 @@ opencode.jsonc
 .agents/
 skills-lock.json
 
+# Contentlayer docs (template files, deps not yet installed)
+apps/web/app/\(app\)/docs
+apps/web/app/design-system
+apps/web/app/docs
+apps/web/content
+apps/web/components/mdx-components.tsx
+apps/web/components/source-panel.tsx
+apps/web/components/pager.tsx
+apps/web/contentlayer.config.js
+
 # Root-level scratch files
 *.snap
 /*.png
