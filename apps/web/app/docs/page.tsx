@@ -7,7 +7,7 @@ export default function DocsPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground antialiased">
       <style>{`
-        .doc-page .wrapper { width: 90%; max-width: 800px; }
+        .doc-page .wrapper { width: 90%; max-width: 800px; margin: 0 auto; }
         .doc-page .wrapper>h2 { position: relative; padding: 120px 0 0; text-align: center; }
         .doc-page .wrapper>h2 strong { font-size: 32px; font-weight: 700; line-height: 1; }
         .doc-page .wrapper>h3 { text-align: center; line-height: 1; font-size: 18px; font-weight: 400; padding: 8px 0 80px; color: #888; }
@@ -91,7 +91,7 @@ export default function DocsPage() {
 
       {/* ── Docs ── */}
       <section className="doc-page" id="docs">
-        <div className="wrapper">
+        <div className="wrapper mx-auto">
           <h2><strong>How to Use</strong></h2>
           <h3>Get started with Webentic components.</h3>
 
@@ -254,7 +254,7 @@ export default function DocsPage() {
 
       {/* ── FAQ ── */}
       <section id="faq" className="doc-page">
-        <div className="wrapper" style={{ paddingBottom: 100 }}>
+        <div className="wrapper mx-auto" style={{ paddingBottom: 100 }}>
           <h2><strong>FAQs</strong></h2>
           <h3>Frequently asked questions.</h3>
 
