@@ -10,19 +10,30 @@ export default function DocsPage() {
         .doc-page .wrapper { width: 90%; max-width: 800px; margin: 0 auto; }
         .doc-page .wrapper>h2 { position: relative; padding: 120px 0 0; text-align: center; }
         .doc-page .wrapper>h2 strong { font-size: 32px; font-weight: 700; line-height: 1; }
-        .doc-page .wrapper>h3 { text-align: center; line-height: 1; font-size: 18px; font-weight: 400; padding: 8px 0 80px; color: #888; }
+        .doc-page .wrapper>h3 { text-align: center; line-height: 1; font-size: 18px; font-weight: 400; padding: 8px 0 80px; color: hsl(var(--foreground-lighter)); }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5 { font-weight: 500; line-height: 1.27; }
         .markdown-body p { margin-top: 1.27rem; line-height: 1.5; }
-        .markdown-body h3 { margin-top: 2.7em; font-size: 1.35rem; font-weight: 500; line-height: 1.27; }
-        .markdown-body h3:first-child { margin-top: 0; }
-        .markdown-body pre { box-sizing: border-box; overflow-x: auto; width: 100%; margin-top: 1.27rem; border-radius: 6px; line-height: 1.6; font-size: 90%; background: #272931; white-space: pre; -webkit-overflow-scrolling: touch; }
+        .markdown-body h3 { margin-top: 2.7em; font-size: 1.35rem; }
+        .markdown-body h3:first-child, .markdown-body h4:first-child, .markdown-body p:first-child { margin-top: 0; }
+        .markdown-body h4 { margin-top: .8rem; font-size: 1.2rem; }
+        .markdown-body pre { box-sizing: border-box; overflow-x: auto; width: 100%; margin-top: 1.27rem; border-radius: 6px; line-height: 1.6; font-size: 90%; background: hsl(var(--background-surface-200)); white-space: pre; -webkit-overflow-scrolling: touch; }
         .markdown-body pre>code { display: block; padding: 1rem !important; }
-        .markdown-body :not(pre)>code { display: inline; white-space: pre-wrap; }
+        .markdown-body :not(pre)>code { display: inline; white-space: pre-wrap; color: hsl(var(--brand-link)); }
+        .markdown-body :not(pre)>code:before, .markdown-body :not(pre)>code:after { content: "\`"; }
         .markdown-body strong { font-weight: 600; }
-        .markdown-body a { box-shadow: 0 1px 0 0 currentColor; }
+        .markdown-body a { color: hsl(var(--brand-link)); box-shadow: 0 1px 0 0 currentColor; }
+        .markdown-body a strong { color: hsl(var(--brand-link)); }
         .markdown-body a:hover { box-shadow: none; }
-        .markdown-body blockquote { border-left: 2px solid #888; padding: 0 1.2rem; margin: 1.5rem 0; }
+        .markdown-body blockquote { border-left: 2px solid hsl(var(--foreground-lighter)); padding: 0 1.2rem; margin: 1.5rem 0; }
         .markdown-body ul { list-style-type: disc; padding-left: 1.6rem; margin-top: 1.27rem; }
+        .markdown-body ol { list-style-type: decimal; }
         .markdown-body li { margin-top: 0.6rem; }
+        .markdown-body hr { border: 0; border-top: 1px solid hsl(var(--border-default)); margin: 1.25rem 0; }
+        .markdown-body img { border-radius: 8px; }
+        #faq .markdown-body p { margin-top: .4rem; }
+        #faq .markdown-body p:nth-child(2n-1) { font-size: 1.1rem; margin-top: 2.8rem; }
+        #faq .markdown-body p:nth-child(2n-1) strong { font-weight: 600; }
+        #faq .markdown-body p:first-child { margin-top: 0; }
       `}</style>
 
       {/* ── Header ── */}
