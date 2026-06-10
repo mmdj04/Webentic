@@ -51,9 +51,9 @@ export default function EsmPage() {
       </header>
 
       <div style={{ paddingTop: 100 }}>
-        <section className="flex flex-col justify-center items-center w-full" style={{ minHeight: 600, padding: '80px 24px 40px', textAlign: 'center' }}>
-          <div style={{ maxWidth: 640, width: '100%' }}>
-            <h2 className="text-center">
+        <section className="flex flex-col justify-center items-center" style={{ height: 'calc(100vh - 100px)', minHeight: 680, width: 780, maxWidth: '100%', margin: '0 auto', textAlign: 'center' }}>
+          <div>
+            <h2>
               <strong className="block text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
                 Webentic
               </strong>
@@ -69,7 +69,7 @@ export default function EsmPage() {
               <span className="text-sm" style={{ color: 'var(--foreground-light)' }}>ESM&gt;CDN</span>
             </div>
 
-            <div className="font-semibold leading-tight mt-24 mb-4" style={{ fontSize: 32, color: 'var(--foreground-default)' }}>
+            <div className="font-semibold leading-tight mt-12 mb-4" style={{ fontSize: 32, color: 'var(--foreground-default)' }}>
               Create modern (es2015+) web apps easily with NPM packages in browser/Deno.
             </div>
             <div className="text-lg mb-6" style={{ color: 'var(--foreground-muted)' }}>
