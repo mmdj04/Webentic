@@ -108,7 +108,6 @@ export async function getRepoTree(
     { headers }
   )
   if (!res.ok) {
-    // try master branch
     const res2 = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/git/trees/master?recursive=1`,
       { headers }
@@ -119,4 +118,119 @@ export async function getRepoTree(
   }
   const data = await res.json()
   return JSON.stringify(data.tree, null, 2)
+}
+
+const SOURCE_FILE_EXTENSIONS = new Set([
+  'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts',
+  'py', 'rb', 'go', 'rs', 'java', 'kt', 'scala',
+  'c', 'cpp', 'h', 'hpp', 'cs', 'swift',
+  'php', 'pl', 'pm', 'r', 'm',
+  'css', 'scss', 'sass', 'less', 'styl',
+  'html', 'htm', 'xml', 'svg', 'vue', 'svelte', 'astro',
+  'json', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf',
+  'md', 'mdx', 'txt', 'rst', 'adoc',
+  'sh', 'bash', 'zsh', 'fish', 'bat', 'ps1',
+  'dockerfile', 'makefile', 'cmake',
+  'sql', 'graphql', 'proto',
+  'prisma', 'gradle', 'properties',
+])
+
+const EXCLUDED_DIRS = new Set([
+  'node_modules', '.git', '.github', '.next', 'dist', 'build',
+  '.cache', '__pycache__', '.venv', 'venv', 'env',
+  'coverage', '.nyc_output', '.turbo',
+  '.vercel', '.serverless', '.webpack',
+])
+
+interface TreeItem {
+  path: string
+  mode: string
+  type: 'blob' | 'tree'
+  sha: string
+  size?: number
+  url?: string
+}
+
+export interface RepoFile {
+  path: string
+  content: string
+}
+
+const MAX_SOURCE_FILES = 80
+const MAX_FILE_SIZE = 100_000
+
+export async function getAllSourceFiles(
+  owner: string,
+  repo: string,
+  branch = 'main',
+  token?: string
+): Promise<{ files: RepoFile[]; structure: string }> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  const treeUrl = `${GITHUB_API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`
+  const treeRes = await fetch(treeUrl, { headers })
+  let tree: TreeItem[]
+
+  if (!treeRes.ok && branch !== 'master') {
+    const fallback = await fetch(
+      `${GITHUB_API}/repos/${owner}/${repo}/git/trees/master?recursive=1`,
+      { headers }
+    )
+    if (!fallback.ok) throw new Error('Failed to fetch repository tree')
+    const d = await fallback.json()
+    tree = d.tree as TreeItem[]
+  } else if (!treeRes.ok) {
+    throw new Error('Failed to fetch repository tree')
+  } else {
+    const d = await treeRes.json()
+    tree = d.tree as TreeItem[]
+  }
+
+  const sourceFiles = tree
+    .filter((item: TreeItem) => {
+      if (item.type !== 'blob') return false
+      const dirs = item.path.split('/')
+      if (dirs.some((d) => EXCLUDED_DIRS.has(d))) return false
+      if (item.size && item.size > MAX_FILE_SIZE) return false
+      const ext = item.path.split('.').pop()?.toLowerCase() || ''
+      if (item.path.endsWith('Dockerfile') || item.path.endsWith('Makefile')) return true
+      return SOURCE_FILE_EXTENSIONS.has(ext)
+    })
+    .slice(0, MAX_SOURCE_FILES)
+
+  const structureLines = tree
+    .filter((item) => {
+      const dirs = item.path.split('/')
+      return !dirs.some((d) => EXCLUDED_DIRS.has(d))
+    })
+    .map((item) => item.path)
+
+  const structure = structureLines.join('\n')
+
+  const rawHeaders: Record<string, string> = {
+    Accept: 'application/vnd.github.v3.raw',
+  }
+  if (token) rawHeaders.Authorization = `Bearer ${token}`
+
+  const contents = await Promise.all(
+    sourceFiles.map(async (item: TreeItem) => {
+      try {
+        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}`
+        const res = await fetch(rawUrl, { headers: rawHeaders })
+        if (!res.ok) return { path: item.path, content: '' } as RepoFile
+        const text = await res.text()
+        return { path: item.path, content: text } as RepoFile
+      } catch {
+        return { path: item.path, content: '' } as RepoFile
+      }
+    })
+  )
+
+  return {
+    files: contents.filter((f) => f.content.length > 0),
+    structure,
+  }
 }

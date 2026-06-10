@@ -26,7 +26,7 @@ import {
   Badge,
 } from 'ui'
 import { createClient } from '@/lib/supabase/client'
-import { searchRepos, getRepo, getRepoReadme, getRepoTree, type GitHubRepo } from '@/lib/github'
+import { searchRepos, getAllSourceFiles, type GitHubRepo } from '@/lib/github'
 import { generateGemini } from '@/lib/gemini'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -188,10 +188,13 @@ function SearchContent() {
 
       if (insertError) throw insertError
 
-      const [readme, treeStructure] = await Promise.all([
-        getRepoReadme(repo.owner.login, repo.name, githubToken),
-        getRepoTree(repo.owner.login, repo.name, repo.default_branch, githubToken).catch(() => 'Unable to fetch tree'),
-      ])
+      const { files: repoFiles, structure } = await getAllSourceFiles(
+        repo.owner.login, repo.name, repo.default_branch, githubToken
+      )
+
+      const filesSection = repoFiles
+        .map((f) => `--- FILE: ${f.path} ---\n${f.content.slice(0, 8000)}${f.content.length > 8000 ? '\n... (truncated)' : ''}`)
+        .join('\n\n')
 
       const repoInfo = `
 Repository: ${repo.full_name}
@@ -201,27 +204,30 @@ Stars: ${repo.stargazers_count}
 Forks: ${repo.forks_count}
 Topics: ${repo.topics?.join(', ') || 'N/A'}
 Default Branch: ${repo.default_branch}
-
-## README Content:
-${readme || 'No README found'}
+Total Files Analyzed: ${repoFiles.length}
 
 ## File Structure:
-${treeStructure}
+${structure}
+
+## Source Files Content:
+${filesSection}
 `
 
       const prompt = `You are a technical documentation expert. Generate a comprehensive, well-structured documentation page for the following GitHub repository. The documentation should be similar to DeepWiki style - thorough, well-organized, and developer-friendly.
 
+You have access to ALL source files of the repository. Analyze every file carefully to produce complete and accurate documentation.
+
 Include the following sections:
 1. **Overview** - What the project is about
 2. **Quick Start** - How to get started with the project
-3. **Architecture** - How the project is structured (based on the file tree)
+3. **Architecture** - How the project is structured (based on actual file contents, imports, and dependencies)
 4. **Key Features** - Main features and capabilities
-5. **API / Usage** - How to use the project (from README and structure)
+5. **API / Usage** - How to use the project (classes, functions, exports, endpoints)
 6. **Configuration** - Any configuration options
 7. **Contributing** - Guidelines for contributors (if any)
 8. **Troubleshooting / FAQ** - Common issues
 
-Format the output in GitHub-flavored Markdown. Be thorough and accurate.
+Format the output in GitHub-flavored Markdown. Be thorough and accurate — base your documentation on the actual code, not just the README.
 
 Here is the repository data:
 ${repoInfo}`
@@ -314,7 +320,7 @@ ${repoInfo}`
               </div>
             </div>
 
-            <div className="prose prose-sm max-w-none dark:prose-invert border rounded-xl p-6 bg-surface-100">
+            <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {documentation}
               </ReactMarkdown>
@@ -368,7 +374,7 @@ ${repoInfo}`
                 <div>
                   <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Generating Documentation</p>
                   <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
-                    Fetching repository data and generating AI documentation...
+                    Fetching all repository files and analyzing with AI...
                   </p>
                 </div>
               </div>

@@ -171,3 +171,19 @@ svg.lucide.inline {
   justify-content: center;
   vertical-align: middle;
 }
+
+.prose {
+  --tw-prose-body: var(--foreground-default);
+  --tw-prose-headings: var(--foreground-default);
+  --tw-prose-links: hsl(var(--brand-900));
+  --tw-prose-bold: var(--foreground-default);
+  --tw-prose-counters: var(--foreground-muted);
+  --tw-prose-bullets: var(--foreground-muted);
+  --tw-prose-hr: var(--border-default);
+  --tw-prose-quotes: var(--foreground-light);
+  --tw-prose-quote-borders: var(--border-default);
+  --tw-prose-code: var(--foreground-default);
+  --tw-prose-pre-bg: var(--background-default);
+  --tw-prose-th-borders: var(--border-default);
+  --tw-prose-td-borders: var(--border-default);
+}
