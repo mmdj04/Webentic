@@ -34,3 +34,6 @@ apps/web/app/example
 *.snap
 /*.png
 !packages/**/*.png
+
+# Lockfile (Vercel handles its own install)
+pnpm-lock.yaml
