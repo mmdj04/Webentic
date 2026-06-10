@@ -8,7 +8,7 @@
 | 🌍 Público | `mmdj04/Webentic` | https://github.com/mmdj04/Webentic |
 
 - **Privado**: Contém TUDO (código fonte completo, Design System, Docs, etc.)
-- **Público**: Apenas Landing Page (`/`) + About (`/about`), deploy automático via Vercel
+- **Público**: Apenas Landing (`/`), ESM CDN (`/esm`) e About (`/about`)
 
 ## Comandos Essenciais
 
