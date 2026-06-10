@@ -1,76 +1,110 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Search, Star, GitFork, ExternalLink } from 'lucide-react'
+import {
+  ArrowLeft,
+  Search,
+  Star,
+  GitFork,
+  ExternalLink,
+  Loader2,
+  FileText,
+  BookOpen,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupInput,
   InputGroupButton,
+  InputGroupInput,
+  Button,
+  Badge,
 } from 'ui'
+import { createClient } from '@/lib/supabase/client'
+import { searchRepos, getRepo, getRepoReadme, getRepoTree, type GitHubRepo } from '@/lib/github'
+import { generateGemini } from '@/lib/gemini'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
-interface MockRepo {
-  owner: string
-  name: string
-  description: string
-  language: string
-  languageColor: string
-  stars: number
-  forks: number
-}
+type AnalysisStatus = 'idle' | 'analyzing' | 'completed' | 'failed'
 
-const MOCK_REPOS: MockRepo[] = [
-  { owner: 'supabase', name: 'supabase', description: 'The open source Firebase alternative. Follow to stay updated about our public Beta.', language: 'TypeScript', languageColor: '#3178c6', stars: 76200, forks: 7200 },
-  { owner: 'vercel', name: 'next.js', description: 'The React Framework for Production. Built for server-rendered React applications with hybrid static generation.', language: 'JavaScript', languageColor: '#f1e05a', stars: 128000, forks: 27000 },
-  { owner: 'tailwindlabs', name: 'tailwindcss', description: 'A utility-first CSS framework for rapid UI development. Highly customizable and low-level.', language: 'CSS', languageColor: '#563d7c', stars: 85000, forks: 4300 },
-  { owner: 'shadcn-ui', name: 'ui', description: 'Beautifully designed components that you can copy and paste into your apps. Accessible. Customizable. Open Source.', language: 'TypeScript', languageColor: '#3178c6', stars: 82000, forks: 4400 },
-  { owner: 'TanStack', name: 'query', description: 'Powerful asynchronous state management for TS/JS, React, Solid, Vue, Svelte and Angular.', language: 'TypeScript', languageColor: '#3178c6', stars: 43000, forks: 3100 },
-  { owner: 'esm-dev', name: 'esm.sh', description: 'A fast, global content delivery network for NPM packages with ES module format.', language: 'Go', languageColor: '#00ADD8', stars: 4500, forks: 320 },
-  { owner: 'facebook', name: 'react', description: 'A declarative, efficient, and flexible JavaScript library for building user interfaces.', language: 'JavaScript', languageColor: '#f1e05a', stars: 232000, forks: 47000 },
-  { owner: 'npm', name: 'cli', description: 'The package manager for JavaScript. A CLI tool for installing, publishing, and managing packages.', language: 'JavaScript', languageColor: '#f1e05a', stars: 8700, forks: 3200 },
-  { owner: 'biomejs', name: 'biome', description: 'A toolchain for web projects: formatter, linter, and more. Aimed to replace ESLint and Prettier.', language: 'Rust', languageColor: '#dea584', stars: 18000, forks: 560 },
-  { owner: 'oven-sh', name: 'bun', description: 'Incredibly fast JavaScript runtime, bundler, test runner, and package manager - all in one.', language: 'Zig', languageColor: '#ec915c', stars: 76000, forks: 2800 },
-]
+const DOCS_SAMPLE = false
 
-function RepoCard({ repo }: { repo: MockRepo }) {
+function RepoCard({
+  repo,
+  onAnalyze,
+  analyzingId,
+  analysisStatus,
+}: {
+  repo: GitHubRepo
+  onAnalyze: (repo: GitHubRepo) => void
+  analyzingId: string | null
+  analysisStatus: AnalysisStatus
+}) {
   const [hovered, setHovered] = useState(false)
+  const isAnalyzing = analyzingId === String(repo.id) && analysisStatus === 'analyzing'
 
   return (
-    <Link
-      href={`https://github.com/${repo.owner}/${repo.name}`}
-      className={`block no-underline rounded-xl border p-5 transition-colors ${hovered ? 'bg-surface-200 border-strong' : 'bg-surface-100 border-default'}`}
+    <div
+      className={`block rounded-xl border p-5 transition-colors ${
+        hovered ? 'bg-surface-200 border-strong' : 'bg-surface-100 border-default'
+      }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm text-foreground-muted">{repo.owner}/</span>
+            <span className="text-sm text-foreground-muted">{repo.owner.login}/</span>
             <span className="text-sm font-semibold text-foreground">{repo.name}</span>
           </div>
           <p className="text-sm leading-relaxed mb-3 line-clamp-2 text-foreground-light">
-            {repo.description}
+            {repo.description || 'No description'}
           </p>
           <div className="flex items-center gap-4 flex-wrap">
-            <span className="flex items-center gap-1.5 text-xs text-foreground-muted">
-              <span className="size-2.5 rounded-full inline-block" style={{ backgroundColor: repo.languageColor }} />
-              {repo.language}
-            </span>
+            {repo.language && (
+              <span className="flex items-center gap-1 text-xs text-foreground-muted">
+                <span className="size-2.5 rounded-full inline-block bg-foreground-muted" />
+                {repo.language}
+              </span>
+            )}
             <span className="flex items-center gap-1 text-xs text-foreground-muted">
               <Star className="size-3.5" />
-              {repo.stars.toLocaleString()}
+              {repo.stargazers_count.toLocaleString()}
             </span>
             <span className="flex items-center gap-1 text-xs text-foreground-muted">
               <GitFork className="size-3.5" />
-              {repo.forks.toLocaleString()}
+              {repo.forks_count.toLocaleString()}
             </span>
           </div>
         </div>
-        <ExternalLink className="size-4 shrink-0 mt-1 text-foreground-muted" />
+        <div className="flex flex-col gap-2 items-end shrink-0">
+          <a
+            href={repo.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground-lighter hover:text-foreground transition-colors"
+          >
+            <ExternalLink className="size-4" />
+          </a>
+          <Button
+            size="tiny"
+            type={isAnalyzing ? 'secondary' : 'primary'}
+            loading={isAnalyzing}
+            disabled={analyzingId === String(repo.id) && analysisStatus !== 'idle' && analysisStatus !== 'completed'}
+            onClick={() => onAnalyze(repo)}
+            icon={isAnalyzing ? <Loader2 className="size-3 animate-spin" /> : <BookOpen className="size-3" />}
+          >
+            {isAnalyzing ? 'Analyzing...' : 'Generate Docs'}
+          </Button>
+        </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -79,11 +113,138 @@ function SearchContent() {
   const router = useRouter()
   const query = searchParams.get('q') || ''
   const [input, setInput] = useState(query)
+  const [results, setResults] = useState<GitHubRepo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [searched, setSearched] = useState(false)
+
+  const [analyzingId, setAnalyzingId] = useState<string | null>(null)
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle')
+  const [documentation, setDocumentation] = useState<string | null>(null)
+  const [analyzedRepo, setAnalyzedRepo] = useState<{ name: string; owner: string; url: string } | null>(null)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
+
+  const supabase: any = createClient()
+
+  const doSearch = useCallback(async (q: string) => {
+    if (!q.trim()) return
+    setLoading(true)
+    setError(null)
+    setSearched(true)
+    setDocumentation(null)
+    setAnalyzedRepo(null)
+    try {
+      const repos = await searchRepos(q)
+      setResults(repos)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to search repositories')
+      setResults([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (query) doSearch(query)
+  }, [query, doSearch])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     const q = input.trim()
     if (q) router.push(`/search?q=${encodeURIComponent(q)}`)
+  }
+
+  const handleAnalyze = async (repo: GitHubRepo) => {
+    setAnalyzingId(String(repo.id))
+    setAnalysisStatus('analyzing')
+    setDocumentation(null)
+    setAnalyzedRepo({ name: repo.name, owner: repo.owner.login, url: repo.html_url })
+    setAnalysisError(null)
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('You must be signed in to generate documentation')
+
+      const { data: configs } = await supabase
+        .from('agent_configs')
+        .select('gemini_api_key, github_token')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const geminiApiKey = configs?.gemini_api_key
+      const githubToken = configs?.github_token
+
+      const { data: analysis, error: insertError } = await supabase
+        .from('repository_analyses')
+        .insert({
+          user_id: user.id,
+          repo_owner: repo.owner.login,
+          repo_name: repo.name,
+          repo_url: repo.html_url,
+          status: 'analyzing',
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      const [readme, treeStructure] = await Promise.all([
+        getRepoReadme(repo.owner.login, repo.name, githubToken),
+        getRepoTree(repo.owner.login, repo.name, repo.default_branch, githubToken).catch(() => 'Unable to fetch tree'),
+      ])
+
+      const repoInfo = `
+Repository: ${repo.full_name}
+Description: ${repo.description || 'N/A'}
+Language: ${repo.language || 'N/A'}
+Stars: ${repo.stargazers_count}
+Forks: ${repo.forks_count}
+Topics: ${repo.topics?.join(', ') || 'N/A'}
+Default Branch: ${repo.default_branch}
+
+## README Content:
+${readme || 'No README found'}
+
+## File Structure:
+${treeStructure}
+`
+
+      const prompt = `You are a technical documentation expert. Generate a comprehensive, well-structured documentation page for the following GitHub repository. The documentation should be similar to DeepWiki style - thorough, well-organized, and developer-friendly.
+
+Include the following sections:
+1. **Overview** - What the project is about
+2. **Quick Start** - How to get started with the project
+3. **Architecture** - How the project is structured (based on the file tree)
+4. **Key Features** - Main features and capabilities
+5. **API / Usage** - How to use the project (from README and structure)
+6. **Configuration** - Any configuration options
+7. **Contributing** - Guidelines for contributors (if any)
+8. **Troubleshooting / FAQ** - Common issues
+
+Format the output in GitHub-flavored Markdown. Be thorough and accurate.
+
+Here is the repository data:
+${repoInfo}`
+
+      const docs = await generateGemini(prompt, geminiApiKey)
+
+      await supabase
+        .from('repository_analyses')
+        .update({
+          documentation: docs,
+          status: 'completed',
+        })
+        .eq('id', analysis.id)
+
+      setDocumentation(docs ?? null)
+      setAnalysisStatus('completed')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Analysis failed'
+      setAnalysisError(message)
+      setAnalysisStatus('failed')
+    } finally {
+      setAnalyzingId(null)
+    }
   }
 
   return (
@@ -102,7 +263,7 @@ function SearchContent() {
                 </InputGroupButton>
               </InputGroupAddon>
               <InputGroupInput
-                placeholder="Search..."
+                placeholder="Search GitHub repositories..."
                 className="font-mono text-sm"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -112,32 +273,144 @@ function SearchContent() {
         </div>
       </header>
 
-      <main className="mx-auto px-6 py-8" style={{ maxWidth: 780 }}>
-        {query ? (
-          <div>
-            <div className="flex items-baseline gap-2 mb-6">
-              <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
-                Results for &ldquo;{query}&rdquo;
-              </span>
-              <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                {MOCK_REPOS.length} repositories
-              </span>
+      <main className="mx-auto px-6 py-8" style={{ maxWidth: 960 }}>
+        {/* Documentation View */}
+        {documentation && analyzedRepo && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen className="size-5 text-foreground" />
+                  <h1 className="text-xl font-bold text-foreground">
+                    {analyzedRepo.owner}/{analyzedRepo.name}
+                  </h1>
+                  <Badge color="green">
+                    <CheckCircle2 className="size-3 mr-1" />
+                    Documentation Generated
+                  </Badge>
+                </div>
+                <a
+                  href={analyzedRepo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
+                >
+                  {analyzedRepo.url} <ExternalLink className="size-3 inline" />
+                </a>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="tiny"
+                  type="default"
+                  icon={<RefreshCw className="size-3" />}
+                  onClick={() => {
+                    setDocumentation(null)
+                    setAnalyzedRepo(null)
+                    setAnalysisStatus('idle')
+                  }}
+                >
+                  New Search
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-col gap-3">
-              {MOCK_REPOS.map((repo) => (
-                <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
-              ))}
+
+            <div className="prose prose-sm max-w-none dark:prose-invert border rounded-xl p-6 bg-surface-100">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {documentation}
+              </ReactMarkdown>
             </div>
           </div>
-        ) : (
-          <div className="text-center py-20">
-            <div className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground-default)' }}>
-              Search Webentic
-            </div>
-            <div className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-              Enter a query above to search open-source repositories.
-            </div>
-          </div>
+        )}
+
+        {/* Search Results */}
+        {!documentation && (
+          <>
+            {searched && (
+              <div className="flex items-baseline gap-2 mb-6">
+                <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
+                  {loading ? 'Searching...' : `Results for "${query}"`}
+                </span>
+                {!loading && (
+                  <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
+                    {results.length} repositories
+                  </span>
+                )}
+              </div>
+            )}
+
+            {loading && (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="size-6 animate-spin text-foreground-muted" />
+              </div>
+            )}
+
+            {error && (
+              <div className="flex flex-col items-center justify-center py-20">
+                <XCircle className="size-8 text-red-500 mb-3" />
+                <p className="text-sm text-foreground-light mb-2">{error}</p>
+                <p className="text-xs text-foreground-muted">Configure your GitHub token in Settings for higher API limits</p>
+              </div>
+            )}
+
+            {analysisError && (
+              <div className="mb-6 p-4 border border-red-300 bg-red-50 dark:bg-red-950/20 rounded-lg flex items-start gap-3">
+                <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">Analysis Failed</p>
+                  <p className="text-xs text-red-600 dark:text-red-300 mt-1">{analysisError}</p>
+                </div>
+              </div>
+            )}
+
+            {analysisStatus === 'analyzing' && (
+              <div className="mb-6 p-4 border border-amber-300 bg-amber-50 dark:bg-amber-950/20 rounded-lg flex items-center gap-3">
+                <Loader2 className="size-5 text-amber-500 animate-spin shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Generating Documentation</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                    Fetching repository data and generating AI documentation...
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && searched && results.length > 0 && (
+              <div className="flex flex-col gap-3">
+                {results.map((repo) => (
+                  <RepoCard
+                    key={repo.id}
+                    repo={repo}
+                    onAnalyze={handleAnalyze}
+                    analyzingId={analyzingId}
+                    analysisStatus={analysisStatus}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!loading && !error && searched && results.length === 0 && (
+              <div className="text-center py-20">
+                <FileText className="size-8 text-foreground-muted mx-auto mb-3" />
+                <p className="text-sm" style={{ color: 'var(--foreground-light)' }}>
+                  No repositories found for &ldquo;{query}&rdquo;
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
+                  Try a different search term
+                </p>
+              </div>
+            )}
+
+            {!searched && (
+              <div className="text-center py-20">
+                <div className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground-default)' }}>
+                  Search & Document Repositories
+                </div>
+                <div className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
+                  Enter a query above to search GitHub repositories, then generate AI-powered documentation.
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

@@ -1,21 +1,18 @@
 import { GoogleGenAI } from '@google/genai'
 
-export const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
-
 export const GEMINI_MODEL = 'gemini-3.5-flash'
 
-export const GEMINI_CONFIG = {
-  thinkingConfig: {
-    thinkingLevel: 'HIGH',
-  },
-  maxOutputTokens: 65536,
-} as const
+export async function generateGemini(prompt: string, apiKey?: string) {
+  const key = apiKey || process.env.GEMINI_API_KEY
+  if (!key) throw new Error('Gemini API key is required')
 
-export async function generateGemini(prompt: string) {
-  const response = await gemini.models.generateContent({
+  const client = new GoogleGenAI({ apiKey: key })
+  const response = await client.models.generateContent({
     model: GEMINI_MODEL,
     contents: prompt,
-    config: GEMINI_CONFIG,
+    config: {
+      maxOutputTokens: 65536,
+    } as any,
   })
   return response.text
 }

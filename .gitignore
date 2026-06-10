@@ -14,6 +14,8 @@ dist/
 opencode.json
 opencode.jsonc
 .playwright-mcp
+.agents/
+skills-lock.json
 
 # Root-level scratch files
 *.snap

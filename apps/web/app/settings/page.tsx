@@ -1,798 +1,413 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { format } from 'date-fns'
-import { CalendarIcon, ExternalLink, Trash, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import {
+  ArrowLeft,
+  Save,
+  Key,
+  Github,
+  Zap,
+  Clock,
+  List,
+  LogOut,
+  User,
+  Mail,
+  Calendar,
+  Eye,
+  EyeOff,
+  Loader2,
+  Plus,
+  Trash2,
+  Play,
+  Square,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import {
   Button,
-  Calendar,
-  Card,
-  CardContent,
-  CardFooter,
-  Checkbox,
-  Form,
-  FormControl,
-  FormField,
-  FormInputGroupInput,
-  FormInputGroupTextArea,
   Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  RadioGroupStacked,
-  RadioGroupStackedItem,
+  Badge,
+  Card,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Switch,
-  Textarea,
 } from 'ui'
-import { Input as PasswordInput } from 'ui-patterns/DataInputs/Input'
-import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
-import { KeyValueFieldArray } from 'ui-patterns/form/KeyValueFieldArray/KeyValueFieldArray'
-import { getKeyValueFieldArrayValidationIssues } from 'ui-patterns/form/KeyValueFieldArray/validation'
-import { SingleValueFieldArray } from 'ui-patterns/form/SingleValueFieldArray/SingleValueFieldArray'
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger,
-} from 'ui-patterns/multi-select'
-import {
-  PageSection,
-  PageSectionContent,
-  PageSectionMeta,
-  PageSectionSummary,
-  PageSectionTitle,
-} from 'ui-patterns/PageSection'
-import * as z from 'zod'
+import { createClient } from '@/lib/supabase/client'
+import { format } from 'date-fns'
 
-const formSchema = z
-  .object({
-    name: z.string().min(1, 'Name is required'),
-    description: z.string().optional(),
-    maxConnections: z
-      .union([
-        z.literal(''),
-        z.coerce
-          .number()
-          .gte(1000, 'Max connections should be at least 1000')
-          .lte(10000, 'Max connections should not exceed 10000'),
-      ])
-      .refine((value) => value !== '', 'Max connections is required'),
-    enableFeature: z.boolean(),
-    enableRls: z.boolean(),
-    enableNotifications: z.boolean(),
-    enableAnalytics: z.boolean(),
-    region: z.string().min(1, 'Region is required'),
-    schemas: z.array(z.string()).min(1, 'At least one schema is required'),
-    queueType: z.enum(['basic', 'partitioned']),
-    expiryDate: z.date().optional(),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    duration: z
-      .union([
-        z.literal(''),
-        z.coerce
-          .number()
-          .gte(1000, 'Duration should be at least 5ms')
-          .lte(10000, 'Duration should not exceed 30ms'),
-      ])
-      .refine((value) => value !== '', 'Duration is required'),
-    redirectUris: z.array(z.object({ value: z.string().url('Must be a valid URL') })),
-    httpHeaders: z.array(z.object({ key: z.string().trim(), value: z.string().trim() })),
-    apiKey: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    getKeyValueFieldArrayValidationIssues({
-      rows: data.httpHeaders,
-      keyFieldName: 'key',
-      valueFieldName: 'value',
-      keyRequiredMessage: 'Header name is required',
-      valueRequiredMessage: 'Header value is required',
-    }).forEach((issue) => {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: issue.message,
-        path: ['httpHeaders', ...issue.path],
-      })
-    })
-  })
-
-const fakeApiKey = 'sk_live_51H3x4mpl3_4nd_53cur3_k3y_1234567890'
-
-function SettingsForm() {
-  const uploadButtonRef = useRef<HTMLInputElement>(null)
-  const fileUploadRef = useRef<HTMLInputElement>(null)
-  const [logoFile, setLogoFile] = useState<File>()
-  const [logoUrl, setLogoUrl] = useState<string>()
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [isDragging, setIsDragging] = useState(false)
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      maxConnections: 10,
-      enableFeature: false,
-      enableRls: true,
-      enableNotifications: false,
-      enableAnalytics: true,
-      region: '',
-      schemas: ['public'],
-      queueType: 'basic',
-      expiryDate: undefined,
-      password: '',
-      duration: 10,
-      redirectUris: [{ value: '' }],
-      httpHeaders: [{ key: '', value: '' }],
-      apiKey: fakeApiKey,
-    },
-  })
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-  }
-
-  return (
-    <div className="w-full">
-      <PageSection className="py-0">
-        <PageSectionMeta>
-          <PageSectionSummary>
-            <PageSectionTitle>Form Settings</PageSectionTitle>
-          </PageSectionSummary>
-        </PageSectionMeta>
-        <PageSectionContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <Card>
-                {/* Text Input */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Text Input"
-                        description="Single-line text entry for short values"
-                      >
-                        <FormControl>
-                          <Input {...field} placeholder="Enter text" />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Password Input */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Password Input"
-                        description="Masked input for secure text entry"
-                      >
-                        <FormControl>
-                          <Input {...field} type="password" placeholder="Enter password" />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Copyable Input */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="apiKey"
-                    render={() => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Copyable Input"
-                        description="Read-only input with copy-to-clipboard functionality"
-                      >
-                        <FormControl>
-                          <PasswordInput
-                            copy
-                            readOnly
-                            value={form.getValues('apiKey') || ''}
-                            onChange={() => {}}
-                            onCopy={() => console.log('Copied to clipboard')}
-                          />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Number Input */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="maxConnections"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Number Input"
-                        description="Numeric input with min/max validation"
-                      >
-                        <FormControl>
-                          <Input {...field} type="number" min={1} max={1000} />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Input with Units */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="duration"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Input with Units"
-                        description="Input with additional unit label"
-                      >
-                        <FormControl>
-                          <InputGroup>
-                            <FormInputGroupInput {...field} type="number" min={5} max={30} />
-                            <InputGroupAddon align="inline-end">
-                              <InputGroupText className="font-mono">ms</InputGroupText>
-                            </InputGroupAddon>
-                          </InputGroup>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Textarea */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Textarea"
-                        description="Multi-line text input for longer content"
-                      >
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            rows={4}
-                            placeholder="Enter multi-line text"
-                            className="resize-none"
-                          />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Textarea with addon */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Textarea"
-                        description="Multi-line text input for longer content with addon"
-                      >
-                        <FormControl>
-                          <InputGroup>
-                            <FormInputGroupTextArea
-                              {...field}
-                              rows={4}
-                              placeholder="Enter multi-line text"
-                              className="resize-none"
-                            />
-                            <InputGroupAddon align="block-end">
-                              <InputGroupText>120 characters left</InputGroupText>
-                            </InputGroupAddon>
-                          </InputGroup>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Icon Upload */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={() => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Icon upload"
-                        description="For icons, avatars, or small images with preview"
-                      >
-                        <FormControl>
-                          <div className="flex gap-4 items-center">
-                            <button
-                              type="button"
-                              onClick={() => uploadButtonRef.current?.click()}
-                              className="flex items-center justify-center h-10 w-10 shrink-0 text-foreground-lighter hover:text-foreground-light overflow-hidden rounded-full bg-cover border hover:border-strong"
-                              style={{
-                                backgroundImage: logoUrl ? `url("${logoUrl}")` : 'none',
-                              }}
-                            >
-                              {!logoUrl && <Upload size={14} />}
-                            </button>
-                            <div className="flex gap-2 items-center">
-                              <Button
-                                type="default"
-                                size="tiny"
-                                icon={<Upload size={14} />}
-                                onClick={() => uploadButtonRef.current?.click()}
-                              >
-                                Upload
-                              </Button>
-                              {logoUrl && (
-                                <Button
-                                  type="default"
-                                  size="tiny"
-                                  icon={<Trash size={12} />}
-                                  onClick={() => {
-                                    setLogoFile(undefined)
-                                    setLogoUrl(undefined)
-                                  }}
-                                />
-                              )}
-                            </div>
-                            <input
-                              type="file"
-                              ref={uploadButtonRef}
-                              className="hidden"
-                              accept="image/png, image/jpeg"
-                              onChange={(e) => {
-                                const files = e.target.files
-                                if (files && files.length > 0) {
-                                  const file = files[0]
-                                  setLogoFile(file)
-                                  setLogoUrl(URL.createObjectURL(file))
-                                  e.target.value = ''
-                                }
-                              }}
-                            />
-                          </div>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* File Upload */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={() => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="File Upload"
-                        description="Drag-and-drop or select files for upload"
-                      >
-                        <FormControl>
-                          <div
-                            className={`border-2 rounded-lg p-6 text-center bg-muted transition-colors duration-300 ${
-                              isDragging
-                                ? 'border-strong border-dashed bg-muted'
-                                : 'border-border border-dashed'
-                            }`}
-                            onDragOver={(e) => {
-                              e.preventDefault()
-                              setIsDragging(true)
-                            }}
-                            onDragLeave={() => setIsDragging(false)}
-                            onDrop={(e) => {
-                              e.preventDefault()
-                              setIsDragging(false)
-                              const files = Array.from(e.dataTransfer.files)
-                              setUploadedFiles((prev) => [...prev, ...files])
-                            }}
-                          >
-                            <input
-                              type="file"
-                              ref={fileUploadRef}
-                              className="hidden"
-                              multiple
-                              onChange={(e) => {
-                                const files = e.target.files
-                                if (files) {
-                                  setUploadedFiles((prev) => [...prev, ...Array.from(files)])
-                                }
-                                e.target.value = ''
-                              }}
-                            />
-                            <div className="flex flex-col items-center gap-y-2">
-                              <Upload size={20} className="text-foreground-lighter" />
-                              <p className="text-sm text-foreground-light">
-                                {uploadedFiles.length > 0
-                                  ? `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} selected`
-                                  : 'Upload files'}
-                              </p>
-                              <p className="text-xs text-foreground-lighter">
-                                Drag and drop or{' '}
-                                <button
-                                  type="button"
-                                  onClick={() => fileUploadRef.current?.click()}
-                                  className="underline cursor-pointer hover:text-foreground-light"
-                                >
-                                  select files
-                                </button>{' '}
-                                to upload
-                              </p>
-                              {uploadedFiles.length > 0 && (
-                                <div className="mt-4 w-full space-y-2">
-                                  {uploadedFiles.map((file, idx) => (
-                                    <div
-                                      key={`${file.name}-${idx}`}
-                                      className="flex items-center justify-between gap-2 p-2 bg rounded-sm border"
-                                    >
-                                      <span className="text-sm text-foreground-light truncate flex-1">
-                                        {file.name}
-                                      </span>
-                                      <Button
-                                        type="default"
-                                        size="tiny"
-                                        icon={<Trash size={12} />}
-                                        onClick={() => {
-                                          setUploadedFiles((prev) =>
-                                            prev.filter((_, i) => i !== idx)
-                                          )
-                                        }}
-                                      />
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Switch */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="enableFeature"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Switch"
-                        description="Toggle for boolean on/off states"
-                      >
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Checkbox */}
-                <CardContent>
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label="Checkbox"
-                    description="Boolean values or multiple selections"
-                  >
-                    <div className="w-full flex flex-col gap-4">
-                      <FormField
-                        control={form.control}
-                        name="enableRls"
-                        render={({ field }) => (
-                          <div className="flex items-center w-full justify-start space-x-2">
-                            <FormControl>
-                              <Checkbox
-                                id="enable-rls"
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <label
-                              htmlFor="enable-rls"
-                              className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            >
-                              Enable Row Level Security
-                            </label>
-                          </div>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="enableNotifications"
-                        render={({ field }) => (
-                          <div className="flex items-center w-full justify-start space-x-2">
-                            <FormControl>
-                              <Checkbox
-                                id="enable-notifications"
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <label
-                              htmlFor="enable-notifications"
-                              className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            >
-                              Enable email notifications
-                            </label>
-                          </div>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="enableAnalytics"
-                        render={({ field }) => (
-                          <div className="flex items-center w-full justify-start space-x-2">
-                            <FormControl>
-                              <Checkbox
-                                id="enable-analytics"
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <label
-                              htmlFor="enable-analytics"
-                              className="text-sm text-foreground-light leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            >
-                              Enable analytics tracking
-                            </label>
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </FormItemLayout>
-                </CardContent>
-
-                {/* Select */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="region"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Select (Dropdown)"
-                        description="Single selection from a list of options"
-                      >
-                        <FormControl>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="us-east-1">US East (N. Virginia)</SelectItem>
-                              <SelectItem value="us-west-2">US West (Oregon)</SelectItem>
-                              <SelectItem value="eu-west-1">EU West (Ireland)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Multi-Select */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="schemas"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Multi-Select"
-                        description="Multiple selection from a list"
-                      >
-                        <MultiSelector
-                          onValuesChange={field.onChange}
-                          values={field.value}
-                          size="small"
-                        >
-                          <MultiSelectorTrigger
-                            mode="inline-combobox"
-                            label="Select options..."
-                            badgeLimit="wrap"
-                            showIcon={false}
-                            deletableBadge
-                            className="w-full"
-                          />
-                          <MultiSelectorContent>
-                            <MultiSelectorList>
-                              <MultiSelectorItem value="public">public</MultiSelectorItem>
-                              <MultiSelectorItem value="auth">auth</MultiSelectorItem>
-                              <MultiSelectorItem value="storage">storage</MultiSelectorItem>
-                            </MultiSelectorList>
-                          </MultiSelectorContent>
-                        </MultiSelector>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Radio Group */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="queueType"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Radio Group"
-                        description="Single selection from multiple options"
-                      >
-                        <FormControl>
-                          <RadioGroupStacked value={field.value} onValueChange={field.onChange}>
-                            <RadioGroupStackedItem
-                              value="basic"
-                              label="Option 1"
-                              description="First option description"
-                            />
-                            <RadioGroupStackedItem
-                              value="partitioned"
-                              label="Option 2"
-                              description="Second option description"
-                            />
-                          </RadioGroupStacked>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Date Picker */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="expiryDate"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Date Picker"
-                        description="Date selection with calendar popover"
-                      >
-                        <FormControl>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                type="outline"
-                                className="bg-control w-full justify-start text-left font-normal px-3 py-4"
-                                icon={<CalendarIcon className="h-4 w-4" />}
-                              >
-                                {field.value ? format(field.value, 'PPP') : 'Pick a date'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Field Array */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="redirectUris"
-                    render={() => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Field Array"
-                        description="Dynamic list for adding/removing items"
-                      >
-                        <SingleValueFieldArray
-                          control={form.control}
-                          name="redirectUris"
-                          valueFieldName="value"
-                          createEmptyRow={() => ({ value: '' })}
-                          placeholder="https://example.com/callback"
-                          addLabel="Add redirect URI"
-                          removeLabel="Remove redirect URI"
-                        />
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Key/Value Field Array */}
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="httpHeaders"
-                    render={() => (
-                      <FormItemLayout
-                        layout="flex-row-reverse"
-                        label="Key/Value Field Array"
-                        description="Repeated text pairs for headers, parameters, and config entries"
-                      >
-                        <KeyValueFieldArray
-                          control={form.control}
-                          name="httpHeaders"
-                          keyFieldName="key"
-                          valueFieldName="value"
-                          createEmptyRow={() => ({ key: '', value: '' })}
-                          keyPlaceholder="Header name"
-                          valuePlaceholder="Header value"
-                          addLabel="Add header"
-                          removeLabel="Remove header"
-                        />
-                      </FormItemLayout>
-                    )}
-                  />
-                </CardContent>
-
-                {/* Action Field */}
-                <CardContent>
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label="Action Field"
-                    description="Button or link for navigation or performable actions"
-                  >
-                    <div className="flex gap-2 items-center justify-end">
-                      <Button
-                        type="default"
-                        icon={<ExternalLink size={14} />}
-                        onClick={() => console.log('Action performed')}
-                      >
-                        View documentation
-                      </Button>
-                      <Button type="default" onClick={() => console.log('Reset action')}>
-                        Reset API key
-                      </Button>
-                    </div>
-                  </FormItemLayout>
-                </CardContent>
-                <CardFooter className="justify-end space-x-2">
-                  {form.formState.isDirty && (
-                    <Button type="default" onClick={() => form.reset()}>
-                      Cancel
-                    </Button>
-                  )}
-                  <Button type="primary" htmlType="submit" disabled={!form.formState.isDirty}>
-                    Save changes
-                  </Button>
-                </CardFooter>
-              </Card>
-            </form>
-          </Form>
-        </PageSectionContent>
-      </PageSection>
-    </div>
-  )
+interface AgentConfig {
+  id: string
+  user_id: string
+  name: string
+  api_used: string
+  model_type: string
+  status: string
+  gemini_api_key: string | null
+  github_token: string | null
+  generation_frequency: string
+  created_at: string
+  updated_at: string
 }
 
-export default function SettingsPage() {
+interface AgentLog {
+  id: number
+  agent_id: string
+  message: string
+  level: string
+  created_at: string
+}
+
+type GenericAuthSession = {
+  user: { id: string; email?: string; created_at?: string; user_metadata?: Record<string, unknown> } | null
+  access_token?: string
+  refresh_token?: string
+  expires_in?: number
+  expires_at?: number
+  token_type?: string
+}
+
+const FREQUENCIES = [
+  { value: 'manual', label: 'Manual' },
+  { value: '1h', label: 'Every 1 hour' },
+  { value: '3h', label: 'Every 3 hours' },
+  { value: '6h', label: 'Every 6 hours' },
+  { value: '12h', label: 'Every 12 hours' },
+  { value: '24h', label: 'Every 24 hours' },
+] as const
+
+function SettingsContent() {
+  const supabase: any = createClient()
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  // Auth form
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [authLoading, setAuthLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  // Agent form
+  const [agentName, setAgentName] = useState('')
+  const [geminiKey, setGeminiKey] = useState('')
+  const [githubToken, setGithubToken] = useState('')
+  const [frequency, setFrequency] = useState<string>('manual')
+  const [showGeminiKey, setShowGeminiKey] = useState(false)
+  const [showGithubToken, setShowGithubToken] = useState(false)
+  const [agentSaving, setAgentSaving] = useState(false)
+
+  // Agent list
+  const [agents, setAgents] = useState<AgentConfig[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(true)
+
+  // Logs
+  const [logs, setLogs] = useState<AgentLog[]>([])
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [logsLoading, setLogsLoading] = useState(false)
+
+  // Profile
+  const [profileEmail, setProfileEmail] = useState('')
+  const [profileName, setProfileName] = useState('')
+
+  const fetchAgents = useCallback(async () => {
+    if (!session?.user?.id) return
+    setAgentsLoading(true)
+    const { data } = await supabase
+      .from('agent_configs')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (data) setAgents(data)
+    setAgentsLoading(false)
+  }, [session, supabase])
+
+  const fetchLogs = useCallback(async (agentId: string) => {
+    setLogsLoading(true)
+    const { data } = await supabase
+      .from('agent_logs')
+      .select('*')
+      .eq('agent_id', agentId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (data) setLogs(data)
+    setLogsLoading(false)
+  }, [supabase])
+
+  useEffect(() => {
+    supabase.auth.getSession().then((res: any) => {
+      const s: GenericAuthSession | null = res.data?.session ?? null
+      setSession(s)
+      setProfileEmail(s?.user?.email ?? '')
+      setProfileName((s?.user?.user_metadata as Record<string, unknown>)?.full_name as string ?? '')
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setSession(session as GenericAuthSession | null)
+      setProfileEmail(session?.user?.email ?? '')
+      setProfileName((session?.user?.user_metadata as Record<string, unknown>)?.full_name as string ?? '')
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  useEffect(() => {
+    if (session?.user?.id) fetchAgents()
+  }, [session, fetchAgents])
+
+  // Real-time logs subscription
+  useEffect(() => {
+    if (!selectedAgentId) return
+
+    const channel = supabase
+      .channel('agent-logs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'agent_logs',
+          filter: `agent_id=eq.${selectedAgentId}`,
+        },
+        (payload: any) => {
+          setLogs((prev: AgentLog[]) => [payload.new as AgentLog, ...prev].slice(0, 50))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedAgentId, supabase])
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthError(null)
+    setAuthLoading(true)
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+        })
+        if (error) throw error
+        setIsSignUp(false)
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        })
+        if (error) throw error
+      }
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Authentication failed')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setSession(null)
+    setAgents([])
+    setLogs([])
+  }
+
+  const handleSaveAgent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!agentName.trim()) return
+    setAgentSaving(true)
+
+    try {
+      const { data: existing } = await supabase
+        .from('agent_configs')
+        .select('id')
+        .eq('user_id', session!.user.id)
+
+      if (existing && existing.length >= 5) {
+        setAuthError('Maximum of 5 agents allowed')
+        setAgentSaving(false)
+        return
+      }
+
+      const { error } = await supabase.from('agent_configs').insert({
+        user_id: session!.user.id,
+        name: agentName.trim(),
+        api_used: 'Gemini + GitHub',
+        model_type: 'gemini-2.5-flash',
+        status: 'stopped',
+        gemini_api_key: geminiKey || null,
+        github_token: githubToken || null,
+        generation_frequency: frequency as AgentConfig['generation_frequency'],
+      })
+
+      if (error) throw error
+
+      setAgentName('')
+      setGeminiKey('')
+      setGithubToken('')
+      setFrequency('manual')
+      fetchAgents()
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Failed to create agent')
+    } finally {
+      setAgentSaving(false)
+    }
+  }
+
+  const handleToggleAgent = async (agent: AgentConfig) => {
+    const newStatus = agent.status === 'running' ? 'stopped' : 'running'
+    await supabase
+      .from('agent_configs')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', agent.id)
+
+    await supabase.from('agent_logs').insert({
+      agent_id: agent.id,
+      message: `Agent ${newStatus === 'running' ? 'started' : 'stopped'} manually`,
+      level: 'info',
+    })
+
+    fetchAgents()
+    if (selectedAgentId === agent.id) fetchLogs(agent.id)
+  }
+
+  const handleDeleteAgent = async (agent: AgentConfig) => {
+    await supabase.from('agent_configs').delete().eq('id', agent.id)
+    if (selectedAgentId === agent.id) {
+      setSelectedAgentId(null)
+      setLogs([])
+    }
+    fetchAgents()
+  }
+
+  const handleViewLogs = (agentId: string) => {
+    setSelectedAgentId(agentId)
+    fetchLogs(agentId)
+  }
+
+  const handleUpdateProfile = async () => {
+    setSaving(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: profileName },
+      })
+      if (error) throw error
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-background">
+        <Loader2 className="size-6 animate-spin text-foreground-muted" />
+      </div>
+    )
+  }
+
+  // Auth screen
+  if (!session) {
+    return (
+      <div className="min-h-dvh bg-background">
+        <header style={{ borderBottom: '1px solid var(--border-default)' }}>
+          <div className="mx-auto flex items-center gap-4 px-6 py-4" style={{ maxWidth: 480 }}>
+            <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0" style={{ color: 'var(--foreground-light)' }}>
+              <ArrowLeft className="size-4" />
+              Home
+            </Link>
+            <span className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
+              Settings
+            </span>
+          </div>
+        </header>
+        <main className="mx-auto px-6 py-12" style={{ maxWidth: 480 }}>
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
+              {isSignUp ? 'Create Account' : 'Sign In'}
+            </h2>
+            <p className="text-sm mb-6" style={{ color: 'var(--foreground-muted)' }}>
+              {isSignUp
+                ? 'Create an account to manage AI agents'
+                : 'Sign in to manage your AI agents and settings'}
+            </p>
+
+            {authError && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+                <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-600 dark:text-red-400">{authError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--foreground-light)' }}>
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--foreground-light)' }}>
+                  Password
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="At least 6 characters"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="w-full"
+                loading={authLoading}
+                disabled={authLoading}
+              >
+                {authLoading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+              </Button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => { setIsSignUp(!isSignUp); setAuthError(null) }}
+                className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
+              >
+                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
+              </button>
+            </div>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
+  // Main settings
   return (
     <div className="min-h-dvh bg-background">
       <header style={{ borderBottom: '1px solid var(--border-default)' }}>
@@ -801,17 +416,365 @@ export default function SettingsPage() {
             <ArrowLeft className="size-4" />
             Home
           </Link>
-          <div className="flex-1">
+          <div className="flex-1 flex items-center justify-between">
             <span className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
               Settings
             </span>
+            <Button size="tiny" type="default" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
+              Sign Out
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto px-6 py-8" style={{ maxWidth: 780 }}>
-        <SettingsForm />
+      <main className="mx-auto px-6 py-8 space-y-8" style={{ maxWidth: 780 }}>
+        {authError && (
+          <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+            <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-red-600 dark:text-red-400">{authError}</p>
+          </div>
+        )}
+
+        {/* Account Management */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <User className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Account</h2>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Mail className="size-3 inline mr-1" />
+                Email
+              </label>
+              <Input value={profileEmail} disabled className="opacity-60" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <User className="size-3 inline mr-1" />
+                Display Name
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  placeholder="Your display name"
+                  className="flex-1"
+                />
+                <Button
+                  type="primary"
+                  size="tiny"
+                  icon={<Save className="size-3" />}
+                  loading={saving}
+                  onClick={handleUpdateProfile}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Calendar className="size-3 inline mr-1" />
+                Member since
+              </label>
+              <p className="text-sm text-foreground-muted">
+                {session.user.created_at
+                  ? format(new Date(session.user.created_at), 'MMM d, yyyy')
+                  : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* AI Agent Configuration */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Zap className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">AI Agent Configuration</h2>
+            <Badge color="amber">gemini-2.5-flash</Badge>
+          </div>
+
+          {agents.length >= 5 && (
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
+              <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                Maximum of 5 agents reached. Delete an existing agent to add a new one.
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveAgent} className="space-y-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                Agent Name
+              </label>
+              <Input
+                placeholder="My Documentation Agent"
+                value={agentName}
+                onChange={(e) => setAgentName(e.target.value)}
+                required
+                disabled={agents.length >= 5}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Key className="size-3 inline mr-1" />
+                Gemini API Key
+              </label>
+              <p className="text-xs text-foreground-muted mb-2">
+                Get your key from{' '}
+                <a
+                  href="https://aistudio.google.com/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  aistudio.google.com
+                </a>
+              </p>
+              <div className="relative">
+                <Input
+                  type={showGeminiKey ? 'text' : 'password'}
+                  placeholder="AIzaSy..."
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  disabled={agents.length >= 5}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGeminiKey(!showGeminiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                >
+                  {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Github className="size-3 inline mr-1" />
+                GitHub Token
+              </label>
+              <p className="text-xs text-foreground-muted mb-2">
+                Create a token at{' '}
+                <a
+                  href="https://github.com/settings/tokens"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  github.com/settings/tokens
+                </a>
+                {' '}(repo scope recommended)
+              </p>
+              <div className="relative">
+                <Input
+                  type={showGithubToken ? 'text' : 'password'}
+                  placeholder="ghp_..."
+                  value={githubToken}
+                  onChange={(e) => setGithubToken(e.target.value)}
+                  disabled={agents.length >= 5}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGithubToken(!showGithubToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                >
+                  {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Clock className="size-3 inline mr-1" />
+                Generation Frequency
+              </label>
+              <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FREQUENCIES.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      {f.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<Plus className="size-4" />}
+              loading={agentSaving}
+              disabled={!agentName.trim() || agents.length >= 5}
+            >
+              Create Agent
+            </Button>
+          </form>
+        </Card>
+
+        {/* Agent List */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <List className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Agents</h2>
+            <Badge color="scale">
+              {agents.length}/5
+            </Badge>
+          </div>
+
+          {agentsLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="size-5 animate-spin text-foreground-muted" />
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-foreground-muted">No agents configured yet</p>
+              <p className="text-xs text-foreground-lighter mt-1">
+                Create an agent above to get started
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {agents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="border rounded-lg p-4 bg-surface-100"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
+                      <p className="text-xs text-foreground-muted mt-0.5">
+                        Created {format(new Date(agent.created_at), 'MMM d, yyyy HH:mm')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        color={
+                          agent.status === 'running'
+                            ? 'green'
+                            : agent.status === 'error'
+                              ? 'red'
+                              : 'scale'
+                        }
+                      >
+                        {agent.status === 'running' ? (
+                          <span className="flex items-center gap-1">
+                            <span className="size-1.5 bg-green-500 rounded-full animate-pulse" />
+                            Running
+                          </span>
+                        ) : agent.status === 'error' ? (
+                          'Error'
+                        ) : (
+                          'Stopped'
+                        )}
+                      </Badge>
+                      <Button
+                        size="tiny"
+                        type={agent.status === 'running' ? 'danger' : 'default'}
+                        icon={
+                          agent.status === 'running' ? (
+                            <Square className="size-3" />
+                          ) : (
+                            <Play className="size-3" />
+                          )
+                        }
+                        onClick={() => handleToggleAgent(agent)}
+                      />
+                      <Button
+                        size="tiny"
+                        type="default"
+                        icon={<Trash2 className="size-3" />}
+                        onClick={() => handleDeleteAgent(agent)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 text-xs">
+                    <div>
+                      <span className="text-foreground-lighter">API</span>
+                      <p className="text-foreground-light mt-0.5">{agent.api_used}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-lighter">Model</span>
+                      <p className="text-foreground-light mt-0.5">{agent.model_type}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-lighter">Frequency</span>
+                      <p className="text-foreground-light mt-0.5 capitalize">
+                        {FREQUENCIES.find((f) => f.value === agent.generation_frequency)?.label ??
+                          agent.generation_frequency}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <Button
+                      size="tiny"
+                      type="default"
+                      icon={<RefreshCw className="size-3" />}
+                      onClick={() => handleViewLogs(agent.id)}
+                    >
+                      {selectedAgentId === agent.id ? 'Refresh Logs' : 'View Logs'}
+                    </Button>
+                  </div>
+
+                  {/* Real-time logs for selected agent */}
+                  {selectedAgentId === agent.id && (
+                    <div className="mt-4 border-t pt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
+                        <Badge color="scale" className="text-[10px]">
+                          <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
+                          Live
+                        </Badge>
+                      </div>
+                      {logsLoading ? (
+                        <div className="flex justify-center py-4">
+                          <Loader2 className="size-4 animate-spin text-foreground-muted" />
+                        </div>
+                      ) : logs.length === 0 ? (
+                        <p className="text-xs text-foreground-muted text-center py-4">No logs yet</p>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {logs.map((log) => (
+                            <div
+                              key={log.id}
+                              className="flex items-start gap-2 py-1.5 px-2 rounded bg-muted/50 text-xs font-mono"
+                            >
+                              <span className="text-foreground-lighter shrink-0">
+                                {format(new Date(log.created_at), 'HH:mm:ss')}
+                              </span>
+                              <span
+                                className={`shrink-0 font-medium ${
+                                  log.level === 'error'
+                                    ? 'text-red-500'
+                                    : log.level === 'warn'
+                                      ? 'text-amber-500'
+                                      : log.level === 'debug'
+                                        ? 'text-foreground-lighter'
+                                        : 'text-foreground-light'
+                                }`}
+                              >
+                                [{log.level.toUpperCase()}]
+                              </span>
+                              <span className="text-foreground-light break-all">{log.message}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       </main>
     </div>
   )
+}
+
+export default function SettingsPage() {
+  return <SettingsContent />
 }
