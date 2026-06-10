@@ -295,16 +295,38 @@ print('  OK')
 "
 
 echo "==> Fixing next.config.mjs for public repo..."
-python3 -c "
+# The remaining fixes (contentlayer, transpilePackages) are done earlier via sed.
+# This step removes the redirects block that breaks the public build.
+python3 << 'FIXNEXT'
 import re
+
 with open('apps/web/next.config.mjs') as f:
-    c = f.read()
-c = c.replace(\"'icons', \", '').replace(\"'shared-data', \", '')
-c = re.sub(r'async redirects\(\) \{[^}]*\},?\n?', '', c, flags=re.DOTALL)
+    lines = f.readlines()
+
+# Find redirects function and remove it (along with any trailing comma)
+in_redirects = False
+brace_depth = 0
+new_lines = []
+for i, line in enumerate(lines):
+    if 'async redirects' in line:
+        in_redirects = True
+        brace_depth = line.count('{') - line.count('}')
+        continue
+    if in_redirects:
+        brace_depth += line.count('{') - line.count('}')
+        if brace_depth <= 0:
+            in_redirects = False
+            # Also consume the leftover comma on the next non-empty line
+            continue
+        continue
+
+    new_lines.append(line)
+
 with open('apps/web/next.config.mjs', 'w') as f:
-    f.write(c)
+    f.writelines(new_lines)
+
 print('  OK')
-"
+FIXNEXT
 
 echo "==> Fixing vercel.json (remove rootDirectory, remove outputDirectory)..."
 python3 -c "
