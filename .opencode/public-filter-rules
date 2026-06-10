@@ -16,6 +16,7 @@
 + /apps/web/app/layout.tsx
 + /apps/web/app/page.tsx
 + /apps/web/app/search/**
++ /apps/web/app/settings/**
 + /apps/web/app/Providers.tsx
 + /apps/web/app/toaster.tsx
 + /apps/web/app/favicon.ico
@@ -43,6 +44,7 @@
 
 # ── Packages ──
 + /packages/ui/**
++ /packages/ui-patterns/**
 + /packages/common/**
 + /packages/config/**
 + /packages/tsconfig/**
