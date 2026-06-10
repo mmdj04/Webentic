@@ -240,7 +240,7 @@ function SettingsContent() {
         user_id: session!.user.id,
         name: agentName.trim(),
         api_used: 'Gemini + GitHub',
-        model_type: 'gemini-2.5-flash',
+        model_type: 'gemini-3.5-flash',
         status: 'stopped',
         gemini_api_key: geminiKey || null,
         github_token: githubToken || null,
@@ -463,7 +463,7 @@ function SettingsContent() {
           <div className="flex items-center gap-3 mb-6">
             <Zap className="size-5 text-foreground" />
             <h2 className="text-base font-semibold text-foreground">AI Agent Configuration</h2>
-            <Badge color="amber">gemini-2.5-flash</Badge>
+            <Badge color="amber">gemini-3.5-flash</Badge>
           </div>
 
           {!isLoggedIn ? (
