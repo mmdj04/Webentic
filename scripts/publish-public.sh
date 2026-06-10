@@ -221,19 +221,37 @@ echo "==> Cleaning turbo.json build deps (content:build & build:registry not in 
 sed -i '/"content:build",/d' turbo.json
 sed -i '/"build:registry",/d' turbo.json
 
-echo "==> Simplifying landing page nav for public repo..."
+echo "==> Simplifying landing page for public repo..."
 python3 -c "
 import re
 with open('apps/web/app/page.tsx') as f:
     content = f.read()
-# Remove ui-library, design-system, and about entries from MODES
-content = re.sub(r'  \{\n    id: .ui-library.,[\s\S]*?  \},?\n?', '', content)
-content = re.sub(r'  \{\n    id: .design-system.,[\s\S]*?  \},?\n?', '', content)
-content = re.sub(r'  \{\n    id: .about.,[\s\S]*?  \},?\n?', '', content)
+# Remove the Popover (mode selector) and unused imports from the landing page
+content = re.sub(r\"import \{ ArrowUpRight \} from 'lucide-react'\n\", '', content)
+content = re.sub(r\"  Popover,\n  PopoverContent,\n  PopoverTrigger,\n\", '', content)
+content = re.sub(r\"            <InputGroupAddon align=\"inline-start\">[\s\S]*?</InputGroupAddon>\n\", '', content)
+content = re.sub(r\"            <InputGroupAddon align=\"inline-end\">[\s\S]*?</InputGroupAddon>\n\", '', content)
+content = re.sub(r\"const MODES = \[[\s\S]*?\] as const\n\n\", '', content)
+# Remove activeMode state and activeHref since MODES is removed
+content = re.sub(r\"  const \[activeMode, setActiveMode\] = useState<string | null>\(null\)\n  \n  const activeHref = activeMode\s*\n    \? MODES.find\(\(m\) => m\.id === activeMode\)!\.href\n    : '#'\n\n\", '  ', content)
+content = re.sub(r\"  const handleSearch = \(e: React\.FormEvent\) => \{\n    e\.preventDefault\(\)\n    const q = query\.trim\(\)\n    if \(q\) router\.push\(\`/search\?q=\$\{encodeURIComponent\(q\)\}\`\)\n  \}\n\n\", '', content)
+# Simplify form to just an input with search-on-enter
+content = re.sub(r\"<form onSubmit=\{handleSearch\} className=\"w-full\">\n          <InputGroup className=\"w-full\">\n            <InputGroupAddon align=\"inline-start\">\n              <Popover>[\s\S]*?</Popover>\n            </InputGroupAddon>\n\n            <InputGroupInput\n              placeholder=\"Search\.\.\.\"\n              className=\"font-mono text-sm\"\n              value=\{query\}\n              onChange=\{\(e\) => setQuery\(e\.target\.value\)\}\n            />\n\n            <InputGroupAddon align=\"inline-end\">\n              <Link href=\{activeHref\}>[\s\S]*?</Link>\n            </InputGroupAddon>\n          </InputGroup>\n        </form>\", '''\
+        <form onSubmit={handleSearch} className=\"w-full\">
+          <InputGroup className=\"w-full\">
+            <InputGroupInput
+              placeholder=\"Search...\"
+              className=\"font-mono text-sm\"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </InputGroup>
+        </form>''')
 with open('apps/web/app/page.tsx', 'w') as f:
     f.write(content)
 print('  OK')
 "
+
 
 echo "==> Updating pnpm-workspace.yaml for public repo..."
 cat > pnpm-workspace.yaml << 'WORKSPACE_EOF'
@@ -418,10 +436,10 @@ rm -rf .git
 git init
 git checkout -b "$BRANCH"
 git add -A
-git commit -m "Initial public release: Landing + About pages
+git commit -m "Initial public release: Landing + Search pages
 
 Extracted from the private monorepo. Contains only the minimal
-files needed to render the landing page (/) and esm page (/esm)
+files needed to render the landing page (/) and search page (/search)
 at https://webentic-ui.vercel.app
 
 Includes:

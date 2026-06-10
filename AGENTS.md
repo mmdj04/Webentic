@@ -8,7 +8,7 @@
 | 🌍 Público | `mmdj04/Webentic` | https://github.com/mmdj04/Webentic |
 
 - **Privado**: Contém TUDO (código fonte completo, Design System, Docs, etc.)
-- **Público**: Apenas Landing (`/`) e ESM CDN (`/esm`)
+- **Público**: Landing (`/`) e Search (`/search`)
 
 ## Comandos Essenciais
 
@@ -33,13 +33,14 @@ git add -A && git commit -m "..." && git push origin main
 ### Landing Page (`apps/web/app/page.tsx`)
 - Título "WEBENTIC OPEN-SOURCE" em stack (duas linhas, uppercase)
 - InputGroup + Popover com hamburger para navegação
-- MODES array: `ui-library`, `design-system`, `esm` (about removido)
-- Publish script strips `ui-library`, `design-system`, `about` do MODES
+- MODES array: `ui-library`, `design-system` (esm removido)
+- Input faz submit para `/search?q=...`
+- Publish script simplifica landing (remove Popover, MODES, mantém só input de busca)
 
-### ESM Page (`apps/web/app/esm/page.tsx`)
-- Hero "Webentic Open-Source" (mesmo estilo do antigo About)
-- Theme toggle (Sun/Moon) no header substituindo Playground
-- CodeBlocks com syntax highlighting via `CodeBlock` do DS
+### Search Page (`apps/web/app/search/page.tsx`)
+- Página de busca com layout limpo (max-width 780px)
+- Lê query de `useSearchParams`, mostra input + resultados
+- Header com link "Home" e input de busca
 
 ### Providers (`apps/web/app/Providers.tsx`)
 - `AuthProvider` com `alwaysLoggedIn={true}` — remove dependência de Supabase em runtime
@@ -53,14 +54,14 @@ git add -A && git commit -m "..." && git push origin main
 - `apps/web/registry/default/examples/` (308 arquivos de exemplo)
 
 ### Script de Publish (`scripts/publish-public.sh`)
-- Extrai landing + esm para o repo público (`mmdj04/Webentic`)
+- Extrai landing + search para o repo público (`mmdj04/Webentic`)
 - Remove: DS pages, docs, API routes, registry examples, contentlayer, blocks, icons, ui-patterns
-- Modifica: `next.config.mjs` (remove withContentlayer), `turbo.json` (remove content:build), `page.tsx` (strips ui-library, design-system, about do MODES), `pnpm-workspace.yaml` (só packages existentes)
+- Modifica: `next.config.mjs` (remove withContentlayer), `turbo.json` (remove content:build), `page.tsx` (simplifica: remove Popover, MODES, mantém só input de busca), `pnpm-workspace.yaml` (só packages existentes)
 
 ## Arquivos Relevantes
 
 - `apps/web/app/page.tsx` — Landing page
-- `apps/web/app/esm/page.tsx` — ESM CDN page
+- `apps/web/app/search/page.tsx` — Search page
 - `apps/web/app/layout.tsx` — Root layout
 - `apps/web/app/Providers.tsx` — Provider tree
 - `apps/web/vercel.json` — Vercel config (na raiz do projeto)
