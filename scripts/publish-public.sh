@@ -297,11 +297,12 @@ with open('apps/web/next.config.mjs', 'w') as f:
 print('  OK')
 "
 
-echo "==> Fixing vercel.json (remove rootDirectory)..."
+echo "==> Fixing vercel.json (remove rootDirectory, remove outputDirectory)..."
 python3 -c "
 import json
 cfg = json.load(open('vercel.json'))
 cfg.pop('rootDirectory', None)
+cfg.pop('outputDirectory', None)
 json.dump(cfg, open('vercel.json', 'w'), indent=2)
 print('  OK')
 "
