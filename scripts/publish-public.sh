@@ -242,7 +242,6 @@ packages:
   - packages/config
   - packages/tsconfig
   - packages/ui
-  - packages/ui-patterns
 
 catalog:
   '@supabase/auth-js': ^2.107.0
@@ -287,7 +286,7 @@ echo "==> Fixing apps/web/package.json for public repo..."
 python3 -c "
 import json
 pkg = json.load(open('apps/web/package.json'))
-for dep in ['@webentic/vue-blocks', 'eslint-config-webentic', 'icons']:
+for dep in ['@webentic/vue-blocks', 'eslint-config-webentic', 'icons', 'ui-patterns']:
     pkg['dependencies'].pop(dep, None)
 pkg['scripts']['build'] = 'next build --turbopack'
 for s in ['build:registry', 'build:llms', 'content:dev', 'content:build', 'lint:mdx', 'dev:full', 'preinstall', 'typecheck']:
