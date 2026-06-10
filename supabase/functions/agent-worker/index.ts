@@ -3,22 +3,82 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 const MAX_FILE_SIZE = 100_000
-const MAX_PAGES = 10
 const PER_PAGE = 100
 
 const SOURCE_FILE_EXTENSIONS = new Set([
-  'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts',
-  'py', 'rb', 'go', 'rs', 'java', 'kt', 'scala',
-  'c', 'cpp', 'h', 'hpp', 'cs', 'swift',
-  'php', 'pl', 'pm', 'r', 'm',
-  'css', 'scss', 'sass', 'less', 'styl',
-  'html', 'htm', 'xml', 'svg', 'vue', 'svelte', 'astro',
-  'json', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf',
-  'md', 'mdx', 'txt', 'rst', 'adoc',
-  'sh', 'bash', 'zsh', 'fish', 'bat', 'ps1',
-  'dockerfile', 'makefile', 'cmake',
-  'sql', 'graphql', 'proto',
-  'prisma', 'gradle', 'properties',
+  // JavaScript ecosystem
+  'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts', 'd.ts',
+  'vue', 'svelte', 'astro', 'qwik', 'njk', 'hbs', 'ejs', 'pug', 'jade',
+  // Python
+  'py', 'pyx', 'pxd', 'pyi', 'ipynb', 'pyw', 'rpy',
+  // Ruby
+  'rb', 'erb', 'rbs', 'rake', 'gemfile', 'gemspec',
+  // Go
+  'go', 'mod', 'sum',
+  // Rust
+  'rs', 'rlib', 'rson',
+  // Java & JVM
+  'java', 'kt', 'kts', 'scala', 'sc', 'groovy', 'gvy', 'gy', 'gsh',
+  'clj', 'cljs', 'cljc', 'edn',
+  // C family
+  'c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'hh', 'hxx', 'cuh', 'cu',
+  'cs', 'fs', 'fsx', 'vb',
+  // Swift/ObjC
+  'swift', 'm', 'mm',
+  // PHP
+  'php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'phpt',
+  // Web
+  'html', 'htm', 'xhtml', 'xml', 'xsl', 'xslt', 'svg', 'webmanifest',
+  'css', 'scss', 'sass', 'less', 'styl', 'stylus', 'postcss',
+  // Config / data
+  'json', 'jsonc', 'json5', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf',
+  'env', 'editorconfig', 'gitattributes', 'gitmodules',
+  // Markup / docs
+  'md', 'mdx', 'txt', 'rst', 'adoc', 'asciidoc', 'tex', 'bib',
+  // Shell / scripts
+  'sh', 'bash', 'zsh', 'fish', 'ksh', 'csh', 'bat', 'cmd', 'ps1', 'psm1',
+  'awk', 'sed', 'exp',
+  // Build / CI
+  'dockerfile', 'makefile', 'cmake', 'mk', 'gnumakefile',
+  'gradle', 'maven', 'ant', 'bazel', 'bzl', 'buck',
+  'github', 'gitlab-ci', 'circleci', 'travis',
+  // Database
+  'sql', 'psql', 'mysql', 'pgsql', 'sqlite', 'graphql', 'gql', 'prisma',
+  'dbt', 'migration',
+  // Protocol / API
+  'proto', 'protobuf', 'grpc', 'thrift', 'avsc', 'avdl',
+  // Android
+  'xml', 'gradle', 'kt', 'kts', 'dart',
+  // Dart/Flutter
+  'dart',
+  // Lua
+  'lua', 'wlua',
+  // Elixir/Erlang
+  'ex', 'exs', 'erl', 'hrl',
+  // Haskell
+  'hs', 'lhs', 'cabal',
+  // Julia
+  'jl',
+  // R
+  'r', 'rdata', 'rds',
+  // Zig
+  'zig', 'zon',
+  // Nim
+  'nim', 'nims',
+  // Crystal
+  'cr',
+  // OCaml
+  'ml', 'mli',
+  // Assembly
+  'asm', 's', 'nasm',
+  // Properties / env
+  'properties', 'props', 'env', 'dotenv',
+  // Nix
+  'nix',
+  // Terraform / IaC
+  'tf', 'tfvars', 'hcl',
+  // Miscellaneous
+  'lock', 'seed', 'snapshot', 'patch', 'diff',
 ])
 
 const EXCLUDED_DIRS = new Set([
@@ -67,7 +127,9 @@ async function findUndocumentedRepo(
   supabase: ReturnType<typeof createClient>,
   token?: string
 ): Promise<GitHubRepo | null> {
-  for (let page = 1; page <= MAX_PAGES; page++) {
+  let page = 1
+
+  while (true) {
     const { items: repos } = await searchReposPage(page, token)
 
     if (repos.length === 0) return null
@@ -86,9 +148,9 @@ async function findUndocumentedRepo(
         return repo
       }
     }
-  }
 
-  return null
+    page++
+  }
 }
 
 async function getSourceFiles(
