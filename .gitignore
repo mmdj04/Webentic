@@ -27,6 +27,9 @@ apps/web/components/source-panel.tsx
 apps/web/components/pager.tsx
 apps/web/contentlayer.config.js
 
+# Registry and example pages (not adapted to project env vars)
+apps/web/app/example
+
 # Root-level scratch files
 *.snap
 /*.png
