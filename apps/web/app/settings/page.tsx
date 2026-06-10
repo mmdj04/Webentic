@@ -29,6 +29,7 @@ import {
   Input,
   Badge,
   Card,
+  Separator,
   Select,
   SelectContent,
   SelectItem,
@@ -420,6 +421,7 @@ function SettingsContent() {
               </label>
               <Input value={profileEmail} disabled className="opacity-60" />
             </div>
+            <Separator className="w-full" />
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
                 <User className="size-3 mr-1" />
@@ -443,6 +445,7 @@ function SettingsContent() {
                 </Button>
               </div>
             </div>
+            <Separator className="w-full" />
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
                 <Calendar className="size-3 mr-1" />
@@ -494,6 +497,7 @@ function SettingsContent() {
                 disabled={agents.length >= 5}
               />
             </div>
+            <Separator className="w-full" />
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
                 <Key className="size-3 mr-1" />
@@ -527,6 +531,7 @@ function SettingsContent() {
                 </button>
               </div>
             </div>
+            <Separator className="w-full" />
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
                 <Github className="size-3 mr-1" />
@@ -561,6 +566,7 @@ function SettingsContent() {
                 </button>
               </div>
             </div>
+            <Separator className="w-full" />
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
                 <Clock className="size-3 mr-1" />
@@ -579,6 +585,7 @@ function SettingsContent() {
                 </SelectContent>
               </Select>
             </div>
+            <Separator className="w-full" />
             <Button
               type="primary"
               htmlType="submit"
