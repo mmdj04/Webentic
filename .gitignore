@@ -6,3 +6,7 @@ dist
 *.tsbuildinfo
 .contentlayer
 .vercel
+.playwright-mcp
+esm-sh-fullpage.png
+esm-sh-snapshot.md
+esm-sh-visual.md
