@@ -15,24 +15,24 @@ const inter = Inter({ subsets: ['latin'] })
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export const metadata: Metadata = {
-  applicationName: 'Supabase UI Library',
-  title: 'Supabase UI Library',
-  description: 'Provides a library of components for your project',
-  metadataBase: new URL('https://supabase.com'),
+  applicationName: 'Webentic Open-Source',
+  title: 'Webentic Open-Source',
+  description: 'Webentic Open-Source — UI library, Design System and ESM CDN',
+  metadataBase: new URL('https://webentic-ui.vercel.app'),
   icons: genFaviconData(BASE_PATH),
   openGraph: {
     type: 'article',
-    authors: 'Supabase',
+    authors: 'Webentic',
     url: `${BASE_PATH}`,
-    images: `${BASE_PATH}/img/supabase-og-image.png`,
+    images: `${BASE_PATH}/img/webentic-og-image.png`,
     publishedTime: new Date().toISOString(),
     modifiedTime: new Date().toISOString(),
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@supabase',
-    creator: '@supabase',
-    images: `${BASE_PATH}/img/supabase-og-image.png`,
+    site: '@webentic',
+    creator: '@webentic',
+    images: `${BASE_PATH}/img/webentic-og-image.png`,
   },
 }
 
