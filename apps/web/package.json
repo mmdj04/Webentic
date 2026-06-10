@@ -77,10 +77,10 @@
     "y-monaco": "^0.1.6",
     "y-protocols": "^1.0.7",
     "yjs": "^13.6.29",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@google/genai": "^2.0.0"
   },
   "devDependencies": {
-    "@babel/core": "*",
     "@react-router/dev": "^7.9.0",
     "@shikijs/compat": "^1.1.7",
     "@supabase/ssr": "catalog:",

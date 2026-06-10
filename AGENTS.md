@@ -10,70 +10,123 @@
 - **Privado**: Contém TUDO (código fonte completo, Design System, Docs, etc.)
 - **Público**: Landing (`/`), Search (`/search`) e Settings (`/settings`)
 
-## Comandos Essenciais
+## Publicação (fora deste repositório)
 
-```bash
-# Publicar alterações no site público (rodar do diretório raiz)
-# SEMPRE use HTTPS com token no Cloud Shell (SSH não funciona — sem keys)
-./scripts/publish-public.sh https://mmdj04:TOKEN@github.com/mmdj04/Webentic.git
+O repositório público é mantido manualmente. O processo é:
 
-# Commit e push no privado
-git add -A && git commit -m "..." && git push origin main
+1. Clonar o privado
+2. Copiar tudo para um diretório limpo
+3. Criar `.gitignore` no diretório limpo com os padrões de exclusão (ver abaixo)
+4. Remover dependências/deploys que não existem no público
+5. `git init && git add -A && git commit && git push`
+
+### Padrões do `.gitignore` do repo público
+
+```gitignore
+# ── Standard ignores ──
+node_modules/
+.pnpm-store/
+.next/
+.turbo/
+dist/
+.env
+.env*.local
+*.tsbuildinfo
+.contentlayer
+.vercel
+*.log
+.DS_Store
+.github/
+
+# ── Páginas exclusivas do privado ──
+apps/web/app/(app)/
+apps/web/app/api/
+apps/web/app/design-system/
+apps/web/app/example/
+
+# ── Componentes/Config do DS ──
+apps/web/components/design-system-side-navigation.tsx
+apps/web/components/mdx-components.tsx
+apps/web/components/mobile-sidebar-sheet.tsx
+apps/web/config/design-system-docs.ts
+
+# ── Conteúdo MDX / registry / scripts ──
+apps/web/content/
+apps/web/contentlayer.config.js
+apps/web/__registry__/
+apps/web/scripts/
+apps/web/public/r/
+apps/web/registry/default/examples/
+apps/web/registry/examples.ts
+
+# ── Assets exclusivos do DS ──
+apps/web/public/img/design-system-marks/
+apps/web/public/img/themes/
+apps/web/public/img/profile-images/
+
+# ── Estilos MDX ──
+apps/web/styles/mdx.css
+apps/web/styles/code-block-variables.css
+
+# ── Dev / lint ──
+apps/web/supabase/
+apps/web/eslint.config.cjs
+
+# ── Packages não usados no público ──
+blocks/
+packages/eslint-config-webentic/
+packages/common/assets/images/archive/
 ```
+
+### Pós-processamento manual após copiar
+
+Antes do `git commit`, editar:
+
+- `apps/web/package.json`: remover deps `@webentic/vue-blocks`, `eslint-config-webentic`, `contentlayer2`, `next-contentlayer2`; simplificar scripts (`"build": "next build --turbopack"`)
+- `apps/web/next.config.mjs`: remover import `withContentlayer`, trocar `export default withContentlayer(nextConfig)` → `export default nextConfig`, remover `transpilePackages: ['icons']`, remover bloco `redirects`
+- `turbo.json`: remover tasks `content:build`, `build:registry`
+- `apps/web/app/page.tsx`: remover Popover, MODES, activeMode — deixar só input de busca
+- `pnpm-workspace.yaml`: ajustar `packages` e `catalog` (copiar do template no diretório limpo)
+- `vercel.json`: remover `rootDirectory` e `outputDirectory`
 
 ## Vercel
 
-- **Projeto**: `webentic-ui` (https://webentic-ui.vercel.app)
+- **Projeto único**: `webentic-ui` (https://webentic-ui.vercel.app)
 - **Deploy**: automático via GitHub — push em `mmdj04/Webentic` (público) dispara build
 - **Config**: `vercel.json` na raiz com `framework: nextjs`
 - **Env vars**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_API_URL`, etc. configuradas no projeto
+- **Node**: 24.x
+- **Instalar**: `npx --yes pnpm@10.24.0 install`
+- **Build**: `npx --yes pnpm@10.24.0 run build`
+- **Root directory**: `apps/web`
 
-## Modificações Importantes Feitas
+## Páginas no Repositório Público
 
-### Landing Page (`apps/web/app/page.tsx`)
-- Título "WEBENTIC OPEN-SOURCE" em stack (duas linhas, uppercase)
-- InputGroup + Popover com hamburger para navegação
-- MODES array: `ui-library`, `design-system` (esm removido)
-- Input faz submit para `/search?q=...`
-- Publish script simplifica landing (remove Popover, MODES, mantém só input de busca)
+- `/` — Landing page (InputGroup de busca, título "WEBENTIC OPEN-SOURCE")
+- `/search?q=...` — Resultados de busca
+- `/settings` — Formulário de configurações (usa `packages/ui` + `packages/ui-patterns`)
 
-### Search Page (`apps/web/app/search/page.tsx`)
-- Página de busca com layout limpo (max-width 780px)
-- Lê query de `useSearchParams`, mostra input + resultados
-- Header com link "Home" e input de busca
+## Packages no Repositório Público
 
-### Providers (`apps/web/app/Providers.tsx`)
-- `AuthProvider` com `alwaysLoggedIn={true}` — remove dependência de Supabase em runtime
+| Package | Presente? |
+|---------|-----------|
+| `packages/ui` (shadcn) | ✅ |
+| `packages/ui-patterns` | ✅ |
+| `packages/icons` | ✅ |
+| `packages/common` | ✅ |
+| `packages/api-types` | ✅ |
+| `packages/config` | ✅ |
+| `packages/tsconfig` | ✅ |
+| `packages/eslint-config-webentic` | ❌ |
+| `blocks/` | ❌ |
 
-### Design System (mesclado para o privado)
-- `apps/web/app/design-system/` — páginas DS
-- `apps/web/config/design-system-docs.ts` — navegação DS
-- `apps/web/components/design-system-side-navigation.tsx` — sidebar DS
-- `apps/web/components/mdx-components.tsx` — componentes MDX
-- Registry examples em `apps/web/registry/examples.ts` (295 entries DS + 10 UI Lib)
-- `apps/web/registry/default/examples/` (308 arquivos de exemplo)
+## Providers
 
-### Script de Publish (`scripts/publish-public.sh`) + Blacklist (`.opencode/public-filter-rules`)
-- Usa **blacklist** via `rsync --exclude-from`: tudo vai pro público por padrão
-- Só o que está em `.opencode/public-filter-rules` é **excluído** do publish
-- **Novas páginas/arquivos são automaticamente incluídos** — sem precisar mexer em nada
-- Pós-processamento: simplifica landing (remove Popover, MODES), limpa `next.config.mjs`/`turbo.json`/`package.json`, troca `pnpm-workspace.yaml`
-
-## Arquivos Relevantes
-
-- `apps/web/app/page.tsx` — Landing page
-- `apps/web/app/search/page.tsx` — Search page
-- `apps/web/app/layout.tsx` — Root layout
-- `apps/web/app/Providers.tsx` — Provider tree
-- `apps/web/vercel.json` — Vercel config (na raiz do projeto)
-- `scripts/publish-public.sh` — Script de publish
-- `.opencode/public-filter-rules` — Blacklist: tudo que NÃO deve ir pro público
-- `packages/ui/src/components/CodeBlock/` — CodeBlock copiado do ui-patterns para o público
+- `AuthProvider` com `alwaysLoggedIn={true}` — não depende de Supabase em runtime
 
 ## Observações
 
 - Cloud Shell Google tem <5 GB — não rodar `pnpm install` ou `pnpm dev`
-- O `.gitignore` padrão já exclui `node_modules/`, `.next/`, `.turbo/`, `.vercel/`
 - O repo público `mmdj04/Webentic` é open-source e deploya em https://webentic-ui.vercel.app
 
 ## Learnings (Evitar Erros Recorrentes)
