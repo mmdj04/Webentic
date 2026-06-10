@@ -271,6 +271,41 @@ onlyBuiltDependencies:
   - '@next/swc-darwin-arm64'
 WORKSPACE_EOF
 
+echo "==> Fixing apps/web/package.json for public repo..."
+python3 -c "
+import json
+pkg = json.load(open('apps/web/package.json'))
+for dep in ['@webentic/vue-blocks', 'eslint-config-webentic', 'icons', 'ui-patterns']:
+    pkg['dependencies'].pop(dep, None)
+pkg['scripts']['build'] = 'next build --turbopack'
+for s in ['build:registry', 'build:llms', 'content:dev', 'content:build', 'lint:mdx', 'dev:full', 'preinstall', 'typecheck']:
+    pkg['scripts'].pop(s, None)
+pkg['scripts']['dev'] = 'next dev --turbopack --port 3004'
+json.dump(pkg, open('apps/web/package.json', 'w'), indent=2)
+print('  OK')
+"
+
+echo "==> Fixing next.config.mjs for public repo..."
+python3 -c "
+import re
+with open('apps/web/next.config.mjs') as f:
+    c = f.read()
+c = c.replace(\"'icons', \", '').replace(\"'shared-data', \", '')
+c = re.sub(r'async redirects\(\) \{[^}]*\},?', '', c)
+with open('apps/web/next.config.mjs', 'w') as f:
+    f.write(c)
+print('  OK')
+"
+
+echo "==> Fixing vercel.json (remove rootDirectory)..."
+python3 -c "
+import json
+cfg = json.load(open('vercel.json'))
+cfg.pop('rootDirectory', None)
+json.dump(cfg, open('vercel.json', 'w'), indent=2)
+print('  OK')
+"
+
 echo "==> Creating public .gitignore..."
 cat > .gitignore << 'GITIGNORE_EOF'
 # dependencies
