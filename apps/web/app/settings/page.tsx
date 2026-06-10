@@ -293,7 +293,9 @@ function SettingsContent() {
     const token = session?.access_token
     if (!token) return
 
-    fetch('/api/agent/run', {
+    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-worker`
+
+    fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
