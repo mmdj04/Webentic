@@ -222,35 +222,64 @@ sed -i '/"content:build",/d' turbo.json
 sed -i '/"build:registry",/d' turbo.json
 
 echo "==> Simplifying landing page for public repo..."
-python3 -c "
+python3 << 'PYEOF'
 import re
 with open('apps/web/app/page.tsx') as f:
     content = f.read()
-# Remove the Popover (mode selector) and unused imports from the landing page
-content = re.sub(r\"import \{ ArrowUpRight \} from 'lucide-react'\n\", '', content)
-content = re.sub(r\"  Popover,\n  PopoverContent,\n  PopoverTrigger,\n\", '', content)
-content = re.sub(r\"            <InputGroupAddon align=\"inline-start\">[\s\S]*?</InputGroupAddon>\n\", '', content)
-content = re.sub(r\"            <InputGroupAddon align=\"inline-end\">[\s\S]*?</InputGroupAddon>\n\", '', content)
-content = re.sub(r\"const MODES = \[[\s\S]*?\] as const\n\n\", '', content)
-# Remove activeMode state and activeHref since MODES is removed
-content = re.sub(r\"  const \[activeMode, setActiveMode\] = useState<string | null>\(null\)\n  \n  const activeHref = activeMode\s*\n    \? MODES.find\(\(m\) => m\.id === activeMode\)!\.href\n    : '#'\n\n\", '  ', content)
-content = re.sub(r\"  const handleSearch = \(e: React\.FormEvent\) => \{\n    e\.preventDefault\(\)\n    const q = query\.trim\(\)\n    if \(q\) router\.push\(\`/search\?q=\$\{encodeURIComponent\(q\)\}\`\)\n  \}\n\n\", '', content)
-# Simplify form to just an input with search-on-enter
-content = re.sub(r\"<form onSubmit=\{handleSearch\} className=\"w-full\">\n          <InputGroup className=\"w-full\">\n            <InputGroupAddon align=\"inline-start\">\n              <Popover>[\s\S]*?</Popover>\n            </InputGroupAddon>\n\n            <InputGroupInput\n              placeholder=\"Search\.\.\.\"\n              className=\"font-mono text-sm\"\n              value=\{query\}\n              onChange=\{\(e\) => setQuery\(e\.target\.value\)\}\n            />\n\n            <InputGroupAddon align=\"inline-end\">\n              <Link href=\{activeHref\}>[\s\S]*?</Link>\n            </InputGroupAddon>\n          </InputGroup>\n        </form>\", '''\
-        <form onSubmit={handleSearch} className=\"w-full\">
-          <InputGroup className=\"w-full\">
+# Remove unused imports
+content = re.sub(r"import \{ ArrowUpRight \} from 'lucide-react'\n", '', content)
+content = re.sub(r"  Popover,\n  PopoverContent,\n  PopoverTrigger,\n", '', content)
+# Remove the Popover (mode selector) and replace form with simple search input
+content = re.sub(
+    r'const MODES = \[[\s\S]*?\] as const\n\n',
+    '',
+    content
+)
+content = re.sub(
+    r'  const \[activeMode, setActiveMode\] = useState<string \| null>\(null\)\n  \n  const activeHref = activeMode\s*\n    \? MODES.find\(\(m\) => m\.id === activeMode\)!\.href\n    : \'#\'\n\n',
+    '  ',
+    content
+)
+content = re.sub(
+    r'  const handleSearch = \(e: React\.FormEvent\) => \{\n    e\.preventDefault\(\)\n    const q = query\.trim\(\)\n    if \(q\) router\.push\(`/search\?q=\$\{encodeURIComponent\(q\)\}\)`\)\n  \}\n\n',
+    '',
+    content
+)
+# Replace the full InputGroup form with just a search input
+old_form = (
+    r'<form onSubmit=\{handleSearch\} className="w-full">\n'
+    r'          <InputGroup className="w-full">\n'
+    r'            <InputGroupAddon align="inline-start">\n'
+    r'              <Popover>[\s\S]*?</Popover>\n'
+    r'            </InputGroupAddon>\n\n'
+    r'            <InputGroupInput\n'
+    r'              placeholder="Search\.\.\."\n'
+    r'              className="font-mono text-sm"\n'
+    r'              value=\{query\}\n'
+    r'              onChange=\{\(e\) => setQuery\(e\.target\.value\)\}\n'
+    r'            />\n\n'
+    r'            <InputGroupAddon align="inline-end">\n'
+    r'              <Link href=\{activeHref\}>[\s\S]*?</Link>\n'
+    r'            </InputGroupAddon>\n'
+    r'          </InputGroup>\n'
+    r'        </form>'
+)
+new_form = '''\
+        <form onSubmit={handleSearch} className="w-full">
+          <InputGroup className="w-full">
             <InputGroupInput
-              placeholder=\"Search...\"
-              className=\"font-mono text-sm\"
+              placeholder="Search..."
+              className="font-mono text-sm"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </InputGroup>
-        </form>''')
+        </form>'''
+content = re.sub(old_form, new_form, content)
 with open('apps/web/app/page.tsx', 'w') as f:
     f.write(content)
 print('  OK')
-"
+PYEOF
 
 
 echo "==> Updating pnpm-workspace.yaml for public repo..."
