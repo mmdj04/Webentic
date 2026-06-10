@@ -353,7 +353,7 @@ ${repoInfo}`
             )}
 
             {analysisError && (
-              <div className="mb-6 p-4 border border-red-300 bg-red-50 dark:bg-red-900/30 rounded-lg flex items-start gap-3">
+              <div className="mb-6 p-4 border border-red-300 bg-red-50 dark:bg-red-950/20 rounded-lg flex items-start gap-3">
                 <AlertCircle className="size-5 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-700 dark:text-red-400">Analysis Failed</p>
@@ -363,7 +363,7 @@ ${repoInfo}`
             )}
 
             {analysisStatus === 'analyzing' && (
-              <div className="mb-6 p-4 border border-amber-300 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center gap-3">
+              <div className="mb-6 p-4 border border-amber-300 bg-amber-50 dark:bg-amber-950/20 rounded-lg flex items-center gap-3">
                 <Loader2 className="size-5 text-amber-500 animate-spin shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Generating Documentation</p>
