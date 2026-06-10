@@ -34,30 +34,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
 } from 'ui'
-import { PageBreadcrumbs } from 'ui-patterns/PageBreadcrumbs'
-import { PageContainer } from 'ui-patterns/PageContainer'
-import {
-  PageHeader,
-  PageHeaderAside,
-  PageHeaderDescription,
-  PageHeaderMeta,
-  PageHeaderSummary,
-  PageHeaderTitle,
-} from 'ui-patterns/PageHeader'
-import {
-  PageSection,
-  PageSectionContent,
-  PageSectionDescription,
-  PageSectionMeta,
-  PageSectionSummary,
-  PageSectionTitle,
-} from 'ui-patterns/PageSection'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 
@@ -341,54 +318,41 @@ function SettingsContent() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <PageBreadcrumbs>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Home</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Settings</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </PageBreadcrumbs>
-
-      <PageHeader size="small">
-        <PageHeaderMeta>
-          <PageHeaderSummary>
-            <PageHeaderTitle>Settings</PageHeaderTitle>
-            <PageHeaderDescription>
-              Configure your AI agents and manage your account
-            </PageHeaderDescription>
-          </PageHeaderSummary>
-          {isLoggedIn && (
-            <PageHeaderAside>
+      <header style={{ borderBottom: '1px solid var(--border-default)' }}>
+        <div className="mx-auto flex items-center gap-4 px-6 py-4" style={{ maxWidth: 780 }}>
+          <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0" style={{ color: 'var(--foreground-light)' }}>
+            <ArrowLeft className="size-4" />
+            Home
+          </Link>
+          <div className="flex-1 flex items-center justify-between">
+            <span className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
+              Settings
+            </span>
+            {isLoggedIn && (
               <Button size="tiny" type="default" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
                 Sign Out
               </Button>
-            </PageHeaderAside>
-          )}
-        </PageHeaderMeta>
-      </PageHeader>
+            )}
+          </div>
+        </div>
+      </header>
 
-      <PageContainer size="small" className="pb-16">
+      <main className="mx-auto px-6 py-8 space-y-8" style={{ maxWidth: 780 }}>
         {authError && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2 mb-8">
+          <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
             <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
             <p className="text-xs text-red-600 dark:text-red-400">{authError}</p>
           </div>
         )}
 
         {!isLoggedIn && (
-          <Card className="p-6 border border-amber-400 dark:border-amber-800 mb-8">
+          <Card className="p-6 border border-amber-400 dark:border-amber-800">
             <div className="flex items-start gap-4">
               <div className="flex-1">
-                <h2 className="text-base font-semibold mb-1 text-foreground">
+                <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
                   Sign in to manage settings
                 </h2>
-                <p className="text-sm mb-4 text-foreground-muted">
+                <p className="text-sm mb-4" style={{ color: 'var(--foreground-muted)' }}>
                   {isSignUp
                     ? 'Create an account to configure AI agents and manage your profile.'
                     : 'Sign in to configure AI agents, manage your profile, and view real-time logs.'}
@@ -437,379 +401,364 @@ function SettingsContent() {
           </Card>
         )}
 
-        <PageSection>
-          <PageSectionMeta>
-            <PageSectionSummary>
-              <PageSectionTitle>Account</PageSectionTitle>
-              <PageSectionDescription>
-                Manage your profile and account details
-              </PageSectionDescription>
-            </PageSectionSummary>
-          </PageSectionMeta>
-          <PageSectionContent>
-            {!isLoggedIn ? (
-              <div className="py-6 text-center">
-                <p className="text-sm text-foreground-muted">Sign in above to manage your account settings.</p>
+        {/* Account Management */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <User className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Account</h2>
+          </div>
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to manage your account settings.</p>
+            </div>
+          ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Mail className="size-3 mr-1" />
+                Email
+              </label>
+              <Input value={profileEmail} disabled className="opacity-60" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <User className="size-3 mr-1" />
+                Display Name
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  placeholder="Your display name"
+                  className="flex-1"
+                />
+                <Button
+                  type="primary"
+                  size="tiny"
+                  icon={<Save className="size-3" />}
+                  loading={saving}
+                  onClick={handleUpdateProfile}
+                >
+                  Save
+                </Button>
               </div>
-            ) : (
-              <Card>
-                <div className="p-6 space-y-4">
-                  <div>
-                    <label className="text-xs font-medium mb-1 block text-foreground-light">
-                      <Mail className="size-3 mr-1" />
-                      Email
-                    </label>
-                    <Input value={profileEmail} disabled className="opacity-60" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium mb-1 block text-foreground-light">
-                      <User className="size-3 mr-1" />
-                      Display Name
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        placeholder="Your display name"
-                        className="flex-1"
-                      />
-                      <Button
-                        type="primary"
-                        size="tiny"
-                        icon={<Save className="size-3" />}
-                        loading={saving}
-                        onClick={handleUpdateProfile}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium mb-1 block text-foreground-light">
-                      <Calendar className="size-3 mr-1" />
-                      Member since
-                    </label>
-                    <p className="text-sm text-foreground-muted">
-                      {session.user.created_at
-                        ? format(new Date(session.user.created_at), 'MMM d, yyyy')
-                        : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </PageSectionContent>
-        </PageSection>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Calendar className="size-3 mr-1" />
+                Member since
+              </label>
+              <p className="text-sm text-foreground-muted">
+                {session.user.created_at
+                  ? format(new Date(session.user.created_at), 'MMM d, yyyy')
+                  : 'N/A'}
+              </p>
+            </div>
+          </div>
+          )}
+        </Card>
 
-        <PageSection>
-          <PageSectionMeta>
-            <PageSectionSummary>
-              <PageSectionTitle>AI Agent Configuration</PageSectionTitle>
-              <PageSectionDescription>
-                Configure Gemini-powered agents for automatic documentation generation
-              </PageSectionDescription>
-            </PageSectionSummary>
+        {/* AI Agent Configuration */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Zap className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">AI Agent Configuration</h2>
             <Badge color="amber">gemini-3.5-flash</Badge>
-          </PageSectionMeta>
-          <PageSectionContent>
-            {!isLoggedIn ? (
-              <div className="py-6 text-center">
-                <p className="text-sm text-foreground-muted">Sign in above to configure AI agents.</p>
-              </div>
-            ) : (
-              <>
-                {agents.length >= 5 && (
-                  <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
-                      Maximum of 5 agents reached. Delete an existing agent to add a new one.
-                    </p>
-                  </div>
-                )}
-                <Card>
-                  <form onSubmit={handleSaveAgent} className="p-6 space-y-4">
-                    <div>
-                      <label className="text-xs font-medium mb-1 block text-foreground-light">
-                        Agent Name
-                      </label>
-                      <Input
-                        placeholder="My Documentation Agent"
-                        value={agentName}
-                        onChange={(e) => setAgentName(e.target.value)}
-                        required
-                        disabled={agents.length >= 5}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block text-foreground-light">
-                        <Key className="size-3 mr-1" />
-                        Gemini API Key
-                      </label>
-                      <p className="text-xs text-foreground-muted mb-2">
-                        Get your key from{' '}
-                        <a
-                          href="https://aistudio.google.com/apikey"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-foreground"
-                        >
-                          aistudio.google.com
-                        </a>
-                      </p>
-                      <div className="relative">
-                        <Input
-                          type={showGeminiKey ? 'text' : 'password'}
-                          placeholder="AIzaSy..."
-                          value={geminiKey}
-                          onChange={(e) => setGeminiKey(e.target.value)}
-                          disabled={agents.length >= 5}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowGeminiKey(!showGeminiKey)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                        >
-                          {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block text-foreground-light">
-                        <Github className="size-3 mr-1" />
-                        GitHub Token
-                      </label>
-                      <p className="text-xs text-foreground-muted mb-2">
-                        Create a token at{' '}
-                        <a
-                          href="https://github.com/settings/tokens"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-foreground"
-                        >
-                          github.com/settings/tokens
-                        </a>
-                        {' '}(repo scope recommended)
-                      </p>
-                      <div className="relative">
-                        <Input
-                          type={showGithubToken ? 'text' : 'password'}
-                          placeholder="ghp_..."
-                          value={githubToken}
-                          onChange={(e) => setGithubToken(e.target.value)}
-                          disabled={agents.length >= 5}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowGithubToken(!showGithubToken)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                        >
-                          {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block text-foreground-light">
-                        <Clock className="size-3 mr-1" />
-                        Generation Frequency
-                      </label>
-                      <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FREQUENCIES.map((f) => (
-                            <SelectItem key={f.value} value={f.value}>
-                              {f.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      icon={<Plus className="size-4" />}
-                      loading={agentSaving}
-                      disabled={!agentName.trim() || agents.length >= 5}
-                    >
-                      Create Agent
-                    </Button>
-                  </form>
-                </Card>
-              </>
-            )}
-          </PageSectionContent>
-        </PageSection>
+          </div>
 
-        <PageSection>
-          <PageSectionMeta>
-            <PageSectionSummary>
-              <PageSectionTitle>Agents</PageSectionTitle>
-              <PageSectionDescription>
-                Monitor and manage your documentation agents
-              </PageSectionDescription>
-            </PageSectionSummary>
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to configure AI agents.</p>
+            </div>
+          ) : (
+          <>
+          {agents.length >= 5 && (
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
+              <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                Maximum of 5 agents reached. Delete an existing agent to add a new one.
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveAgent} className="space-y-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                Agent Name
+              </label>
+              <Input
+                placeholder="My Documentation Agent"
+                value={agentName}
+                onChange={(e) => setAgentName(e.target.value)}
+                required
+                disabled={agents.length >= 5}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Key className="size-3 mr-1" />
+                Gemini API Key
+              </label>
+              <p className="text-xs text-foreground-muted mb-2">
+                Get your key from{' '}
+                <a
+                  href="https://aistudio.google.com/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  aistudio.google.com
+                </a>
+              </p>
+              <div className="relative">
+                <Input
+                  type={showGeminiKey ? 'text' : 'password'}
+                  placeholder="AIzaSy..."
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  disabled={agents.length >= 5}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGeminiKey(!showGeminiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                >
+                  {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Github className="size-3 mr-1" />
+                GitHub Token
+              </label>
+              <p className="text-xs text-foreground-muted mb-2">
+                Create a token at{' '}
+                <a
+                  href="https://github.com/settings/tokens"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  github.com/settings/tokens
+                </a>
+                {' '}(repo scope recommended)
+              </p>
+              <div className="relative">
+                <Input
+                  type={showGithubToken ? 'text' : 'password'}
+                  placeholder="ghp_..."
+                  value={githubToken}
+                  onChange={(e) => setGithubToken(e.target.value)}
+                  disabled={agents.length >= 5}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGithubToken(!showGithubToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                >
+                  {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block text-foreground-light">
+                <Clock className="size-3 mr-1" />
+                Generation Frequency
+              </label>
+              <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FREQUENCIES.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      {f.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<Plus className="size-4" />}
+              loading={agentSaving}
+              disabled={!agentName.trim() || agents.length >= 5}
+            >
+              Create Agent
+            </Button>
+          </form>
+          </>
+          )}
+        </Card>
+
+        {/* Agent List */}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <List className="size-5 text-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Agents</h2>
             <Badge color="scale">
               {agents.length}/5
             </Badge>
-          </PageSectionMeta>
-          <PageSectionContent>
-            {!isLoggedIn ? (
-              <div className="py-6 text-center">
-                <p className="text-sm text-foreground-muted">Sign in above to view and manage your agents.</p>
-              </div>
-            ) : (
-              <>
-                {agentsLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="size-5 animate-spin text-foreground-muted" />
-                  </div>
-                ) : agents.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-foreground-muted">No agents configured yet</p>
-                    <p className="text-xs text-foreground-lighter mt-1">
-                      Create an agent above to get started
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {agents.map((agent) => (
-                      <div
-                        key={agent.id}
-                        className="border rounded-lg p-4 bg-surface-100"
+          </div>
+
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to view and manage your agents.</p>
+            </div>
+          ) : (
+          <>
+          {agentsLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="size-5 animate-spin text-foreground-muted" />
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-foreground-muted">No agents configured yet</p>
+              <p className="text-xs text-foreground-lighter mt-1">
+                Create an agent above to get started
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {agents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="border rounded-lg p-4 bg-surface-100"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
+                      <p className="text-xs text-foreground-muted mt-0.5">
+                        Created {format(new Date(agent.created_at), 'MMM d, yyyy HH:mm')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        color={
+                          agent.status === 'running'
+                            ? 'green'
+                            : agent.status === 'error'
+                              ? 'red'
+                              : 'scale'
+                        }
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
-                            <p className="text-xs text-foreground-muted mt-0.5">
-                              Created {format(new Date(agent.created_at), 'MMM d, yyyy HH:mm')}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              color={
-                                agent.status === 'running'
-                                  ? 'green'
-                                  : agent.status === 'error'
-                                    ? 'red'
-                                    : 'scale'
-                              }
-                            >
-                              {agent.status === 'running' ? (
-                                <span className="flex items-center gap-1">
-                                  <span className="size-1.5 bg-green-500 rounded-full animate-pulse" />
-                                  Running
-                                </span>
-                              ) : agent.status === 'error' ? (
-                                'Error'
-                              ) : (
-                                'Stopped'
-                              )}
-                            </Badge>
-                            <Button
-                              size="tiny"
-                              type={agent.status === 'running' ? 'danger' : 'default'}
-                              icon={
-                                agent.status === 'running' ? (
-                                  <Square className="size-3" />
-                                ) : (
-                                  <Play className="size-3" />
-                                )
-                              }
-                              onClick={() => handleToggleAgent(agent)}
-                            />
-                            <Button
-                              size="tiny"
-                              type="default"
-                              icon={<Trash2 className="size-3" />}
-                              onClick={() => handleDeleteAgent(agent)}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 text-xs">
-                          <div>
-                            <span className="text-foreground-lighter">API</span>
-                            <p className="text-foreground-light mt-0.5">{agent.api_used}</p>
-                          </div>
-                          <div>
-                            <span className="text-foreground-lighter">Model</span>
-                            <p className="text-foreground-light mt-0.5">{agent.model_type}</p>
-                          </div>
-                          <div>
-                            <span className="text-foreground-lighter">Frequency</span>
-                            <p className="text-foreground-light mt-0.5 capitalize">
-                              {FREQUENCIES.find((f) => f.value === agent.generation_frequency)?.label ??
-                                agent.generation_frequency}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <Button
-                            size="tiny"
-                            type="default"
-                            icon={<RefreshCw className="size-3" />}
-                            onClick={() => handleViewLogs(agent.id)}
-                          >
-                            {selectedAgentId === agent.id ? 'Refresh Logs' : 'View Logs'}
-                          </Button>
-                        </div>
-
-                        {selectedAgentId === agent.id && (
-                          <div className="mt-4 border-t pt-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
-                              <Badge color="scale" className="text-[10px]">
-                                <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
-                                Live
-                              </Badge>
-                            </div>
-                            {logsLoading ? (
-                              <div className="flex justify-center py-4">
-                                <Loader2 className="size-4 animate-spin text-foreground-muted" />
-                              </div>
-                            ) : logs.length === 0 ? (
-                              <p className="text-xs text-foreground-muted text-center py-4">No logs yet</p>
-                            ) : (
-                              <div className="max-h-48 overflow-y-auto space-y-1">
-                                {logs.map((log) => (
-                                  <div
-                                    key={log.id}
-                                    className="flex items-start gap-2 py-1.5 px-2 rounded bg-muted/50 text-xs font-mono"
-                                  >
-                                    <span className="text-foreground-lighter shrink-0">
-                                      {format(new Date(log.created_at), 'HH:mm:ss')}
-                                    </span>
-                                    <span
-                                      className={`shrink-0 font-medium ${
-                                        log.level === 'error'
-                                          ? 'text-red-500'
-                                          : log.level === 'warn'
-                                            ? 'text-amber-500'
-                                            : log.level === 'debug'
-                                              ? 'text-foreground-lighter'
-                                              : 'text-foreground-light'
-                                      }`}
-                                    >
-                                      [{log.level.toUpperCase()}]
-                                    </span>
-                                    <span className="text-foreground-light break-all">{log.message}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                        {agent.status === 'running' ? (
+                          <span className="flex items-center gap-1">
+                            <span className="size-1.5 bg-green-500 rounded-full animate-pulse" />
+                            Running
+                          </span>
+                        ) : agent.status === 'error' ? (
+                          'Error'
+                        ) : (
+                          'Stopped'
                         )}
-                      </div>
-                    ))}
+                      </Badge>
+                      <Button
+                        size="tiny"
+                        type={agent.status === 'running' ? 'danger' : 'default'}
+                        icon={
+                          agent.status === 'running' ? (
+                            <Square className="size-3" />
+                          ) : (
+                            <Play className="size-3" />
+                          )
+                        }
+                        onClick={() => handleToggleAgent(agent)}
+                      />
+                      <Button
+                        size="tiny"
+                        type="default"
+                        icon={<Trash2 className="size-3" />}
+                        onClick={() => handleDeleteAgent(agent)}
+                      />
+                    </div>
                   </div>
-                )}
-              </>
-            )}
-          </PageSectionContent>
-        </PageSection>
-      </PageContainer>
+
+                  <div className="grid grid-cols-3 gap-4 text-xs">
+                    <div>
+                      <span className="text-foreground-lighter">API</span>
+                      <p className="text-foreground-light mt-0.5">{agent.api_used}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-lighter">Model</span>
+                      <p className="text-foreground-light mt-0.5">{agent.model_type}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-lighter">Frequency</span>
+                      <p className="text-foreground-light mt-0.5 capitalize">
+                        {FREQUENCIES.find((f) => f.value === agent.generation_frequency)?.label ??
+                          agent.generation_frequency}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <Button
+                      size="tiny"
+                      type="default"
+                      icon={<RefreshCw className="size-3" />}
+                      onClick={() => handleViewLogs(agent.id)}
+                    >
+                      {selectedAgentId === agent.id ? 'Refresh Logs' : 'View Logs'}
+                    </Button>
+                  </div>
+
+                  {/* Real-time logs for selected agent */}
+                  {selectedAgentId === agent.id && (
+                    <div className="mt-4 border-t pt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
+                        <Badge color="scale" className="text-[10px]">
+                          <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
+                          Live
+                        </Badge>
+                      </div>
+                      {logsLoading ? (
+                        <div className="flex justify-center py-4">
+                          <Loader2 className="size-4 animate-spin text-foreground-muted" />
+                        </div>
+                      ) : logs.length === 0 ? (
+                        <p className="text-xs text-foreground-muted text-center py-4">No logs yet</p>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {logs.map((log) => (
+                            <div
+                              key={log.id}
+                              className="flex items-start gap-2 py-1.5 px-2 rounded bg-muted/50 text-xs font-mono"
+                            >
+                              <span className="text-foreground-lighter shrink-0">
+                                {format(new Date(log.created_at), 'HH:mm:ss')}
+                              </span>
+                              <span
+                                className={`shrink-0 font-medium ${
+                                  log.level === 'error'
+                                    ? 'text-red-500'
+                                    : log.level === 'warn'
+                                      ? 'text-amber-500'
+                                      : log.level === 'debug'
+                                        ? 'text-foreground-lighter'
+                                        : 'text-foreground-light'
+                                }`}
+                              >
+                                [{log.level.toUpperCase()}]
+                              </span>
+                              <span className="text-foreground-light break-all">{log.message}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          </>
+          )}
+        </Card>
+      </main>
     </div>
   )
 }
