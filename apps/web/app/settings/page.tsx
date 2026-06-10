@@ -415,14 +415,14 @@ function SettingsContent() {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <Mail className="size-3 inline mr-1" />
+                <Mail className="size-3 mr-1" />
                 Email
               </label>
               <Input value={profileEmail} disabled className="opacity-60" />
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <User className="size-3 inline mr-1" />
+                <User className="size-3 mr-1" />
                 Display Name
               </label>
               <div className="flex gap-2">
@@ -445,7 +445,7 @@ function SettingsContent() {
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <Calendar className="size-3 inline mr-1" />
+                <Calendar className="size-3 mr-1" />
                 Member since
               </label>
               <p className="text-sm text-foreground-muted">
@@ -496,7 +496,7 @@ function SettingsContent() {
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <Key className="size-3 inline mr-1" />
+                <Key className="size-3 mr-1" />
                 Gemini API Key
               </label>
               <p className="text-xs text-foreground-muted mb-2">
@@ -529,7 +529,7 @@ function SettingsContent() {
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <Github className="size-3 inline mr-1" />
+                <Github className="size-3 mr-1" />
                 GitHub Token
               </label>
               <p className="text-xs text-foreground-muted mb-2">
@@ -563,7 +563,7 @@ function SettingsContent() {
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
-                <Clock className="size-3 inline mr-1" />
+                <Clock className="size-3 mr-1" />
                 Generation Frequency
               </label>
               <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>

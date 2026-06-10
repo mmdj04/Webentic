@@ -164,7 +164,8 @@
   @apply border-border outline-ring/50;
 }
 
-svg.lucide {
+svg.lucide,
+svg.lucide.inline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
