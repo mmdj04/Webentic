@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true,
+      "environment": {
+        "BROWSER": "chromium"
+      }
+    },
+    "supabase": {
+      "type": "local",
+      "command": ["npx", "-y", "@supabase/mcp-server-supabase@latest"],
+      "enabled": true,
+      "environment": {
+        "SUPABASE_ACCESS_TOKEN": "{env:SUPABASE_ACCESS_TOKEN}"
+      }
+    },
+    "shadcn-ui": {
+      "type": "local",
+      "command": ["npx", "-y", "@jpisnice/shadcn-ui-mcp-server"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/home/matheusm10092004/Webentic"],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@github/github-mcp-server"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_TOKEN}"
+      }
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "fetch": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-fetch"],
+      "enabled": true
+    },
+    "puppeteer": {
+      "type": "local",
+      "command": ["npx", "-y", "@puppeteer/mcp"],
+      "enabled": true
+    },
+    "sqlite": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sqlite", "/home/matheusm10092004/Webentic/.mcp/memory.db"],
+      "enabled": true
+    },
+    "postgres": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres"],
+      "enabled": true,
+      "environment": {
+        "DATABASE_URL": "{env:DATABASE_URL}"
+      }
+    },
+    "docker": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-server-docker-npx"],
+      "enabled": true
+    },
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-f2473dec-e561-4f5e-bc3a-e59dc36a5b76"],
+      "enabled": true
+    },
+    "duckduckgo": {
+      "type": "local",
+      "command": ["npx", "-y", "duckduckgo-mcp"],
+      "enabled": true
+    }
+  }
+}

@@ -29,6 +29,11 @@ const MODES = [
     label: 'About Me',
     href: '/about',
   },
+  {
+    id: 'esm',
+    label: 'ESM CDN',
+    href: '/esm',
+  },
 ] as const
 
 export default function HomePage() {
