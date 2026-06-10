@@ -163,3 +163,10 @@
 .preview * {
   @apply border-border outline-ring/50;
 }
+
+svg.lucide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
