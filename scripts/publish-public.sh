@@ -223,9 +223,10 @@ python3 -c "
 import re
 with open('apps/web/app/page.tsx') as f:
     content = f.read()
-# Remove ui-library and design-system entries from MODES
+# Remove ui-library, design-system, and about entries from MODES
 content = re.sub(r'  \{\n    id: .ui-library.,[\s\S]*?  \},?\n?', '', content)
 content = re.sub(r'  \{\n    id: .design-system.,[\s\S]*?  \},?\n?', '', content)
+content = re.sub(r'  \{\n    id: .about.,[\s\S]*?  \},?\n?', '', content)
 with open('apps/web/app/page.tsx', 'w') as f:
     f.write(content)
 print('  OK')
@@ -417,7 +418,7 @@ git add -A
 git commit -m "Initial public release: Landing + About pages
 
 Extracted from the private monorepo. Contains only the minimal
-files needed to render the landing page (/) and about page (/about)
+files needed to render the landing page (/) and esm page (/esm)
 at https://webentic-ui.vercel.app
 
 Includes:

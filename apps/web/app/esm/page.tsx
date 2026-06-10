@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Github } from 'lucide-react'
+import { Github, Sun, Moon } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { CodeBlock } from 'ui'
 
 const NAV_ITEMS = [
@@ -11,6 +12,8 @@ const NAV_ITEMS = [
 ]
 
 export default function EsmPage() {
+  const { theme, setTheme } = useTheme()
+
   return (
     <div className="min-h-screen" style={{ fontFamily: 'ui-sans-serif, system-ui, -apple-system, Inter, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif' }}>
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center backdrop-blur-sm" style={{ height: 100, backgroundColor: 'color-mix(in srgb, var(--background-default) 95%, transparent)' }}>
@@ -36,23 +39,30 @@ export default function EsmPage() {
               <Github className="size-5" style={{ color: 'var(--foreground-light)' }} />
             </Link>
             <button
-              className="border-none rounded-lg text-sm font-medium cursor-pointer"
-              style={{
-                backgroundColor: 'var(--foreground-light)',
-                color: 'var(--background-default)',
-                padding: '0 20px',
-                height: 36,
-              }}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="bg-transparent border-none cursor-pointer flex items-center justify-center p-1.5 rounded-lg"
+              style={{ color: 'var(--foreground-light)' }}
+              aria-label="Toggle theme"
             >
-              Playground
+              {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
             </button>
           </div>
         </div>
       </header>
 
       <div style={{ paddingTop: 100 }}>
-        <section style={{ maxWidth: 1152, margin: '0 auto', padding: '80px 24px 40px', textAlign: 'center' }}>
-          <div className="flex items-center justify-center gap-2 mb-4">
+        <section className="flex flex-col justify-center items-center w-full" style={{ minHeight: 600, padding: '80px 24px 40px', textAlign: 'center' }}>
+          <h2 className="pt-[60px] text-center">
+            <strong className="text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
+              Webentic
+            </strong>
+            <br />
+            <strong className="text-[52px] sm:text-[72px] md:text-[105px] leading-none font-bold text-foreground uppercase">
+              <em className="not-italic text-foreground-muted">Open</em>-Source
+            </strong>
+          </h2>
+
+          <div className="flex items-center justify-center gap-2 mt-12 mb-4">
             <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Fast</span>
             <span className="text-sm" style={{ color: 'var(--foreground-default)' }}>Smart</span>
             <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Global</span>

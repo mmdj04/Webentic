@@ -25,11 +25,6 @@ const MODES = [
     href: '/design-system',
   },
   {
-    id: 'about',
-    label: 'About Me',
-    href: '/about',
-  },
-  {
     id: 'esm',
     label: 'ESM CDN',
     href: '/esm',
