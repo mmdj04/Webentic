@@ -33,8 +33,6 @@ import remarkGfm from 'remark-gfm'
 
 type AnalysisStatus = 'idle' | 'analyzing' | 'completed' | 'failed'
 
-const DOCS_SAMPLE = false
-
 function RepoCard({
   repo,
   onAnalyze,
