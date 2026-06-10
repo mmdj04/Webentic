@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect, useCallback } from 'react'
+import { useState, Suspense, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -124,7 +124,7 @@ function SearchContent() {
   const [analyzedRepo, setAnalyzedRepo] = useState<{ name: string; owner: string; url: string } | null>(null)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
 
-  const supabase: any = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) return

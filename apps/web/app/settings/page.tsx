@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -79,7 +79,7 @@ const FREQUENCIES = [
 ] as const
 
 function SettingsContent() {
-  const supabase: any = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
