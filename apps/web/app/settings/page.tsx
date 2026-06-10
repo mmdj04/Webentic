@@ -205,11 +205,8 @@ function SettingsContent() {
         if (error) throw error
       }
     } catch (err: any) {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT SET'
-      const keyPrefix = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').slice(0, 15)
-      const msg = `REAL ERROR → name: ${err?.name || '?'} | message: ${err?.message || err} | stack: ${(err?.stack || '').split('\n')[0] || '?'} | Supabase URL: ${url} | Key starts with: ${keyPrefix}...`
-      console.error('[AUTH DEBUG]', err)
-      setAuthError(msg)
+      console.error('[AUTH ERROR]', err)
+      setAuthError(err?.message || String(err))
     } finally {
       setAuthLoading(false)
     }
