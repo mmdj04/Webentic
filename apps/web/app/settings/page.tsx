@@ -345,9 +345,9 @@ function SettingsContent() {
             </p>
 
             {authError && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg flex items-start gap-2">
                 <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
-                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono break-all max-h-48 overflow-y-auto">{authError}</pre>
+                <pre className="text-xs text-red-600 dark:text-red-300 whitespace-pre-wrap font-mono break-all max-h-48 overflow-y-auto">{authError}</pre>
               </div>
             )}
 
@@ -435,9 +435,9 @@ function SettingsContent() {
 
       <main className="mx-auto px-6 py-8 space-y-8" style={{ maxWidth: 780 }}>
         {authError && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+          <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg flex items-start gap-2">
             <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-red-600 dark:text-red-400">{authError}</p>
+            <p className="text-xs text-red-600 dark:text-red-300">{authError}</p>
           </div>
         )}
 
@@ -501,9 +501,9 @@ function SettingsContent() {
           </div>
 
           {agents.length >= 5 && (
-            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2">
               <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-700 dark:text-amber-400">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
                 Maximum of 5 agents reached. Delete an existing agent to add a new one.
               </p>
             </div>
