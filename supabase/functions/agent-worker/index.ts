@@ -3,6 +3,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 const MAX_FILE_SIZE = 100_000
+const MAX_PAGES = 10
+const PER_PAGE = 100
 
 const SOURCE_FILE_EXTENSIONS = new Set([
   'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts',
@@ -42,10 +44,10 @@ interface GitHubRepo {
 interface TreeItem {
   path: string
   type: string
-  size?: number
+  size?: string
 }
 
-async function searchRepos(token?: string): Promise<GitHubRepo[]> {
+async function searchReposPage(page: number, token?: string): Promise<{ items: GitHubRepo[]; total: number }> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
     'User-Agent': 'Webentic-Agent',
@@ -53,12 +55,40 @@ async function searchRepos(token?: string): Promise<GitHubRepo[]> {
   if (token) headers.Authorization = `Bearer ${token}`
 
   const res = await fetch(
-    `${GITHUB_API}/search/repositories?q=stars:>1000&sort=stars&order=desc&per_page=10`,
+    `${GITHUB_API}/search/repositories?q=stars:>1000&sort=stars&order=desc&per_page=${PER_PAGE}&page=${page}`,
     { headers }
   )
   if (!res.ok) throw new Error(`GitHub search error: ${res.status} ${res.statusText}`)
   const data = await res.json()
-  return data.items as GitHubRepo[]
+  return { items: data.items as GitHubRepo[], total: data.total_count as number }
+}
+
+async function findUndocumentedRepo(
+  supabase: ReturnType<typeof createClient>,
+  token?: string
+): Promise<GitHubRepo | null> {
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const { items: repos } = await searchReposPage(page, token)
+
+    if (repos.length === 0) return null
+
+    const urls = repos.map((r) => r.html_url)
+    const { data: existing } = await supabase
+      .from('repository_analyses')
+      .select('repo_url')
+      .in('repo_url', urls)
+      .neq('status', 'failed')
+
+    const existingUrls = new Set((existing || []).map((r: { repo_url: string }) => r.repo_url))
+
+    for (const repo of repos) {
+      if (!existingUrls.has(repo.html_url)) {
+        return repo
+      }
+    }
+  }
+
+  return null
 }
 
 async function getSourceFiles(
@@ -86,7 +116,7 @@ async function getSourceFiles(
     if (item.type !== 'blob') return false
     const dirs = item.path.split('/')
     if (dirs.some((d) => EXCLUDED_DIRS.has(d))) return false
-    if (item.size && item.size > MAX_FILE_SIZE) return false
+    if (item.size && parseInt(item.size) > MAX_FILE_SIZE) return false
     const ext = item.path.split('.').pop()?.toLowerCase() || ''
     if (item.path.endsWith('Dockerfile') || item.path.endsWith('Makefile')) return true
     return SOURCE_FILE_EXTENSIONS.has(ext)
@@ -275,20 +305,19 @@ Deno.serve(async (req) => {
 
   try {
     await log(`[${runId}] Agent started: ${agent.name}`)
-    await log(`[${runId}] Searching GitHub for repositories with 1k+ stars...`)
+    await log(`[${runId}] Searching for undocumented repos with 1k+ stars...`)
 
-    const repos = await searchRepos(agent.github_token || undefined)
+    const repo = await findUndocumentedRepo(supabase, agent.github_token || undefined)
 
-    if (repos.length === 0) {
-      await log(`[${runId}] No repositories found`, 'warn')
+    if (!repo) {
+      await log(`[${runId}] All repositories have already been documented`, 'warn')
       await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
-      return new Response(JSON.stringify({ message: 'No repos found' }))
+      return new Response(JSON.stringify({ message: 'No undocumented repos found' }))
     }
 
-    const repo = repos[0]
     const [owner, name] = repo.full_name.split('/')
 
-    await log(`[${runId}] Selected repository: ${repo.full_name} ⭐ ${repo.stargazers_count}`)
+    await log(`[${runId}] Selected: ${repo.full_name} ⭐ ${repo.stargazers_count} (not yet documented)`)
     await log(`[${runId}] Fetching source files from ${repo.full_name}...`)
 
     const { files, structure } = await getSourceFiles(
@@ -316,10 +345,8 @@ Deno.serve(async (req) => {
       throw new Error('Gemini returned empty documentation')
     }
 
-    const analysisId = crypto.randomUUID()
-
     await supabase.from('repository_analyses').upsert({
-      id: analysisId,
+      id: crypto.randomUUID(),
       user_id: agent.user_id,
       repo_owner: owner,
       repo_name: name,
