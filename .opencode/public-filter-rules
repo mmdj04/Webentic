@@ -1,0 +1,64 @@
+# ─── Whitelist for public repo ───
+# rsync filter rules: only files matching these patterns are published.
+# Used by scripts/publish-public.sh
+#
+# Syntax:
+#   + /path - include this file/dir
+#   - /path - exclude this file/dir (overrides earlier includes)
+#   **     - wildcard matching any path (including /)
+#   *      - wildcard matching a single path segment
+#
+# Order matters: first match wins. The script passes --include='*/'
+# (traverse all dirs), --include-from=this file, --exclude='*'
+# (exclude by default).
+
+# ── apps/web: app routes ──
++ /apps/web/app/layout.tsx
++ /apps/web/app/page.tsx
++ /apps/web/app/search/**
++ /apps/web/app/Providers.tsx
++ /apps/web/app/toaster.tsx
++ /apps/web/app/favicon.ico
+
+# ── apps/web: config & build ──
++ /apps/web/package.json
++ /apps/web/next.config.mjs
++ /apps/web/postcss.config.cjs
++ /apps/web/tsconfig.json
++ /apps/web/components.json
++ /apps/web/turbo.jsonc
++ /apps/web/.gitignore
++ /apps/web/README.md
+
+# ── apps/web: source directories ──
++ /apps/web/styles/**
++ /apps/web/lib/**
++ /apps/web/hooks/**
++ /apps/web/types/**
++ /apps/web/context/**
++ /apps/web/components/**
++ /apps/web/config/**
++ /apps/web/public/**
++ /apps/web/registry/**
+
+# ── Packages ──
++ /packages/ui/**
++ /packages/common/**
++ /packages/config/**
++ /packages/tsconfig/**
++ /packages/api-types/**
+
+# ── Root ──
++ /package.json
++ /pnpm-workspace.yaml
++ /turbo.json
++ /vercel.json
++ /.gitignore
++ /README.md
++ /LICENSE
++ /AGENTS.md
++ /opencode.json
+
+# ── Scripts & config ──
++ /scripts/**
++ /.opencode/**

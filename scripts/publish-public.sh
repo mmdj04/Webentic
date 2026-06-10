@@ -3,99 +3,54 @@ set -euo pipefail
 
 # ──────────────────────────────────────────────────────────────
 # publish-public.sh
-# Extracts only public pages (Landing + About) from the private
-# monorepo and pushes them to a standalone public GitHub repo.
+# Extracts only whitelisted files (see .opencode/public-filter-rules)
+# from the private monorepo and pushes to a standalone public repo.
 # ──────────────────────────────────────────────────────────────
 
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <public-repo-url> [branch]"
   echo ""
-echo "   <public-repo-url>  SSH or HTTPS URL of the public GitHub repo"
-echo "   [branch]           Branch to push (default: main)"
-echo ""
-echo "Examples:"
-echo "   $0 git@github.com:youruser/webentic-ui.git main"
-echo "   $0 https://youruser:TOKEN@github.com/youruser/webentic-ui.git main"
-echo ""
-echo "NOTE: Cloud Shell Google nao tem SSH keys, use HTTPS com token."
+  echo "   <public-repo-url>  SSH or HTTPS URL of the public GitHub repo"
+  echo "   [branch]           Branch to push (default: main)"
+  echo ""
+  echo "Examples:"
+  echo "   $0 git@github.com:user/repo.git main"
+  echo "   $0 https://user:TOKEN@github.com/user/repo.git main"
+  echo ""
+  echo "NOTE: Cloud Shell Google nao tem SSH keys, use HTTPS com token."
   exit 1
 fi
 
 PUBLIC_REPO="$1"
 BRANCH="${2:-main}"
 
-# Resolve the private repo URL from the current git remote
 PRIVATE_REPO="$(git remote get-url origin)"
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 REPO_NAME="$(basename "$REPO_ROOT")"
+FILTER_FILE="$REPO_ROOT/.opencode/public-filter-rules"
+
+if [ ! -f "$FILTER_FILE" ]; then
+  echo "ERROR: $FILTER_FILE not found. Create it with rsync filter rules."
+  exit 1
+fi
 
 TEMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TEMP_DIR"' EXIT
+CLEAN_DIR="$(mktemp -d)"
+trap 'rm -rf "$TEMP_DIR" "$CLEAN_DIR"' EXIT
 
-echo "==> Cloning private repo to temp directory..."
+echo "==> Cloning private repo..."
 git clone --depth=1 "$PRIVATE_REPO" "$TEMP_DIR/$REPO_NAME"
 
-cd "$TEMP_DIR/$REPO_NAME"
+echo "==> Applying whitelist via rsync..."
+rsync -a \
+  --include='*/' \
+  --include-from="$FILTER_FILE" \
+  --exclude='*' \
+  "$TEMP_DIR/$REPO_NAME/" "$CLEAN_DIR/"
 
-echo "==> Removing non-public files..."
-
-# ── Design System pages ──
-rm -rf apps/web/app/design-system
-
-# ── Docs pages (UI Library docs) ──
-rm -rf apps/web/app/\(app\)
-
-# ── API routes (registry API, etc.) ──
-rm -rf apps/web/app/api
-
-# ── Example pages ──
-rm -rf apps/web/app/example
-
-# ── DS-specific components ──
-rm -f apps/web/components/design-system-side-navigation.tsx
-rm -f apps/web/components/mdx-components.tsx
-rm -f apps/web/components/mobile-sidebar-sheet.tsx
-
-# ── DS config ──
-rm -f apps/web/config/design-system-docs.ts
-
-# ── DS content & registry ──
-rm -rf apps/web/content
-rm -f apps/web/contentlayer.config.js
-rm -rf apps/web/registry/default/examples
-rm -rf apps/web/__registry__
-rm -rf apps/web/scripts
-rm -rf apps/web/public/r
-
-# ── DS-only static assets ──
-rm -rf apps/web/public/img/design-system-marks
-rm -rf apps/web/public/img/themes
-rm -rf apps/web/public/img/profile-images
-
-# ── MDX / docs-only CSS ──
-rm -f apps/web/styles/mdx.css
-rm -rf apps/web/styles/code-block-variables.css
-
-# ── Supabase local dev ──
-rm -rf apps/web/supabase
-
-# ── ESLint config (dev-only) ──
-rm -f apps/web/eslint.config.cjs
-
-# ── Blocks package (not needed) ──
-rm -rf blocks
-
-# ── Extra packages not needed for public pages ──
-rm -rf packages/icons
-rm -rf packages/ui-patterns
-rm -rf packages/eslint-config-webentic
-
-# ── DS leftover from merge ──
-rm -rf apps/design-system 2>/dev/null || true
-rm -rf apps/web/design-system 2>/dev/null || true
+cd "$CLEAN_DIR"
 
 echo "==> Cleaning up registry examples (keeping only original 10 UI Lib entries)..."
-# Replace examples.ts with only the original UI Library entries
 cat > apps/web/registry/examples.ts << 'REGISTRY_EOF'
 import type { RegistryItem } from 'shadcn/schema'
 
@@ -217,7 +172,7 @@ echo "==> Removing contentlayer from next.config.mjs..."
 sed -i '/import { withContentlayer } from .next-contentlayer2./d' apps/web/next.config.mjs
 sed -i 's/export default withContentlayer(nextConfig)/export default nextConfig/' apps/web/next.config.mjs
 
-echo "==> Cleaning turbo.json build deps (content:build & build:registry not in public)..."
+echo "==> Cleaning turbo.json build deps..."
 sed -i '/"content:build",/d' turbo.json
 sed -i '/"build:registry",/d' turbo.json
 
@@ -229,7 +184,7 @@ with open('apps/web/app/page.tsx') as f:
 # Remove unused imports
 content = re.sub(r"import \{ ArrowUpRight \} from 'lucide-react'\n", '', content)
 content = re.sub(r"  Popover,\n  PopoverContent,\n  PopoverTrigger,\n", '', content)
-# Remove the Popover (mode selector) and replace form with simple search input
+# Remove MODES, activeMode, handleSearch
 content = re.sub(
     r'const MODES = \[[\s\S]*?\] as const\n\n',
     '',
@@ -245,7 +200,7 @@ content = re.sub(
     '',
     content
 )
-# Replace the full InputGroup form with just a search input
+# Replace form with simple search input
 old_form = (
     r'<form onSubmit=\{handleSearch\} className="w-full">\n'
     r'          <InputGroup className="w-full">\n'
@@ -265,7 +220,7 @@ old_form = (
     r'        </form>'
 )
 new_form = '''\
-        <form onSubmit={handleSearch} className="w-full">
+        <form onSubmit={handleSearch} className="w-full max-w-lg">
           <InputGroup className="w-full">
             <InputGroupInput
               placeholder="Search..."
@@ -352,11 +307,9 @@ import re
 with open('apps/web/next.config.mjs') as f:
     c = f.read()
 
-# Fix transpilePackages
 c = c.replace("'shared-data', ", '')
 c = c.replace("'icons', ", '')
 
-# Remove redirects block
 lines = c.split('\n')
 in_redirects = False
 brace_depth = 0
@@ -380,7 +333,7 @@ with open('apps/web/next.config.mjs', 'w') as f:
 print('  OK')
 FIXNEXT
 
-echo "==> Fixing vercel.json (remove rootDirectory, remove outputDirectory)..."
+echo "==> Fixing vercel.json..."
 python3 -c "
 import json
 cfg = json.load(open('vercel.json'))
