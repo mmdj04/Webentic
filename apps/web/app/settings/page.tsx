@@ -346,7 +346,7 @@ function SettingsContent() {
         )}
 
         {!isLoggedIn && (
-          <Card className="p-6 border border-amber-200 dark:border-amber-800">
+          <Card className="p-6 border border-amber-400 dark:border-amber-800">
             <div className="flex items-start gap-4">
               <div className="flex-1">
                 <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
