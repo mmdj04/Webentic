@@ -25,11 +25,6 @@ const MODES = [
     label: 'Design System',
     href: '/design-system',
   },
-  {
-    id: 'settings',
-    label: 'Settings',
-    href: '/settings',
-  },
 ] as const
 
 export default function HomePage() {
