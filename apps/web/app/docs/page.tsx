@@ -57,17 +57,7 @@ export default function DocsPage() {
       <section id="hero" className="flex flex-col items-center justify-center w-full" style={{ height: '100vh', minHeight: 680 }}>
         <h2 className="flex flex-col items-center" style={{ paddingTop: 60 }}>
           <span className="font-bold uppercase leading-none text-[65px] sm:text-[80px] md:text-[105px]" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
-            Modern
-          </span>
-          <span className="font-bold uppercase leading-none text-[65px] sm:text-[80px] md:text-[105px]" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
-            Accessible
-          </span>
-          <span className="font-bold uppercase leading-none text-[65px] sm:text-[80px] md:text-[105px]" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
-            Performant
-          </span>
-          <span className="font-bold uppercase leading-none text-[65px] sm:text-[80px] md:text-[105px]" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
-            <em className="not-italic text-foreground-muted">Webentic</em>
-            {'>'}Open-Source
+            Documentation
           </span>
         </h2>
       </section>
@@ -94,34 +84,7 @@ export default function DocsPage() {
             <h3 className="text-2xl sm:text-3xl font-semibold leading-tight">
               Build modern web apps with accessible, performant components.
             </h3>
-            <h4 className="text-2xl sm:text-3xl font-medium text-foreground-muted mt-4">
-              No build configuration needed!
-            </h4>
-            <pre className="mt-6 p-[18px_24px] rounded-lg bg-[#111] overflow-x-auto">
-              <code className="text-[15px] text-foreground-muted">
-                <span className="text-foreground-muted">import </span>
-                <span className="text-foreground">{'{ Button }'}</span>
-                <span className="text-foreground-muted"> from </span>
-                <span className="text-foreground">{'ui'}</span>
-              </code>
-            </pre>
-            <pre className="p-[18px_24px] rounded-lg bg-[#111] overflow-x-auto">
-              <code className="text-[15px] text-foreground-muted">
-                <span className="text-foreground-muted">import </span>
-                <span className="text-foreground">{'{ Card }'}</span>
-                <span className="text-foreground-muted"> from </span>
-                <span className="text-foreground">{'ui'}</span>
-              </code>
-            </pre>
-            <div className="flex items-center gap-4 mt-6">
-              <Link
-                href="/search"
-                className="inline-flex items-center relative px-6 py-2 rounded-lg text-base font-semibold text-foreground overflow-hidden transition-transform hover:scale-105"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-[#9933FF] via-[#FF6666] via-[#FACA30] via-[#00CD99] to-[#00CCFF] scale-110 transition-transform hover:scale-100" />
-                <span className="relative">Search &amp; Install</span>
-              </Link>
-            </div>
+
           </div>
         </div>
       </section>
