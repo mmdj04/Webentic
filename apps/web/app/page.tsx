@@ -25,6 +25,11 @@ const MODES = [
     label: 'Design System',
     href: '/design-system',
   },
+  {
+    id: 'settings',
+    label: 'Settings',
+    href: '/settings',
+  },
 ] as const
 
 export default function HomePage() {
@@ -49,12 +54,12 @@ export default function HomePage() {
           <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase">
             WEBENTIC
           </span>
-          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase">
+          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase whitespace-nowrap">
             <span className="text-foreground-muted">OPEN</span>-SOURCE
           </span>
         </h1>
 
-        <form onSubmit={handleSearch} className="w-full">
+        <form onSubmit={handleSearch} className="w-full max-w-lg">
           <InputGroup className="w-full">
             <InputGroupAddon align="inline-start">
               <Popover>
