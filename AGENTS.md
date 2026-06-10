@@ -37,6 +37,15 @@ dist/
 *.log
 .DS_Store
 .github/
+opencode.json
+opencode.jsonc
+
+# ── Root-level scratch files (screenshots, notes, etc.) ──
+*.png
+!packages/**/*.png
+esm-sh-snapshot.md
+esm-sh-visual.md
+*.snap
 
 # ── Páginas exclusivas do privado ──
 apps/web/app/(app)/
