@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect, useCallback, useMemo } from 'react'
+import { useState, Suspense, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -24,6 +24,26 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import mermaid from 'mermaid'
+
+mermaid.initialize({ startOnLoad: false, theme: 'default' })
+
+function Mermaid({ chart }: { chart: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      mermaid
+        .render('mermaid-' + Math.random().toString(36).slice(2), chart)
+        .then(({ svg }) => {
+          if (ref.current) ref.current.innerHTML = svg
+        })
+        .catch(() => {})
+    }
+  }, [chart])
+
+  return <div ref={ref} className="my-4 flex justify-center" />
+}
 
 interface AnalysisDoc {
   id: string
@@ -210,7 +230,21 @@ function SearchContent() {
             </div>
 
             <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ className, children, ...props }) {
+                    const isMermaid = className === 'language-mermaid'
+                    if (isMermaid) {
+                      return <Mermaid chart={String(children)} />
+                    }
+                    return <code className={className} {...props}>{children}</code>
+                  },
+                  pre({ children }) {
+                    return <pre>{children}</pre>
+                  },
+                }}
+              >
                 {selectedDoc.documentation}
               </ReactMarkdown>
             </div>

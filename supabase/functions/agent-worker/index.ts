@@ -168,8 +168,14 @@ async function getSourceFiles(
   }
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const treeUrl = `${GITHUB_API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`
-  const treeRes = await fetch(treeUrl, { headers })
+  let treeUrl = `${GITHUB_API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`
+  let treeRes = await fetch(treeUrl, { headers })
+
+  if (!treeRes.ok && branch !== 'master') {
+    treeUrl = `${GITHUB_API}/repos/${owner}/${repo}/git/trees/master?recursive=1`
+    treeRes = await fetch(treeUrl, { headers })
+  }
+
   if (!treeRes.ok) throw new Error('Failed to fetch repository tree')
   const treeData = await treeRes.json()
   const tree = treeData.tree as TreeItem[]
@@ -409,12 +415,18 @@ Deno.serve(async (req) => {
 
     await log(`[${runId}] Generating documentation via Gemini...`)
 
+    // Set status to running before Gemini (longest operation, may timeout)
+    await supabase.from('agent_configs').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', agent_id)
+
     const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, structure, files)
     const documentation = await generateGemini(prompt, agent.gemini_api_key!)
 
     if (!documentation) {
       throw new Error('Gemini returned empty documentation')
     }
+
+    // Log progress: about to save
+    await log(`[${runId}] Saving documentation to database...`)
 
     await supabase.from('repository_analyses').upsert({
       id: crypto.randomUUID(),
