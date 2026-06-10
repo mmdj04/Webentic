@@ -37,12 +37,6 @@ import {
 } from 'ui'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
-import {
-  AuthError,
-  AuthApiError,
-  AuthRetryableFetchError,
-  AuthUnknownError,
-} from '@supabase/supabase-js'
 
 interface AgentConfig {
   id: string
@@ -64,30 +58,6 @@ interface AgentLog {
   message: string
   level: string
   created_at: string
-}
-
-function formatAuthError(error: unknown): string {
-  if (error instanceof AuthApiError) {
-    const status = error.status ?? 'unknown'
-    const code = error.code ?? 'no_code'
-    return `[${status}] ${error.message} (code: ${code})`
-  }
-  if (error instanceof AuthRetryableFetchError) {
-    return `[NETWORK ERROR] ${error.message} — This may be a CORS issue, Supabase is unreachable, or the project is paused. Check if your Supabase project is active and your URL is correct.`
-  }
-  if (error instanceof AuthUnknownError) {
-    return `[UNKNOWN] ${error.message}`
-  }
-  if (error instanceof AuthError) {
-    return error.message
-  }
-  if (error instanceof TypeError && error.message === 'Failed to fetch') {
-    return `[NETWORK] Failed to reach Supabase. Possible causes:\n• Supabase project is paused or sleeping → wake it up at supabase.com/dashboard\n• CORS not configured for your domain\n• Invalid Supabase URL or anon key\n• Browser extension blocking the request`
-  }
-  if (error instanceof Error) {
-    return error.message
-  }
-  return String(error)
 }
 
 type GenericAuthSession = {
@@ -234,8 +204,12 @@ function SettingsContent() {
         })
         if (error) throw error
       }
-    } catch (err) {
-      setAuthError(formatAuthError(err))
+    } catch (err: any) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT SET'
+      const keyPrefix = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').slice(0, 15)
+      const msg = `REAL ERROR → name: ${err?.name || '?'} | message: ${err?.message || err} | stack: ${(err?.stack || '').split('\n')[0] || '?'} | Supabase URL: ${url} | Key starts with: ${keyPrefix}...`
+      console.error('[AUTH DEBUG]', err)
+      setAuthError(msg)
     } finally {
       setAuthLoading(false)
     }
@@ -283,8 +257,8 @@ function SettingsContent() {
       setGithubToken('')
       setFrequency('manual')
       fetchAgents()
-    } catch (err) {
-      setAuthError(formatAuthError(err))
+    } catch (err: any) {
+      setAuthError(`[SAVE AGENT] ${err?.message || err}`)
     } finally {
       setAgentSaving(false)
     }
@@ -328,8 +302,8 @@ function SettingsContent() {
         data: { full_name: profileName },
       })
       if (error) throw error
-    } catch (err) {
-      setAuthError(formatAuthError(err))
+    } catch (err: any) {
+      setAuthError(`[PROFILE] ${err?.message || err}`)
     } finally {
       setSaving(false)
     }
@@ -373,7 +347,7 @@ function SettingsContent() {
             {authError && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
                 <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-red-600 dark:text-red-400">{authError}</p>
+                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono break-all max-h-48 overflow-y-auto">{authError}</pre>
               </div>
             )}
 
