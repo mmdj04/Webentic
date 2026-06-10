@@ -213,24 +213,78 @@ ${structure}
 ${filesSection}
 `
 
-      const prompt = `You are a technical documentation expert. Generate a comprehensive, well-structured documentation page for the following GitHub repository. The documentation should be similar to DeepWiki style - thorough, well-organized, and developer-friendly.
+      const prompt = `<role>
+You are a senior technical documentation engineer. Your sole purpose is to analyze GitHub repository source files and produce authoritative, developer-friendly documentation in the style of DeepWiki.
+</role>
 
-You have access to ALL source files of the repository. Analyze every file carefully to produce complete and accurate documentation.
+<rules>
+- OUTPUT MUST BE IN GITHUB-FLAVORED MARKDOWN ONLY
+- Base EVERY claim on actual source code, imports, exports, and file contents — never on assumptions or the README alone
+- Every section MUST reference specific source files with inline links in this exact format: [file:path/to/file.ts](https://github.com/${repo.owner.login}/${repo.name}/blob/${repo.default_branch}/path/to/file.ts)
+- When referencing specific lines, use: file:path/to/file.ts#L42-L57
+- Use Mermaid codeblocks for architecture diagrams (\`\`\`mermaid ... \`\`\`)
+- Use tables to present structured data (features, configs, APIs, class hierarchies)
+- Be objective and precise — no marketing language, no fluff
+- Never say "the code suggests" or "it appears" — either cite the source or omit
+</rules>
 
-Include the following sections:
-1. **Overview** - What the project is about
-2. **Quick Start** - How to get started with the project
-3. **Architecture** - How the project is structured (based on actual file contents, imports, and dependencies)
-4. **Key Features** - Main features and capabilities
-5. **API / Usage** - How to use the project (classes, functions, exports, endpoints)
-6. **Configuration** - Any configuration options
-7. **Contributing** - Guidelines for contributors (if any)
-8. **Troubleshooting / FAQ** - Common issues
+<output_structure>
+Generate a multi-section documentation page with the following sections IN THIS ORDER:
 
-Format the output in GitHub-flavored Markdown. Be thorough and accurate — base your documentation on the actual code, not just the README.
+1. ## Overview
+   - Repository purpose (1-2 sentences, cited from README or package.json description)
+   - Key technologies detected (from actual dependency files)
+   - Deployment targets if identifiable (from config files)
 
-Here is the repository data:
-${repoInfo}`
+2. ## Quick Start
+   - Installation commands (from package.json scripts, Dockerfile, Makefile, etc.)
+   - Minimum requirements (from package.json engines, .nvmrc, Dockerfile, etc.)
+   - Basic usage example (from README or test files)
+
+3. ## Architecture
+   - Mermaid diagram showing the system architecture (components, data flow, layers)
+   - Directory structure overview in a table
+   - Key modules and their responsibilities (with source file references)
+
+4. ## Core Features
+   - For each feature: a table with Feature | Implementation File | Description
+   - Reference the exact source files that implement each feature
+
+5. ## API / Usage Reference
+   - Public API surface: exported classes, functions, types (with file references)
+   - Configuration options in a table
+   - Key interfaces and type definitions
+
+6. ## Configuration
+   - Configuration files detected (package.json, tsconfig, .env, Docker, CI configs, etc.)
+   - Important environment variables
+   - Build and deployment configuration
+
+7. ## Dependencies
+   - Table of key dependencies and their purpose
+   - Runtime vs dev dependencies
+
+8. ## Contributing (if detectable)
+   - Test commands, lint commands, contribution guidelines
+   - CI/CD pipeline configuration
+
+9. ## File Manifest
+   - Brief table of important files and their purposes
+</output_structure>
+
+<formatting_rules>
+- Use ## for section headers, ### for subsections
+- Every table MUST have a header row
+- Mermaid blocks MUST be fenced with \`\`\`mermaid
+- Every file reference MUST have a clickable GitHub link
+- Keep paragraphs concise (2-4 sentences max per paragraph)
+- Use codeblocks with language tags for any code snippets
+- Do NOT use HTML tags in the output (except inside Mermaid)
+</formatting_rules>
+
+<source_data>
+${repoInfo}
+</source_data>`
 
       const docs = await generateGemini(prompt, geminiApiKey)
 
