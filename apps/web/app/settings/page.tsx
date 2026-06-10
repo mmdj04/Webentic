@@ -314,103 +314,8 @@ function SettingsContent() {
     )
   }
 
-  // Auth screen
-  if (!session) {
-    return (
-      <div className="min-h-dvh bg-background flex flex-col">
-        <header style={{ borderBottom: '1px solid var(--border-default)' }}>
-          <div className="mx-auto flex items-center gap-4 px-6 py-4" style={{ maxWidth: 480 }}>
-            <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0" style={{ color: 'var(--foreground-light)' }}>
-              <ArrowLeft className="size-4" />
-              Home
-            </Link>
-            <span className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
-              Settings
-            </span>
-          </div>
-        </header>
-        <main className="flex-1 flex items-center justify-center px-6">
-          <div className="w-full" style={{ maxWidth: 420 }}>
-            <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
-              {isSignUp ? 'Create Account' : 'Sign In'}
-            </h2>
-            <p className="text-sm mb-6" style={{ color: 'var(--foreground-muted)' }}>
-              {isSignUp
-                ? 'Create an account to manage AI agents'
-                : 'Sign in to manage your AI agents and settings'}
-            </p>
+  const isLoggedIn = !!session
 
-            {authError && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-                <AlertCircle className="size-4 text-red-500 shrink-0 mt-0.5" />
-                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono break-all max-h-48 overflow-y-auto">{authError}</pre>
-              </div>
-            )}
-
-            <form onSubmit={handleAuth} className="space-y-4">
-              <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--foreground-light)' }}>
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--foreground-light)' }}>
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="At least 6 characters"
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </div>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="w-full"
-                loading={authLoading}
-                disabled={authLoading}
-              >
-                {authLoading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => { setIsSignUp(!isSignUp); setAuthError(null) }}
-                className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
-              >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
-              </button>
-            </div>
-          </Card>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  // Main settings
   return (
     <div className="min-h-dvh bg-background">
       <header style={{ borderBottom: '1px solid var(--border-default)' }}>
@@ -423,9 +328,11 @@ function SettingsContent() {
             <span className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
               Settings
             </span>
-            <Button size="tiny" type="default" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
-              Sign Out
-            </Button>
+            {isLoggedIn && (
+              <Button size="tiny" type="default" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -438,12 +345,73 @@ function SettingsContent() {
           </div>
         )}
 
+        {!isLoggedIn && (
+          <Card className="p-6 border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
+                  Sign in to manage settings
+                </h2>
+                <p className="text-sm mb-4" style={{ color: 'var(--foreground-muted)' }}>
+                  {isSignUp
+                    ? 'Create an account to configure AI agents and manage your profile.'
+                    : 'Sign in to configure AI agents, manage your profile, and view real-time logs.'}
+                </p>
+                <form onSubmit={handleAuth} className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    required
+                    className="flex-1"
+                  />
+                  <div className="relative flex-1">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                  <Button type="primary" htmlType="submit" loading={authLoading} disabled={authLoading}>
+                    {authLoading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+                  </Button>
+                </form>
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => { setIsSignUp(!isSignUp); setAuthError(null) }}
+                    className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
+                  >
+                    {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Account Management */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <User className="size-5 text-foreground" />
             <h2 className="text-base font-semibold text-foreground">Account</h2>
           </div>
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to manage your account settings.</p>
+            </div>
+          ) : (
           <div className="space-y-4">
             <div>
               <label className="text-xs font-medium mb-1 block text-foreground-light">
@@ -487,6 +455,7 @@ function SettingsContent() {
               </p>
             </div>
           </div>
+          )}
         </Card>
 
         {/* AI Agent Configuration */}
@@ -497,6 +466,12 @@ function SettingsContent() {
             <Badge color="amber">gemini-2.5-flash</Badge>
           </div>
 
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to configure AI agents.</p>
+            </div>
+          ) : (
+          <>
           {agents.length >= 5 && (
             <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
               <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
@@ -614,6 +589,8 @@ function SettingsContent() {
               Create Agent
             </Button>
           </form>
+          </>
+          )}
         </Card>
 
         {/* Agent List */}
@@ -626,6 +603,12 @@ function SettingsContent() {
             </Badge>
           </div>
 
+          {!isLoggedIn ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-foreground-muted">Sign in above to view and manage your agents.</p>
+            </div>
+          ) : (
+          <>
           {agentsLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="size-5 animate-spin text-foreground-muted" />
@@ -771,6 +754,8 @@ function SettingsContent() {
                 </div>
               ))}
             </div>
+          )}
+          </>
           )}
         </Card>
       </main>
