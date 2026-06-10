@@ -295,19 +295,22 @@ print('  OK')
 "
 
 echo "==> Fixing next.config.mjs for public repo..."
-# The remaining fixes (contentlayer, transpilePackages) are done earlier via sed.
-# This step removes the redirects block that breaks the public build.
 python3 << 'FIXNEXT'
 import re
 
 with open('apps/web/next.config.mjs') as f:
-    lines = f.readlines()
+    c = f.read()
 
-# Find redirects function and remove it (along with any trailing comma)
+# Fix transpilePackages
+c = c.replace("'shared-data', ", '')
+c = c.replace("'icons', ", '')
+
+# Remove redirects block
+lines = c.split('\n')
 in_redirects = False
 brace_depth = 0
 new_lines = []
-for i, line in enumerate(lines):
+for line in lines:
     if 'async redirects' in line:
         in_redirects = True
         brace_depth = line.count('{') - line.count('}')
@@ -316,14 +319,12 @@ for i, line in enumerate(lines):
         brace_depth += line.count('{') - line.count('}')
         if brace_depth <= 0:
             in_redirects = False
-            # Also consume the leftover comma on the next non-empty line
             continue
         continue
-
     new_lines.append(line)
 
 with open('apps/web/next.config.mjs', 'w') as f:
-    f.writelines(new_lines)
+    f.write('\n'.join(new_lines))
 
 print('  OK')
 FIXNEXT
