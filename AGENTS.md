@@ -8,7 +8,7 @@
 | 🌍 Público | `mmdj04/Webentic` | https://github.com/mmdj04/Webentic |
 
 - **Privado**: Contém TUDO (código fonte completo, Design System, Docs, etc.)
-- **Público**: Landing (`/`) e Search (`/search`)
+- **Público**: Landing (`/`), Search (`/search`) e Settings (`/settings`)
 
 ## Comandos Essenciais
 
@@ -53,10 +53,11 @@ git add -A && git commit -m "..." && git push origin main
 - Registry examples em `apps/web/registry/examples.ts` (295 entries DS + 10 UI Lib)
 - `apps/web/registry/default/examples/` (308 arquivos de exemplo)
 
-### Script de Publish (`scripts/publish-public.sh`)
-- Extrai landing + search para o repo público (`mmdj04/Webentic`)
-- Remove: DS pages, docs, API routes, registry examples, contentlayer, blocks, icons, ui-patterns
-- Modifica: `next.config.mjs` (remove withContentlayer), `turbo.json` (remove content:build), `page.tsx` (simplifica: remove Popover, MODES, mantém só input de busca), `pnpm-workspace.yaml` (só packages existentes)
+### Script de Publish (`scripts/publish-public.sh`) + Blacklist (`.opencode/public-filter-rules`)
+- Usa **blacklist** via `rsync --exclude-from`: tudo vai pro público por padrão
+- Só o que está em `.opencode/public-filter-rules` é **excluído** do publish
+- **Novas páginas/arquivos são automaticamente incluídos** — sem precisar mexer em nada
+- Pós-processamento: simplifica landing (remove Popover, MODES), limpa `next.config.mjs`/`turbo.json`/`package.json`, troca `pnpm-workspace.yaml`
 
 ## Arquivos Relevantes
 
@@ -66,6 +67,7 @@ git add -A && git commit -m "..." && git push origin main
 - `apps/web/app/Providers.tsx` — Provider tree
 - `apps/web/vercel.json` — Vercel config (na raiz do projeto)
 - `scripts/publish-public.sh` — Script de publish
+- `.opencode/public-filter-rules` — Blacklist: tudo que NÃO deve ir pro público
 - `packages/ui/src/components/CodeBlock/` — CodeBlock copiado do ui-patterns para o público
 
 ## Observações
