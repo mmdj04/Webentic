@@ -219,8 +219,17 @@ sed -i '/"content:build",/d' turbo.json
 sed -i '/"build:registry",/d' turbo.json
 
 echo "==> Simplifying landing page nav for public repo..."
-sed -i '/id: .ui-library.,/,/},/d' apps/web/app/page.tsx
-sed -i '/id: .design-system.,/,/},/d' apps/web/app/page.tsx
+python3 -c "
+import re
+with open('apps/web/app/page.tsx') as f:
+    content = f.read()
+# Remove ui-library and design-system entries from MODES
+content = re.sub(r'  \{\n    id: .ui-library.,[\s\S]*?  \},?\n?', '', content)
+content = re.sub(r'  \{\n    id: .design-system.,[\s\S]*?  \},?\n?', '', content)
+with open('apps/web/app/page.tsx', 'w') as f:
+    f.write(content)
+print('  OK')
+"
 
 echo "==> Updating pnpm-workspace.yaml for public repo..."
 cat > pnpm-workspace.yaml << 'WORKSPACE_EOF'
@@ -291,7 +300,7 @@ import re
 with open('apps/web/next.config.mjs') as f:
     c = f.read()
 c = c.replace(\"'icons', \", '').replace(\"'shared-data', \", '')
-c = re.sub(r'async redirects\(\) \{[^}]*\},?', '', c)
+c = re.sub(r'async redirects\(\) \{[^}]*\},?\n?', '', c, flags=re.DOTALL)
 with open('apps/web/next.config.mjs', 'w') as f:
     f.write(c)
 print('  OK')
