@@ -17,6 +17,13 @@
 - Components in `packages/ui-patterns/src/`
 - May depend on `ui`, `icons`, `common`, `api-types`
 
+## Data Flow
+- `/search` page does NOT query GitHub API — it queries `repository_analyses` table (status = 'completed')
+- RLS: anyone can SELECT completed analyses (anon policy); INSERT/UPDATE restricted to owner
+- Agent (background worker) handles: search GitHub → filter 1k+ stars & file types → fetch source files → Gemini generation → store in `repository_analyses`
+- User only browses/view docs; no user-triggered generation in search page
+- `repository_analyses.analysis_data` jsonb stores repo metadata (stars, forks, description, language, topics)
+
 ## Vercel Deploy
 - Push to `mmdj04/Webentic` → auto-deploys `webentic-ui` (production)
 - Config: `vercel.json` (root), Node 24.x, pnpm 10.24.0
