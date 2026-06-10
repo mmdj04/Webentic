@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { Check, Copy, Github } from 'lucide-react'
+import { Github } from 'lucide-react'
+import { CodeBlock } from 'ui'
 
 const NAV_ITEMS = [
   { label: 'Docs', href: '#docs' },
@@ -11,15 +11,6 @@ const NAV_ITEMS = [
 ]
 
 export default function EsmPage() {
-  const [copied1, setCopied1] = useState(false)
-  const [copied2, setCopied2] = useState(false)
-
-  const copyCode = (code: string, setter: (v: boolean) => void) => {
-    navigator.clipboard.writeText(code)
-    setter(true)
-    setTimeout(() => setter(false), 2000)
-  }
-
   return (
     <div className="min-h-screen" style={{ fontFamily: 'ui-sans-serif, system-ui, -apple-system, Inter, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif' }}>
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center backdrop-blur-sm" style={{ height: 100, backgroundColor: 'color-mix(in srgb, var(--background-default) 95%, transparent)' }}>
@@ -75,29 +66,12 @@ export default function EsmPage() {
             No build tools needed!
           </div>
 
-          <div
-            className="flex items-center justify-center gap-2 rounded-lg mb-4"
-            style={{
-              backgroundColor: 'var(--background-surface-100)',
-              padding: '18px 24px',
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-              fontSize: 14,
-              display: 'inline-flex',
-            }}
-          >
-            <span style={{ color: 'var(--foreground-muted)' }}>import</span>
-            <span style={{ color: 'var(--foreground-default)' }}>confetti</span>
-            <span style={{ color: 'var(--foreground-muted)' }}>from</span>
-            <span style={{ color: 'var(--foreground-muted)' }}>&quot;</span>
-            <span style={{ color: 'var(--foreground-default)' }}>https://esm.sh/canvas-confetti@1.6.0</span>
-            <span style={{ color: 'var(--foreground-muted)' }}>&quot;</span>
-            <button
-              onClick={() => copyCode(`import confetti from "https://esm.sh/canvas-confetti@1.6.0"`, setCopied1)}
-              className="bg-transparent border-none cursor-pointer p-1 ml-2 flex"
-              style={{ color: 'var(--foreground-muted)' }}
-            >
-              {copied1 ? <Check className="size-4" style={{ color: 'var(--foreground-default)' }} /> : <Copy className="size-4" />}
-            </button>
+          <div className="inline-flex justify-center mb-4">
+            <CodeBlock
+              language="js"
+              className="language-js"
+              value={`import confetti from "https://esm.sh/canvas-confetti@1.6.0"`}
+            />
           </div>
 
           <div className="text-center">
@@ -128,11 +102,13 @@ export default function EsmPage() {
             from http URLs, <strong style={{ color: 'var(--foreground-default)' }}>no installation/build steps needed</strong>.
           </div>
 
-          <div className="rounded-lg mb-6" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)' }}>
-            import * as mod from &quot;https://esm.sh/PKG[@SEMVER][/PATH]&quot;;
-          </div>
+          <CodeBlock
+            language="js"
+            className="language-js"
+            value={`import * as mod from "https://esm.sh/PKG[@SEMVER][/PATH]";`}
+          />
 
-          <div className="text-sm leading-relaxed mb-4" style={{ color: 'var(--foreground-light)' }}>
+          <div className="text-sm leading-relaxed mb-4 mt-6" style={{ color: 'var(--foreground-light)' }}>
             With{' '}
             <Link href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap" className="no-underline" style={{ color: 'var(--brand-default)' }}>
               import maps
@@ -140,9 +116,10 @@ export default function EsmPage() {
             , you can even use bare import specifiers instead of URLs:
           </div>
 
-          <div className="relative mb-8">
-            <pre className="rounded-lg overflow-x-auto leading-relaxed" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)', lineHeight: 1.5 }}>
-              <code>{`<script type="importmap">
+          <CodeBlock
+            language="html"
+            className="language-html"
+            value={`<script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@19.2.0",
@@ -153,41 +130,45 @@ export default function EsmPage() {
 <script type="module">
 import React from "react";
 import { render } from "react-dom/client";
-</script>`}</code>
-            </pre>
-            <button
-              onClick={() => copyCode(`<script type="importmap">\n{\n  "imports": {\n    "react": "https://esm.sh/react@19.2.0",\n    "react-dom/": "https://esm.sh/react-dom@19.2.0/"\n  }\n}\n</script>\n<script type="module">\nimport React from "react";\nimport { render } from "react-dom/client";\n</script>`, setCopied2)}
-              className="bg-transparent border-none cursor-pointer p-1.5 rounded absolute"
-              style={{ top: 12, right: 12, color: 'var(--foreground-muted)', display: 'flex' }}
-            >
-              {copied2 ? <Check className="size-4" style={{ color: 'var(--foreground-default)' }} /> : <Copy className="size-4" />}
-            </button>
-          </div>
+</script>`}
+          />
 
-          <div className="text-lg font-medium mb-4" style={{ color: 'var(--foreground-default)' }}>Supported Registries</div>
+          <div className="text-lg font-medium mb-4 mt-8" style={{ color: 'var(--foreground-default)' }}>Supported Registries</div>
 
           <div className="mb-3">
             <strong className="text-sm" style={{ color: 'var(--foreground-default)' }}>NPM</strong>
-            <div className="rounded-lg mt-2 leading-relaxed" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)', lineHeight: 1.5 }}>
-              <code>{`import React from "https://esm.sh/react";
+            <div className="mt-2">
+              <CodeBlock
+                language="js"
+                className="language-js"
+                value={`import React from "https://esm.sh/react";
 import React from "https://esm.sh/react@18";
-import { renderToString } from "https://esm.sh/react-dom/server";`}</code>
+import { renderToString } from "https://esm.sh/react-dom/server";`}
+              />
             </div>
           </div>
 
           <div className="mb-3">
             <strong className="text-sm" style={{ color: 'var(--foreground-default)' }}>JSR <span style={{ color: 'var(--brand-default)' }}>(starts with `/jsr/`)</span></strong>
-            <div className="rounded-lg mt-2 leading-relaxed" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)', lineHeight: 1.5 }}>
-              <code>{`import { encodeBase64 } from "https://esm.sh/jsr/@std/encoding@1.0.0/base64";
-import { Hono } from "https://esm.sh/jsr/@hono/hono@4";`}</code>
+            <div className="mt-2">
+              <CodeBlock
+                language="js"
+                className="language-js"
+                value={`import { encodeBase64 } from "https://esm.sh/jsr/@std/encoding@1.0.0/base64";
+import { Hono } from "https://esm.sh/jsr/@hono/hono@4";`}
+              />
             </div>
           </div>
 
           <div className="mb-3">
             <strong className="text-sm" style={{ color: 'var(--foreground-default)' }}>GitHub <span style={{ color: 'var(--brand-default)' }}>(starts with `/gh/`)</span></strong>
-            <div className="rounded-lg mt-2 leading-relaxed" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)', lineHeight: 1.5 }}>
-              <code>{`import tslib from "https://esm.sh/gh/microsoft/tslib";
-import tslib from "https://esm.sh/gh/microsoft/tslib@v2.8.0";`}</code>
+            <div className="mt-2">
+              <CodeBlock
+                language="js"
+                className="language-js"
+                value={`import tslib from "https://esm.sh/gh/microsoft/tslib";
+import tslib from "https://esm.sh/gh/microsoft/tslib@v2.8.0";`}
+              />
             </div>
           </div>
         </section>
@@ -206,8 +187,10 @@ import tslib from "https://esm.sh/gh/microsoft/tslib@v2.8.0";`}</code>
             <strong style={{ color: 'var(--foreground-default)' }}>TSX</strong> directly in HTML without any build steps.
           </div>
 
-          <pre className="rounded-lg overflow-x-auto leading-relaxed" style={{ backgroundColor: 'var(--background-surface-100)', padding: '18px 24px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: 14, color: 'var(--foreground-muted)', lineHeight: 1.5 }}>
-            <code>{`<!DOCTYPE html>
+          <CodeBlock
+            language="html"
+            className="language-html"
+            value={`<!DOCTYPE html>
 <html>
 <head>
   <script type="importmap">
@@ -227,8 +210,8 @@ import tslib from "https://esm.sh/gh/microsoft/tslib@v2.8.0";`}</code>
     createRoot(root).render(<h1>Hello, World!</h1>)
   </script>
 </body>
-</html>`}</code>
-          </pre>
+</html>`}
+          />
         </section>
 
         <section id="faq" style={{ borderTop: '1px solid var(--border-default)', maxWidth: 960, margin: '0 auto', padding: '48px 24px', textAlign: 'center' }}>

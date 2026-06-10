@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { CodeBlock } from 'ui'
 
 const NAV_LINKS = [
   { label: 'GitHub', href: 'https://github.com/mmdj04' },
@@ -83,9 +84,11 @@ export default function AboutPage() {
             <h4 className="text-2xl sm:text-3xl md:text-[32px] font-medium leading-snug text-foreground-muted max-w-[620px] mt-4">
               Open-source enthusiast.
             </h4>
-            <pre className="overflow-x-auto my-6 p-[18px_24px] rounded-lg bg-muted text-sm text-foreground-muted font-mono">
-              <code>{'import '}</code><code className="text-foreground">about</code><code>{' from '}</code><code>"</code><code className="text-foreground">https://webentic.dev/about</code><code>"</code>
-            </pre>
+            <CodeBlock
+              language="js"
+              className="language-js"
+              value={`import about from "https://webentic.dev/about"`}
+            />
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <a
                 href="https://github.com/mmdj04"
