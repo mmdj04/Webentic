@@ -37,6 +37,12 @@ import {
 } from 'ui'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
+import {
+  AuthError,
+  AuthApiError,
+  AuthRetryableFetchError,
+  AuthUnknownError,
+} from '@supabase/supabase-js'
 
 interface AgentConfig {
   id: string
@@ -58,6 +64,30 @@ interface AgentLog {
   message: string
   level: string
   created_at: string
+}
+
+function formatAuthError(error: unknown): string {
+  if (error instanceof AuthApiError) {
+    const status = error.status ?? 'unknown'
+    const code = error.code ?? 'no_code'
+    return `[${status}] ${error.message} (code: ${code})`
+  }
+  if (error instanceof AuthRetryableFetchError) {
+    return `[NETWORK ERROR] ${error.message} — This may be a CORS issue, Supabase is unreachable, or the project is paused. Check if your Supabase project is active and your URL is correct.`
+  }
+  if (error instanceof AuthUnknownError) {
+    return `[UNKNOWN] ${error.message}`
+  }
+  if (error instanceof AuthError) {
+    return error.message
+  }
+  if (error instanceof TypeError && error.message === 'Failed to fetch') {
+    return `[NETWORK] Failed to reach Supabase. Possible causes:\n• Supabase project is paused or sleeping → wake it up at supabase.com/dashboard\n• CORS not configured for your domain\n• Invalid Supabase URL or anon key\n• Browser extension blocking the request`
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return String(error)
 }
 
 type GenericAuthSession = {
@@ -205,7 +235,7 @@ function SettingsContent() {
         if (error) throw error
       }
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Authentication failed')
+      setAuthError(formatAuthError(err))
     } finally {
       setAuthLoading(false)
     }
@@ -254,7 +284,7 @@ function SettingsContent() {
       setFrequency('manual')
       fetchAgents()
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Failed to create agent')
+      setAuthError(formatAuthError(err))
     } finally {
       setAgentSaving(false)
     }
@@ -299,7 +329,7 @@ function SettingsContent() {
       })
       if (error) throw error
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Failed to update profile')
+      setAuthError(formatAuthError(err))
     } finally {
       setSaving(false)
     }
@@ -316,7 +346,7 @@ function SettingsContent() {
   // Auth screen
   if (!session) {
     return (
-      <div className="min-h-dvh bg-background">
+      <div className="min-h-dvh bg-background flex flex-col">
         <header style={{ borderBottom: '1px solid var(--border-default)' }}>
           <div className="mx-auto flex items-center gap-4 px-6 py-4" style={{ maxWidth: 480 }}>
             <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0" style={{ color: 'var(--foreground-light)' }}>
@@ -328,8 +358,9 @@ function SettingsContent() {
             </span>
           </div>
         </header>
-        <main className="mx-auto px-6 py-12" style={{ maxWidth: 480 }}>
-          <Card className="p-6">
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full" style={{ maxWidth: 420 }}>
+            <Card className="p-6">
             <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--foreground-default)' }}>
               {isSignUp ? 'Create Account' : 'Sign In'}
             </h2>
@@ -402,6 +433,7 @@ function SettingsContent() {
               </button>
             </div>
           </Card>
+          </div>
         </main>
       </div>
     )
