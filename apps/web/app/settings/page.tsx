@@ -23,6 +23,7 @@ import {
   Square,
   AlertCircle,
   RefreshCw,
+  ClipboardCopy,
 } from 'lucide-react'
 import {
   Button,
@@ -264,19 +265,42 @@ function SettingsContent() {
 
   const handleToggleAgent = async (agent: AgentConfig) => {
     const newStatus = agent.status === 'running' ? 'stopped' : 'running'
+
+    if (newStatus === 'stopped') {
+      await supabase
+        .from('agent_configs')
+        .update({ status: 'stopped', updated_at: new Date().toISOString() })
+        .eq('id', agent.id)
+      await supabase.from('agent_logs').insert({
+        agent_id: agent.id,
+        message: `Agent stopped manually`,
+        level: 'info',
+      })
+      fetchAgents()
+      if (selectedAgentId === agent.id) fetchLogs(agent.id)
+      return
+    }
+
     await supabase
       .from('agent_configs')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .update({ status: 'running', updated_at: new Date().toISOString() })
       .eq('id', agent.id)
-
-    await supabase.from('agent_logs').insert({
-      agent_id: agent.id,
-      message: `Agent ${newStatus === 'running' ? 'started' : 'stopped'} manually`,
-      level: 'info',
-    })
 
     fetchAgents()
     if (selectedAgentId === agent.id) fetchLogs(agent.id)
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) return
+
+    fetch('/api/agent/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ agent_id: agent.id }),
+    }).catch(() => {})
   }
 
   const handleDeleteAgent = async (agent: AgentConfig) => {
@@ -716,12 +740,27 @@ function SettingsContent() {
                   {selectedAgentId === agent.id && (
                     <div className="mt-4 border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
-                        <Badge color="scale" className="text-[10px]">
-                          <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
-                          Live
-                        </Badge>
-                      </div>
+                         <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
+                         <div className="flex items-center gap-2">
+                           <button
+                             type="button"
+                             onClick={() => {
+                               const text = logs
+                                 .map((l) => `[${format(new Date(l.created_at), 'HH:mm:ss')}] [${l.level.toUpperCase()}] ${l.message}`)
+                                 .join('\n')
+                               navigator.clipboard.writeText(text)
+                             }}
+                             className="text-foreground-lighter hover:text-foreground transition-colors"
+                             title="Copy logs"
+                           >
+                             <ClipboardCopy className="size-3.5" />
+                           </button>
+                           <Badge color="scale" className="text-[10px]">
+                             <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
+                             Live
+                           </Badge>
+                         </div>
+                       </div>
                       {logsLoading ? (
                         <div className="flex justify-center py-4">
                           <Loader2 className="size-4 animate-spin text-foreground-muted" />
