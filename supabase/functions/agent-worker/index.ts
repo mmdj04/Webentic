@@ -327,17 +327,26 @@ Generate documentation with these sections:
 </formatting_rules>`
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders })
   }
 
   const accessToken = authHeader.slice(7)
   const { agent_id } = await req.json()
 
   if (!agent_id) {
-    return new Response(JSON.stringify({ error: 'agent_id is required' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'agent_id is required' }), { status: 400, headers: corsHeaders })
   }
 
   const supabase = createClient(
@@ -356,7 +365,7 @@ Deno.serve(async (req) => {
     .single()
 
   if (agentError || !agent) {
-    return new Response(JSON.stringify({ error: 'Agent not found' }), { status: 404 })
+    return new Response(JSON.stringify({ error: 'Agent not found' }), { status: 404, headers: corsHeaders })
   }
 
   const log = async (message: string, level = 'info') => {
@@ -374,7 +383,7 @@ Deno.serve(async (req) => {
     if (!repo) {
       await log(`[${runId}] All repositories have already been documented`, 'warn')
       await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
-      return new Response(JSON.stringify({ message: 'No undocumented repos found' }))
+      return new Response(JSON.stringify({ message: 'No undocumented repos found' }), { headers: corsHeaders })
     }
 
     const [owner, name] = repo.full_name.split('/')
@@ -395,7 +404,7 @@ Deno.serve(async (req) => {
     if (files.length === 0) {
       await log(`[${runId}] No source files found`, 'error')
       await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
-      return new Response(JSON.stringify({ message: 'No source files found' }))
+      return new Response(JSON.stringify({ message: 'No source files found' }), { headers: corsHeaders })
     }
 
     await log(`[${runId}] Generating documentation via Gemini...`)
@@ -429,11 +438,11 @@ Deno.serve(async (req) => {
 
     await supabase.from('agent_configs').update({ status: 'stopped', updated_at: new Date().toISOString() }).eq('id', agent_id)
 
-    return new Response(JSON.stringify({ message: 'Agent run complete', repo: repo.full_name }))
+    return new Response(JSON.stringify({ message: 'Agent run complete', repo: repo.full_name }), { headers: corsHeaders })
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err)
     await log(`[${runId}] Fatal error: ${errMsg}`, 'error')
     await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
-    return new Response(JSON.stringify({ error: errMsg }), { status: 500 })
+    return new Response(JSON.stringify({ error: errMsg }), { status: 500, headers: corsHeaders })
   }
 })
