@@ -865,7 +865,7 @@ async function saveProcessingState(
     .eq('id', agentId)
 }
 
-function scheduleNextCall(agentId: string, delayMs = 1000) {
+async function scheduleNextCall(agentId: string, delayMs = 1000) {
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!serviceKey) {
     console.error('[scheduleNextCall] SUPABASE_SERVICE_ROLE_KEY not set')
@@ -873,20 +873,20 @@ function scheduleNextCall(agentId: string, delayMs = 1000) {
   }
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const url = `${supabaseUrl}/functions/v1/agent-worker`
-  setTimeout(async () => {
-    try {
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${serviceKey}`,
-        },
-        body: JSON.stringify({ agent_id: agentId }),
-      })
-    } catch (err) {
-      console.error('[scheduleNextCall]', err)
-    }
-  }, delayMs)
+  // Await the delay BEFORE returning, so the runtime keeps the event loop alive
+  await new Promise(r => setTimeout(r, delayMs))
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ agent_id: agentId }),
+    })
+  } catch (err) {
+    console.error('[scheduleNextCall]', err)
+  }
 }
 
 async function scheduleAfterRun(supabase: ReturnType<typeof createClient>, agentId: string) {
@@ -921,7 +921,7 @@ async function scheduleAfterRun(supabase: ReturnType<typeof createClient>, agent
     })
     .eq('id', agentId)
 
-  scheduleNextCall(agentId, intervalMs)
+  await scheduleNextCall(agentId, intervalMs)
 }
 
 Deno.serve(async (req) => {
@@ -974,7 +974,7 @@ Deno.serve(async (req) => {
       if (ps?.phase === 'idle') {
         if (ps.next_run && new Date(ps.next_run).getTime() > Date.now()) {
           const waitMs = new Date(ps.next_run).getTime() - Date.now()
-          scheduleNextCall(agent_id, Math.min(waitMs, 3600_000))
+          await scheduleNextCall(agent_id, Math.min(waitMs, 3600_000))
           return new Response(JSON.stringify({ message: 'Scheduled run not yet due' }), { headers: corsHeaders })
         }
         await log(`[${runId}] Scheduled run starting for: ${agent.name}`)
@@ -1034,7 +1034,7 @@ Deno.serve(async (req) => {
       }).eq('id', agent_id)
 
       await log(`[${runId}] Files fetched. ${selectedFiles.length} files to process.`)
-      scheduleNextCall(agent_id, 1000)
+      await scheduleNextCall(agent_id, 1000)
       return new Response(JSON.stringify({ message: 'Files fetched, ready for stage 1' }), { headers: corsHeaders })
     }
 
@@ -1089,7 +1089,7 @@ Deno.serve(async (req) => {
       }
 
       await saveProcessingState(supabase, agent_id, ps)
-      scheduleNextCall(agent_id, 1500)
+      await scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({
         message: ps.phase === 'stage2' ? 'All files analyzed' : 'File analyzed',
         file: i + 1,
@@ -1125,7 +1125,7 @@ Deno.serve(async (req) => {
         await log(`[${runId}] Module ${batchDone + 1}/${ps.total_chunks} complete.`)
 
         await saveProcessingState(supabase, agent_id, ps)
-        scheduleNextCall(agent_id, 1500)
+        await scheduleNextCall(agent_id, 1500)
         return new Response(JSON.stringify({
           message: ps.current_chunk >= ps.total_chunks ? 'All modules synthesized' : 'Module done',
           batch: batchDone + 1,
@@ -1140,7 +1140,7 @@ Deno.serve(async (req) => {
       ps.processing_since = null
       await saveProcessingState(supabase, agent_id, ps)
       await log(`[${runId}] All ${ps.module_reports.length} modules synthesized. Moving to architecture synthesis.`)
-      scheduleNextCall(agent_id, 1500)
+      await scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({ message: 'Module synthesis complete, starting architecture' }), { headers: corsHeaders })
     }
 
@@ -1171,7 +1171,7 @@ Deno.serve(async (req) => {
       } else {
         await log(`[${runId}] Architecture complete. Starting ${ps.total_chunks} component deep-dives.`)
       }
-      scheduleNextCall(agent_id, 1500)
+      await scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({ message: 'Architecture complete' }), { headers: corsHeaders })
     }
 
@@ -1211,7 +1211,7 @@ Deno.serve(async (req) => {
       }
 
       await saveProcessingState(supabase, agent_id, ps)
-      scheduleNextCall(agent_id, 1500)
+      await scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({
         message: ps.phase === 'stage5' ? 'All deep-dives complete' : 'Deep-dive done',
         module: i + 1,
@@ -1281,7 +1281,7 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Documentation published for ${ps.owner}/${ps.name}`)
       await log(`[${runId}] Agent run complete. Processing state cleared.`)
 
-      setTimeout(() => scheduleAfterRun(supabase, agent_id), 0)
+      await scheduleAfterRun(supabase, agent_id)
       return new Response(JSON.stringify({ message: 'Documentation complete', repo: repo.full_name }), { headers: corsHeaders })
     }
 
@@ -1294,7 +1294,7 @@ Deno.serve(async (req) => {
     if (ps) {
       ps.processing_since = null
       await saveProcessingState(supabase, agent_id, ps)
-      scheduleNextCall(agent_id, 2500)
+      await scheduleNextCall(agent_id, 2500)
     } else {
       await supabase.from('agent_configs').update({ status: 'error', updated_at: now() }).eq('id', agent_id)
     }
