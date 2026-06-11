@@ -182,7 +182,7 @@ Be exhaustive — no detail is too small. Stage 3 will read this as the authorit
 </instructions>
 
 <files>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content}\n</file>`).join('\n\n')}
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
 </files>`
 }
 
@@ -556,7 +556,7 @@ ${structure}
 </file_structure>
 
 <file_contents>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content}\n</file>`).join('\n\n')}
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
 </file_contents>
 </source_data>
 
