@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Star } from 'lucide-react'
+import { Github } from 'lucide-react'
 
 export function GitHubStars() {
   const [stars, setStars] = useState<number | null>(null)
@@ -22,7 +22,7 @@ export function GitHubStars() {
       rel="noopener noreferrer"
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-foreground-lighter hover:text-foreground hover:bg-muted transition-colors"
     >
-      <Star className="size-3.5 fill-amber-400 text-amber-400" />
+      <Github className="size-3.5" />
       <span>{stars.toLocaleString()}</span>
     </a>
   )

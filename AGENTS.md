@@ -45,4 +45,4 @@
 ## Webentic Backup
 - Two repos: **public** `mmdj04/Webentic` (production, respects `.gitignore`) and **private** `mmdj04/Webentic-backup` (full local backup with ALL files)
 - Backup includes `node_modules`, `.next`, `.turbo`, `supabase/.temp` — everything
-- Branch: `master` (not `main`); synced by copying all files → fresh `git init` → force push
+- Branch: `main`; synced by copying all files → fresh `git init` → force push
