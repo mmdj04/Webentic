@@ -127,66 +127,75 @@ function prioritizeFiles(files: { path: string; content: string }[]): { path: st
   return scored.slice(0, MAX_SCORED_FILES).map(({ score: _, ...f }) => f)
 }
 
-function buildAnalysisPrompt(
-  files: { path: string; content: string }[],
-  chunkIndex: number,
-  totalChunks: number
+function buildSingleFilePrompt(
+  file: { path: string; content: string },
+  fileIndex: number,
+  totalFiles: number,
+  repoName: string,
+  description: string | null,
+  language: string | null,
+  topics: string[]
 ): string {
-  const numberedFiles = files.map(f => {
-    const lines = f.content.split('\n')
-    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
-    return { path: f.path, content: numbered }
-  })
+  const lines = file.content.split('\n')
+  const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
 
   return `<role>
 You are an expert Code Analyst — Stage 1 of 5 in our documentation pipeline.
-Analyze source files and produce exhaustive file-level breakdowns.
-Use the full 150s budget. Analyze every function, type, import, and constant.
+Analyze this single source file and produce a detailed file-level breakdown.
 </role>
 
 <stage_info>
-Stage 1/5 — Per-file Code Analysis (batch ${chunkIndex} of ${totalChunks})
-Your output feeds into: Stage 2 (Module Synthesis) → Stage 5 (Final Wiki)
+Stage 1/5 — File Analysis (file ${fileIndex} of ${totalFiles})
 </stage_info>
 
+<repository_context>
+- Repository: ${repoName}
+- Description: ${description || 'N/A'}
+- Language: ${language || 'N/A'}
+- Topics: ${topics.join(', ') || 'N/A'}
+</repository_context>
+
+<current_file>
+Path: ${file.path}
+Lines: ${lines.length}
+</current_file>
+
+<file_content>
+${numbered.slice(0, 15000)}
+</file_content>
+
 <instructions>
-Analyze EVERY file in this batch. For each file produce a structured analysis:
+Analyze this file comprehensively. Produce:
 
-## \`path/to/file.ts\`
+## Purpose
+What does this file do? Its role in the project.
 
-### Purpose
-What does this file do? Where does it belong in the project?
+## Exports (Public API)
+Every exported symbol: signature, line range, purpose.
 
-### Exports (Public API)
-For every exported symbol (function, class, interface, type, constant, enum):
-- \`export function foo(bar: string): number\` (line 12-45)
-- What it does, parameters, return type, side effects, error handling
-
-### Internal Functions & Helpers
+## Internal Functions & Helpers
 Non-exported functions with line ranges and purpose.
 
-### Types & Interfaces
-Full breakdown of every type/interface/enum with fields, types, and where used.
+## Types & Interfaces
+Types/interfaces/enums with fields and descriptions.
 
-### Dependencies
-**Internal**: imports from other project files — what specifically is imported
-**External**: npm/pip/go/etc packages used
+## Dependencies
+**Internal**: imports from other project files
+**External**: third-party packages used
 
-### Constants & Configuration
-Important constants, env vars, magic numbers, config keys.
+## Constants & Configuration
+Important constants, env vars, config keys.
 
-### Architecture Notes
-Design patterns, state management, event flow, callbacks, class hierarchies.
+## Architecture Notes
+Design patterns, state management, data flow.
 
 ---
-Be exhaustive — no detail is too small. Stage 2 will read this to synthesize module reports.
-- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
-</instructions>
-
-<files>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 15000)}\n</file>`).join('\n\n')}
-</files>`
+Be exhaustive. This analysis feeds into Stage 2 (Module Synthesis).
+- CRITICAL: Never use emojis, emoticons, or decorative characters.
+</instructions>`
 }
+
+
 
 function buildModulePrompt(
   repoName: string,
@@ -999,9 +1008,7 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Fetching latest commit SHA...`)
       const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
 
-      const totalChunks = Math.ceil(selectedFiles.length / CHUNK_SIZE)
-
-      // Save state and return — next invocation processes stage1
+      // Save state and return — next invocation processes stage1 (one file at a time)
       await supabase.from('agent_configs').update({
         status: 'running',
         updated_at: now(),
@@ -1015,7 +1022,7 @@ Deno.serve(async (req) => {
           structure,
           files: selectedFiles,
           current_chunk: 0,
-          total_chunks: totalChunks,
+          total_chunks: selectedFiles.length,
           file_analyses: [],
           module_reports: [],
           architecture_report: '',
@@ -1023,7 +1030,7 @@ Deno.serve(async (req) => {
         } as ProcessingState,
       }).eq('id', agent_id)
 
-      await log(`[${runId}] Files fetched. ${totalChunks} batches to process.`)
+      await log(`[${runId}] Files fetched. ${selectedFiles.length} files to process.`)
       scheduleNextCall(agent_id, 1000)
       return new Response(JSON.stringify({ message: 'Files fetched, ready for stage 1' }), { headers: corsHeaders })
     }
@@ -1052,18 +1059,18 @@ Deno.serve(async (req) => {
     const repo = ps.repo
 
     if (ps.phase === 'stage1') {
-      // ── STAGE 1: File-Level Analysis ────────────────────
+      // ── STAGE 1: Per-File Analysis (one file per RPD) ─────
       const i = ps.current_chunk
-      const chunk = ps.files.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-      await log(`[${runId}] Stage 1/5: File analysis batch ${i + 1} of ${ps.total_chunks} (${chunk.length} files)...`)
+      const file = ps.files[i]
+      await log(`[${runId}] Analyzing file ${i + 1}/${ps.total_chunks}: ${file.path}`)
 
       const analysis = await generateContent(
-        buildAnalysisPrompt(chunk, i + 1, ps.total_chunks),
+        buildSingleFilePrompt(file, i + 1, ps.total_chunks, repo.full_name, repo.description, repo.language, repo.topics),
         apiKey, log, OUTPUT_TOKENS.stage1
       )
 
       if (analysis) ps.file_analyses.push(analysis)
-      else await log(`[${runId}] Batch ${i + 1} returned empty analysis`, 'warn')
+      else await log(`[${runId}] File ${i + 1} returned empty analysis`, 'warn')
 
       ps.current_chunk = i + 1
       ps.processing_since = null
@@ -1073,16 +1080,16 @@ Deno.serve(async (req) => {
         ps.current_chunk = 0
         ps.total_chunks = Math.ceil(ps.file_analyses.length / 2)
         ps.module_reports = []
-        await log(`[${runId}] Stage 1 complete. ${ps.file_analyses.length} analyses ready. Stage 2: ${ps.total_chunks} module synthesis batches.`)
+        await log(`[${runId}] All ${ps.file_analyses.length} files analyzed. Stage 2: ${ps.total_chunks} module synthesis batches.`)
       } else {
-        await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
+        await log(`[${runId}] ${ps.current_chunk}/${ps.total_chunks} files analyzed.`)
       }
 
       await saveProcessingState(supabase, agent_id, ps)
       scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({
-        message: ps.phase === 'stage2' ? 'Stage 1 complete' : 'Batch processed',
-        batch: i + 1,
+        message: ps.phase === 'stage2' ? 'All files analyzed' : 'File analyzed',
+        file: i + 1,
         total: ps.total_chunks,
       }), { headers: corsHeaders })
     }
@@ -1095,7 +1102,7 @@ Deno.serve(async (req) => {
       if (!isLastBatch) {
         const from = batchDone * 2
         const to = Math.min(from + 2, ps.file_analyses.length)
-        await log(`[${runId}] Stage 2/5: Module synthesis batch ${batchDone + 1} of ${ps.total_chunks} (analyses ${from + 1}-${to})...`)
+        await log(`[${runId}] Synthesizing module ${batchDone + 1}/${ps.total_chunks} (analyses ${from + 1}-${to})...`)
 
         const report = await generateContent(
           buildModulePrompt(
@@ -1112,12 +1119,12 @@ Deno.serve(async (req) => {
         ps.current_chunk = batchDone + 1
         ps.processing_since = null
 
-        await log(`[${runId}] Module report ${batchDone + 1}/${ps.total_chunks} done.`)
+        await log(`[${runId}] Module ${batchDone + 1}/${ps.total_chunks} complete.`)
 
         await saveProcessingState(supabase, agent_id, ps)
         scheduleNextCall(agent_id, 1500)
         return new Response(JSON.stringify({
-          message: ps.current_chunk >= ps.total_chunks ? 'All module reports complete' : 'Module report done',
+          message: ps.current_chunk >= ps.total_chunks ? 'All modules synthesized' : 'Module done',
           batch: batchDone + 1,
           total: ps.total_chunks,
         }), { headers: corsHeaders })
@@ -1129,14 +1136,14 @@ Deno.serve(async (req) => {
       ps.total_chunks = 1
       ps.processing_since = null
       await saveProcessingState(supabase, agent_id, ps)
-      await log(`[${runId}] Stage 2 complete. ${ps.module_reports.length} module reports. Moving to Stage 3 (Architecture Synthesis)...`)
+      await log(`[${runId}] All ${ps.module_reports.length} modules synthesized. Moving to architecture synthesis.`)
       scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({ message: 'Module synthesis complete, starting architecture' }), { headers: corsHeaders })
     }
 
     if (ps.phase === 'stage3') {
       // ── STAGE 3: Architecture & Cross-Cutting ────────────
-      await log(`[${runId}] Stage 3/5: Synthesizing ${ps.module_reports.length} module reports into architecture...`)
+      await log(`[${runId}] Building architecture from ${ps.module_reports.length} module reports...`)
 
       const archReport = await generateContent(
         buildArchitecturePrompt(
@@ -1159,10 +1166,10 @@ Deno.serve(async (req) => {
       if (!archReport) {
         await log(`[${runId}] Stage 3 returned empty architecture report`, 'warn')
       } else {
-        await log(`[${runId}] Stage 3 complete. Moving to Stage 4 (${ps.total_chunks} component deep-dives)...`)
+        await log(`[${runId}] Architecture complete. Starting ${ps.total_chunks} component deep-dives.`)
       }
       scheduleNextCall(agent_id, 1500)
-      return new Response(JSON.stringify({ message: 'Architecture synthesis complete' }), { headers: corsHeaders })
+      return new Response(JSON.stringify({ message: 'Architecture complete' }), { headers: corsHeaders })
     }
 
     if (ps.phase === 'stage4') {
@@ -1170,7 +1177,7 @@ Deno.serve(async (req) => {
       const i = ps.current_chunk
       const moduleReport = ps.module_reports[i]
       const topFiles = ps.files.slice(0, CHUNK_SIZE)
-      await log(`[${runId}] Stage 4/5: Deep-dive for module ${i + 1} of ${ps.total_chunks}...`)
+      await log(`[${runId}] Deep-dive module ${i + 1}/${ps.total_chunks}...`)
 
       const doc = await generateContent(
         buildComponentDeepDivePrompt(
@@ -1195,7 +1202,7 @@ Deno.serve(async (req) => {
         ps.phase = 'stage5'
         ps.current_chunk = 0
         ps.total_chunks = 1
-        await log(`[${runId}] Stage 4 complete. ${ps.component_docs.length} deep-dives ready. Moving to Stage 5 (final assembly).`)
+        await log(`[${runId}] All ${ps.component_docs.length} deep-dives complete. Assembling final wiki.`)
       } else {
         await log(`[${runId}] Deep-dive ${i + 1}/${ps.total_chunks} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
       }
@@ -1211,7 +1218,7 @@ Deno.serve(async (req) => {
 
     if (ps.phase === 'stage5') {
       // ── STAGE 5: Final Wiki Assembly ────────────────────
-      await log(`[${runId}] Stage 5/5: Assembling final documentation...`)
+      await log(`[${runId}] Assembling final wiki...`)
 
       const topFiles = ps.files.slice(0, CHUNK_SIZE)
       const documentation = await generateContent(
