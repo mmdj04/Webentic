@@ -4,7 +4,7 @@ const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
-const MAX_INPUT_FILES = 30
+const MAX_INPUT_FILES = 50
 const MAX_RETRIES = 3
 
 const SOURCE_FILE_EXTENSIONS = new Set([
@@ -96,6 +96,14 @@ const CODE_PRIORITY = new Set([
   'h', 'hpp', 'cs', 'swift', 'php',
 ])
 
+function chunkFiles(files: { path: string; content: string }[]): { path: string; content: string }[][] {
+  const chunks: { path: string; content: string }[][] = []
+  for (let i = 0; i < files.length; i += MAX_INPUT_FILES) {
+    chunks.push(files.slice(i, i + MAX_INPUT_FILES))
+  }
+  return chunks
+}
+
 function prioritizeFiles(files: { path: string; content: string }[]): { path: string; content: string }[] {
   // Score each file: code > config > docs/media
   const scored = files.map(f => {
@@ -109,15 +117,175 @@ function prioritizeFiles(files: { path: string; content: string }[]): { path: st
     if (CODE_PRIORITY.has(ext)) score = 3
     else if (isBuild || isConfig) score = 2
     else if (isDoc) score = 1
-    // Prefer files in src/ or lib/ directories
     if (f.path.startsWith('src/') || f.path.startsWith('lib/') || f.path.startsWith('packages/')) score += 1
-    // Prefer shorter paths (deeper = less likely to be core)
     const depth = f.path.split('/').length
     score -= depth * 0.1
     return { ...f, score }
   })
   scored.sort((a, b) => b.score - a.score)
-  return scored.slice(0, MAX_INPUT_FILES).map(({ score: _, ...f }) => f)
+  return scored.slice(0, MAX_INPUT_FILES * 4).map(({ score: _, ...f }) => f)
+}
+
+function buildAnalysisPrompt(
+  files: { path: string; content: string }[],
+  chunkIndex: number,
+  totalChunks: number
+): string {
+  const numberedFiles = files.map(f => {
+    const lines = f.content.split('\n')
+    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
+    return { path: f.path, content: numbered }
+  })
+
+  return `<role>
+You are an expert Code Analyst — Stage 1 of 3 in our documentation pipeline.
+Your sole job is to analyze source files and produce exhaustive file-level breakdowns.
+You have the full 150s generation budget. Use it to analyze every function, type, import, and constant.
+</role>
+
+<stage_info>
+Stage 1/3 — Per-file Code Analysis (batch ${chunkIndex} of ${totalChunks})
+Your output will feed into Stage 2 (Architecture Analysis) and Stage 3 (Documentation Writer).
+</stage_info>
+
+<instructions>
+Analyze EVERY file in this batch. For each file produce a structured analysis:
+
+## \`path/to/file.ts\`
+
+### Purpose
+What does this file do? Where does it belong in the project?
+
+### Exports (Public API)
+For every exported symbol (function, class, interface, type, constant, enum):
+- \`export function foo(bar: string): number\` (line 12-45)
+- What it does, parameters, return type, side effects, error handling
+
+### Internal Functions & Helpers
+Non-exported functions with line ranges and purpose.
+
+### Types & Interfaces
+Full breakdown of every type/interface/enum with fields, types, and where used.
+
+### Dependencies
+**Internal**: imports from other project files — what specifically is imported
+**External**: npm/pip/go/etc packages used
+
+### Constants & Configuration
+Important constants, env vars, magic numbers, config keys.
+
+### Architecture Notes
+Design patterns, state management, event flow, callbacks, class hierarchies.
+
+---
+Be exhaustive — no detail is too small. Stage 3 will read this as the authoritative source.
+</instructions>
+
+<files>
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content}\n</file>`).join('\n\n')}
+</files>`
+}
+
+function buildArchitecturePrompt(
+  repoName: string,
+  description: string | null,
+  language: string | null,
+  topics: string[],
+  owner: string,
+  repo: string,
+  commitSha: string,
+  structure: string,
+  analyses: string[]
+): string {
+  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
+
+  return `<role>
+You are an expert Architecture Analyst — Stage 2 of 3 in our documentation pipeline.
+Your job is to take per-file analyses from Stage 1 and synthesize them into a comprehensive architecture overview.
+You have the full 150s generation budget. Identify patterns, relationships, data flow, and design decisions.
+</role>
+
+<stage_info>
+Stage 2/3 — Cross-file Architecture & Dependency Analysis
+Your output will be the primary input for Stage 3 (Documentation Writer).
+</stage_info>
+
+<repository_info>
+- Name: ${repoName}
+- Description: ${description || 'N/A'}
+- Language: ${language || 'N/A'}
+- Topics: ${topics.join(', ') || 'N/A'}
+- Indexed commit: ${commitSha}
+- GitHub base URL: ${githubBase}
+</repository_info>
+
+<file_structure>
+${structure}
+</file_structure>
+
+<stage1_analyses>
+The following are detailed per-file analyses from Stage 1. Analyze them together to understand the full system.
+
+${analyses.map((a, i) => `<analysis_batch_${i + 1}>\n${a}\n</analysis_batch_${i + 1}>`).join('\n\n')}
+</stage1_analyses>
+
+<instructions>
+Produce a structured architecture report with these sections:
+
+## Project Classification
+- **Software Project** / **Curated Collection** / **Documentation Book**
+- Justify with evidence from Stage 1 analyses
+
+## Dependency Graph
+For each major module/component:
+- What it depends on (both internal and external)
+- What depends on it
+- Categorize: runtime dep, dev dep, optional dep
+
+## Architectural Layers
+Identify the major layers of the project (e.g., API layer, business logic, data access, UI, config).
+For each layer:
+- Which files/modules belong to it
+- What responsibility it has
+- How it communicates with other layers
+
+## Data Flow
+How data moves through the system:
+- Entry points
+- Request/response lifecycle
+- State management
+- Events and event handlers
+- External API interactions
+
+## Design Patterns
+Patterns used in the codebase (MVC, Observer, Factory, Singleton, Repository, etc.):
+- Where each pattern appears (file and line ranges)
+- Why it's used there
+
+## Key Components Summary
+For each major component identified across all files:
+- **Name**: component/module name
+- **Files**: list of files that implement it
+- **Responsibility**: what it does
+- **Public API surface**: how other components interact with it
+- **Dependencies**: what it needs to function
+
+## Configuration Architecture
+How the project is configured:
+- Config file formats and locations
+- Environment variables (required vs optional)
+- Build-time vs runtime configuration
+- Feature flags
+
+## Testing Architecture
+- Testing framework
+- Test organization (unit vs integration vs e2e)
+- Mock/stub approach
+- CI pipeline testing stages
+
+---
+Be exhaustive and technically precise. Stage 3 will use this report to write the final documentation.
+</instructions>`
 }
 
 interface GitHubRepo {
@@ -274,7 +442,10 @@ async function generateGemini(prompt: string, apiKey: string, log?: (msg: string
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 65536 },
+        generationConfig: {
+          maxOutputTokens: 65536,
+          thinkingConfig: { thinkingLevel: 'HIGH' },
+        },
       }),
     })
 
@@ -330,7 +501,7 @@ async function getLatestCommitSha(
   return data.commit?.sha || null
 }
 
-function buildPrompt(
+function buildFinalPrompt(
   repoName: string,
   description: string | null,
   language: string | null,
@@ -338,10 +509,11 @@ function buildPrompt(
   owner: string,
   repo: string,
   commitSha: string,
+  defaultBranch: string,
   structure: string,
-  files: { path: string; content: string }[]
+  files: { path: string; content: string }[],
+  architectureReport: string
 ): string {
-  // Add line numbers to file contents for accurate source line references
   const numberedFiles = files.map(f => {
     const lines = f.content.split('\n')
     const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
@@ -351,8 +523,16 @@ function buildPrompt(
   const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
 
   return `<role>
-You are an expert technical documentation writer. Generate comprehensive, well-structured documentation in the style of DeepWiki for this open-source repository. Focus on accuracy, technical depth, and traceability to source code.
+You are an expert Technical Documentation Writer — Stage 3 of 3 in our documentation pipeline.
+Your job is to take the Stage 2 architecture report and selected source files, then produce a beautiful, comprehensive DeepWiki-style wiki page.
+You have the full 150s generation budget. Use it to write deep, thorough documentation with precise source code traceability.
 </role>
+
+<stage_info>
+Stage 3/3 — Final Wiki Generation
+Inputs: Stage 2 Architecture Report + Top source files with line numbers
+Output: Complete DeepWiki markdown page
+</stage_info>
 
 <repository_info>
 - Name: ${repoName}
@@ -364,94 +544,142 @@ You are an expert technical documentation writer. Generate comprehensive, well-s
 - GitHub base URL: ${githubBase}
 </repository_info>
 
+<stage2_architecture_report>
+${architectureReport}
+</stage2_architecture_report>
+
 <source_data>
-File contents include LINE NUMBERS (format "LINE_NUMBER:content"). Use these to reference exact source locations.
+File contents include LINE NUMBERS (format "LINE_NUMBER:content"). Use these to reference exact source locations in the format \`[path/file.ts#L10-L30](${githubBase}/path/file.ts#L10-L30)\`.
 
 <file_structure>
 ${structure}
 </file_structure>
 
 <file_contents>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content}\n</file>`).join('\n\n')}
 </file_contents>
 </source_data>
 
 <output_structure>
-Generate a single-page DeepWiki-style wiki with sections in this order:
+Generate a multi-section DeepWiki-style documentation page with ALL of the following sections. Use the Stage 2 architecture report as your primary source of truth, and the source files for precise line-numbered references. Be exhaustive, technically detailed, and precise.
 
 ### Relevant Source Files
-Table with columns: File, Purpose, Key Elements.
-List the most important source files identified in the repository.
-After each file path, add a clickable Markdown link to the GitHub location.
+A comprehensive table with columns: File | Purpose | Key Elements | Dependencies.
+List ALL significant source files. After each file path, add a clickable Markdown link to the GitHub location with line range.
+Every important file must be listed here.
 
 ### Overview
-What the project does, key features, problems it solves. Reference source files.
+- What the project does and who it is for
+- Key features and capabilities (list with detail)
+- Problems it solves and use cases
+- Technology stack (languages, frameworks, runtime)
+- Reference source files throughout
 
 ### Project Type
-First, determine the type of this repository:
-- **If the repo is a curated list / awesome list / collection of links** (few or no source code files, mainly a README.md with categorized links), classify it as a "Curated Resource Collection." Do NOT invent software architecture, do NOT generate a Mermaid diagram, and do NOT describe markdown files as "components" or "engines."
-- **If the repo is a software project** (has actual source code in languages like .ts, .py, .go, .rs, .java, .c, etc.), classify it as a "Software Project" and generate the Architecture section as normal.
-- **If the repo is a book / documentation project** (markdown chapters, e-book build system), classify it as a "Documentation / Book" and describe its structure accordingly.
+State the classification (Software Project / Curated Collection / Documentation Book).
 
-### Architecture
-Only generate this section if the repo is a "Software Project."
-If applicable, include a Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships.
-Then explain each component with source file and line range references.
-After this section, add a "Sources:" bullet list of all files referenced.
-**For curated lists or books, skip the Architecture section entirely or replace it with a "Content Organization" section describing how the content is structured.**
-
-### Project Structure
-Table of main directories with columns: Directory, Purpose, Key Files.
-
-### Getting Started
-Prerequisites, installation steps, basic usage examples with code blocks.
-**IMPORTANT: Only include terminal commands (npx, npm, pip, go install, etc.) if they EXACTLY appear in the provided source file contents. Never invent or guess commands.**
-
-### Key Components
-For a software project, describe each major component/module/class:
-#### Component Name
-- **File:** \`path/file.ts#L10-L50\` (as Markdown link to GitHub)
-- **Purpose:** What this component does
-- **Key Methods/Properties:** Table with columns: Name, Signature, Description, Source (file with line range)
-- **Sources:** List of files this component touches
-**For curated lists, replace this with "Content Categories" and describe the organization of the listed resources.**
-**For books, replace this with "Chapter Overview" and describe the chapters.**
-
-### Configuration
-Table with columns: Key, Type, Default, Description, Source file link.
-Only include if the repo has actual configuration files.
-
-### Key Data Structures
-For each important type/interface/class/struct:
-#### Structure Name
-- **File:** \`path/file.ts#L10-L50\`
-- **Fields:** Table with columns: Field, Type, Description, Source link
-- **Used In:** References to components/files that consume this structure
-Only include for software projects with actual data structures.
-
-### Testing
-Testing approach, how to run tests, test file locations.
+### Quick Start
+Installation, prerequisites, and basic usage. Show commands, API keys needed, environment setup.
 **Only include commands that appear verbatim in the source files.**
 
+### Architecture
+FOR SOFTWARE PROJECTS ONLY — generate this section with:
+1. A Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships, data flow, and external dependencies
+2. Detailed explanation of each architectural layer/module with file and line range references
+3. Request/response lifecycle or data flow walkthrough
+4. Design patterns used and why
+5. After the section, a "Sources:" bullet list of every file referenced
+
+FOR CURATED LISTS / BOOKS — skip Architecture, instead generate:
+### Content Organization
+- How the content is structured (categories, chapters, sections)
+- Navigation patterns
+- Contribution guidelines for adding content
+
+### Project Structure
+A detailed table with columns: Directory | Purpose | Key Files | Notable Subdirectories.
+Every major directory should be documented.
+
+### Core Components
+FOR SOFTWARE PROJECTS — exhaustive documentation of every major component:
+#### [Component Name]
+- **File:** \`path/file.ts#L10-L50\` (Markdown link to GitHub)
+- **Purpose:** What this component does
+- **Public API:** Every exported function/class/constant with signature, line range, and explanation
+- **Key Methods:** Table with columns: Method | Signature | Description | Line Range | Source
+- **Internal Logic:** How it works internally, algorithms, state management
+- **Error Handling:** What errors can occur and how they're handled
+- **Dependencies:** Internal and external dependencies
+- **Sources:** List of files this component touches with line ranges
+
+FOR CURATED LISTS — replace with:
+### Content Categories
+Detailed breakdown of each category/section in the list with what it contains.
+
+FOR BOOKS — replace with:
+### Chapter Overview
+Each chapter's content, length, and key topics covered.
+
+### Key Data Structures
+FOR SOFTWARE PROJECTS — for each important type/interface/class/struct:
+#### [Structure Name]
+- **File:** \`path/file.ts#L10-L50\`
+- **Definition:** Full type/interface/class definition with line range
+- **Fields:** Table with columns: Field | Type | Description | Default | Source
+- **Methods:** Table with columns: Method | Signature | Description | Line Range
+- **Usage:** Which components create, consume, or extend this structure
+- **Relationships:** Inheritance, composition, or association with other structures
+
+### Configuration & Environment
+- Configuration files and their formats
+- Environment variables: table with columns: Variable | Required | Default | Description | Source
+- Build / CI configuration
+- Feature flags or runtime configuration
+
+### API Reference
+If the project exposes an API (REST, GraphQL, library API, CLI commands):
+- Endpoints / functions with signatures, parameters, return values
+- Authentication and authorization
+- Request/response examples
+- Error codes
+
+### Testing
+- Testing framework and tools used
+- Test directory structure
+- How to run tests (only commands from source files)
+- Test coverage approach
+- CI pipeline testing steps
+
+### Dependencies
+- Runtime dependencies with purpose
+- Development dependencies with purpose
+- Version constraints
+
+### Contributing
+How to contribute — only what is documented in actual source files (CONTRIBUTING.md, pull request templates, etc.)
+
 ### Last Indexed
-- **Commit:** ${commitSha}
+- **Commit:** \`${commitSha}\`
+- **Branch:** \`${defaultBranch}\`
 - **Source files analyzed:** ${files.length}
 - **Indexed at:** ${new Date().toISOString()}
+- **Repository:** [${owner}/${repo}](${githubBase.replace('/blob/' + commitSha, '')})
 </output_structure>
 
 <formatting_rules>
-- Output valid Markdown
-- EVERY source file reference MUST include line ranges (e.g., \`path/file.ts#L10-L50\`)
-- Use Markdown link syntax for source references: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
-- Only generate a Mermaid diagram if the repo is a software project with actual code architecture
-- Use tables for all structured data (add blank line before and after)
-- Use \`\`\`language code blocks for code examples
-- After each major section, add a "Sources:" line listing files referenced with line ranges
-- Be technically detailed and precise
+- Output valid GitHub-flavored Markdown
+- EVERY source file reference MUST include exact line ranges (e.g., \`path/file.ts#L10-L50\`)
+- Use full Markdown link syntax: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
+- Use Mermaid diagrams (\`\`\`mermaid ... \`\`\`) for software projects with real architecture
+- Use tables for all structured data with blank line before and after each table
+- Use \`\`\`language code blocks for code examples with the correct language identifier
+- After each major section, add a "Sources:" line listing every file referenced in that section with line ranges
+- Be technically exhaustive — cover every function, type, and component in the relevant sections
 - Avoid inline HTML and unnecessary emojis
-- **CRITICAL: Never invent terminal commands.** Only show a command if it is written verbatim in a source file (e.g., a Makefile, Dockerfile, CI config, or README). If no source file contains a command example, do not generate any code blocks with shell commands.
-- **CRITICAL: Do not invent software architecture.** If the repo has no source code (only markdown, config files, and documentation), describe it as a curated collection, list, or book — not as a software framework. Do not generate Mermaid diagrams for list/collection repos.
-- **CRITICAL: Do not describe markdown files or templates as "components," "engines," "pipelines," or "frameworks."** Files like CONTRIBUTING.md, pull_request_template.md, and ISSUE_TEMPLATE.md are documentation templates, not software modules.
+- **CRITICAL: Never invent terminal commands.** Only show a command if it appears VERBATIM in a source file.
+- **CRITICAL: Never invent software architecture.** If no source code exists, classify as curated list or book.
+- **CRITICAL: Never describe markdown templates as components, engines, pipelines, or frameworks.**
+- **CRITICAL: Use the Stage 2 architecture report as the authoritative reference for architecture and dependencies.**
 </formatting_rules>`
 }
 
@@ -542,13 +770,43 @@ Deno.serve(async (req) => {
 
     const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
 
-    await log(`[${runId}] Generating documentation via Gemini...`)
+    await log(`[${runId}] Generating documentation via 3-stage Gemini pipeline...`)
 
     // Set status to running before Gemini (longest operation, may timeout)
     await supabase.from('agent_configs').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', agent_id)
 
-    const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, owner, name, commitSha, structure, selectedFiles)
-    const documentation = await generateGemini(prompt, agent.gemini_api_key!, log)
+    // Stage 1: Per-file code analysis (one call per chunk, each has own 150s + 250K tokens)
+    const chunks = chunkFiles(selectedFiles)
+    const analyses: string[] = []
+
+    for (let i = 0; i < chunks.length; i++) {
+      await log(`[${runId}] Stage 1/${chunks.length + 2}: Analyzing batch ${i + 1} of ${chunks.length} (${chunks[i].length} files)...`)
+      const analysisPrompt = buildAnalysisPrompt(chunks[i], i + 1, chunks.length)
+      const analysis = await generateGemini(analysisPrompt, agent.gemini_api_key!, log)
+      if (analysis) analyses.push(analysis)
+      else await log(`[${runId}] Stage 1 batch ${i + 1} returned empty analysis`, 'warn')
+    }
+
+    // Stage 2: Architecture synthesis from all Stage 1 analyses
+    await log(`[${runId}] Stage 2/${chunks.length + 2}: Synthesizing architecture from ${analyses.length} analyses...`)
+    const archPrompt = buildArchitecturePrompt(
+      repo.full_name, repo.description, repo.language, repo.topics,
+      owner, name, commitSha, structure, analyses
+    )
+    const architectureReport = await generateGemini(archPrompt, agent.gemini_api_key!, log) || ''
+
+    if (!architectureReport) {
+      await log(`[${runId}] Stage 2 returned empty architecture report, proceeding without it`, 'warn')
+    }
+
+    // Stage 3: Final wiki generation from architecture report + top files for line-numbered refs
+    const topFiles = selectedFiles.slice(0, MAX_INPUT_FILES)
+    await log(`[${runId}] Stage 3/${chunks.length + 2}: Generating final documentation...`)
+    const finalPrompt = buildFinalPrompt(
+      repo.full_name, repo.description, repo.language, repo.topics,
+      owner, name, commitSha, repo.default_branch, structure, topFiles, architectureReport
+    )
+    const documentation = await generateGemini(finalPrompt, agent.gemini_api_key!, log)
 
     if (!documentation) {
       throw new Error('Gemini returned empty documentation')
