@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { Button, Input } from 'ui'
+import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import z from 'zod'
 
 const schema = z.object({
@@ -40,30 +41,22 @@ export function SignInForm({ onSubmit, isSubmitting: externalSubmitting, authErr
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="text-xs font-medium mb-1 block text-foreground-light">
-          Email
-        </label>
+      <FormItemLayout layout="vertical" label="Email">
         <Input
-          id="email"
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
           disabled={isSubmitting}
           {...register('email')}
         />
-        {errors.email && (
-          <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
-        )}
-      </div>
+      </FormItemLayout>
+      {errors.email && (
+        <p className="text-xs text-destructive -mt-2">{errors.email.message}</p>
+      )}
 
-      <div className="relative">
-        <label htmlFor="password" className="text-xs font-medium mb-1 block text-foreground-light">
-          Password
-        </label>
+      <FormItemLayout layout="vertical" label="Password">
         <div className="relative">
           <Input
-            id="password"
             type={passwordHidden ? 'password' : 'text'}
             autoComplete="current-password"
             placeholder="••••••••"
@@ -81,10 +74,10 @@ export function SignInForm({ onSubmit, isSubmitting: externalSubmitting, authErr
             onClick={() => setPasswordHidden((prev) => !prev)}
           />
         </div>
-        {errors.password && (
-          <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
-        )}
-      </div>
+      </FormItemLayout>
+      {errors.password && (
+        <p className="text-xs text-destructive -mt-2">{errors.password.message}</p>
+      )}
 
       <Button block form={formId} htmlType="submit" size="large" loading={isSubmitting}>
         Sign In

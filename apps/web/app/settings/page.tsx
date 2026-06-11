@@ -399,22 +399,32 @@ function SettingsContent() {
             </PageSectionSummary>
           </PageSectionMeta>
           <PageSectionContent>
-            <Card className="p-6">
-              {!isLoggedIn ? (
-                <SignInForm onSubmit={handleAuth} isSubmitting={authLoading} authError={authError} />
-              ) : (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <User className="size-5 text-foreground" />
-                    <div>
-                      <p className="text-sm text-foreground">{session?.user?.email}</p>
-                      <p className="text-xs text-foreground-lighter">Signed in</p>
-                    </div>
-                  </div>
-                  <Button type="outline" size="tiny" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Key className="size-5 text-foreground shrink-0" />
+                  <CardTitle>Authentication</CardTitle>
                 </div>
+              </CardHeader>
+              {!isLoggedIn ? (
+                <CardContent>
+                  <SignInForm onSubmit={handleAuth} isSubmitting={authLoading} authError={authError} />
+                </CardContent>
+              ) : (
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <User className="size-5 text-foreground shrink-0" />
+                      <div>
+                        <p className="text-sm text-foreground">{session?.user?.email}</p>
+                        <p className="text-xs text-foreground-lighter">Signed in</p>
+                      </div>
+                    </div>
+                    <Button type="outline" size="tiny" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
+                  </div>
+                </CardContent>
               )}
             </Card>
           </PageSectionContent>
