@@ -59,7 +59,7 @@ export function AnimatedTitle() {
           animation: glow 0.6s ease-in-out 3;
         }
       `}</style>
-      <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase tracking-wide">
+      <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-foreground uppercase tracking-wide whitespace-nowrap">
         {chars.map((ch, i) => {
           const isNew = newIndices.includes(i)
           const isPlus = ch === '+' && visible[i]
@@ -85,7 +85,7 @@ export function AnimatedTitle() {
           )
         })}
       </span>
-      <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase whitespace-nowrap">
+      <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-foreground uppercase whitespace-nowrap">
         <span className="text-foreground-muted">OPEN</span>-SOURCE
       </span>
     </>
