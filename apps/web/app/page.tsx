@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import { InputGroup, InputGroupInput } from 'ui'
 import { GitHubStars } from './github-stars'
+import { AnimatedTitle } from './animated-title'
 
 export default function HomePage() {
   const [query, setQuery] = useState('')
@@ -31,12 +32,7 @@ export default function HomePage() {
       </div>
       <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
         <h1 className="text-center font-bold tracking-tight select-none mb-14 leading-none">
-          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase">
-            WEBENTIC
-          </span>
-          <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase whitespace-nowrap">
-            <span className="text-foreground-muted">OPEN</span>-SOURCE
-          </span>
+          <AnimatedTitle />
         </h1>
 
         <form onSubmit={handleSearch} className="w-full max-w-lg">
