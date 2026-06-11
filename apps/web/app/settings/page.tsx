@@ -295,7 +295,8 @@ function SettingsContent() {
       const token = session?.access_token
       if (!token) return
 
-      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-worker`
+      const baseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '')
+      const functionUrl = `${baseUrl}/functions/v1/agent-worker`
       fetch(functionUrl, {
         method: 'POST',
         headers: {
@@ -342,7 +343,8 @@ function SettingsContent() {
     const token = session?.access_token
     if (!token) return
 
-    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-worker`
+    const baseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '')
+    const functionUrl = `${baseUrl}/functions/v1/agent-worker`
 
     fetch(functionUrl, {
       method: 'POST',
