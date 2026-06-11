@@ -112,7 +112,10 @@ function RepoCard({
             size="tiny"
             type="primary"
             icon={<BookOpen className="size-3" />}
-            onClick={() => setSelectedDoc(analysis)}
+            onClick={() => {
+              setSelectedDoc(analysis)
+              router.push(`/docs/${analysis.repo_owner}/${analysis.repo_name}`)
+            }}
           >
             View Docs
           </Button>
@@ -265,7 +268,10 @@ function SearchContent() {
                 })()}
               </div>
               <div className="flex gap-2">
-                <Button size="tiny" type="default" onClick={() => setSelectedDoc(null)}>
+                <Button size="tiny" type="default" onClick={() => {
+                  setSelectedDoc(null)
+                  router.push('/search')
+                }}>
                   Back to Results
                 </Button>
               </div>
@@ -330,7 +336,10 @@ function SearchContent() {
                   <RepoCard
                     key={analysis.id}
                     analysis={analysis}
-                    onSelect={(a) => setSelectedDoc(a)}
+                    onSelect={(a) => {
+                      setSelectedDoc(a)
+                      router.push(`/docs/${a.repo_owner}/${a.repo_name}`)
+                    }}
                     liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
                   />
                 ))}
