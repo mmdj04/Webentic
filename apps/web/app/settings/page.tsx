@@ -247,8 +247,8 @@ function SettingsContent() {
       const { error } = await supabase.from('agent_configs').insert({
         user_id: session!.user.id,
         name: agentName.trim(),
-        api_used: 'Gemini + GitHub',
-        model_type: 'gemini-3.5-flash',
+        api_used: 'Gemma 4 + GitHub',
+        model_type: 'gemma-4-31b-it',
         status: 'stopped',
         gemini_api_key: geminiKey || null,
         github_token: githubToken || null,
@@ -543,7 +543,7 @@ function SettingsContent() {
                 <div className="flex items-center gap-3">
                   <Zap className="size-5 text-foreground shrink-0" />
                   <CardTitle>AI Agent Configuration</CardTitle>
-                  <Badge variant="warning">gemini-3.5-flash</Badge>
+                  <Badge variant="warning">gemma-4-31b-it</Badge>
                 </div>
               </CardHeader>
               {!isLoggedIn ? (

@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const GITHUB_API = 'https://api.github.com'
-const GEMINI_MODEL = 'gemini-3.5-flash'
+const MODEL = 'gemma-4-31b-it'
 const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
 const MAX_INPUT_FILES = 30
@@ -496,12 +496,12 @@ async function getSourceFiles(
   return { files, structure }
 }
 
-async function generateGemini(prompt: string, apiKey: string, log?: (msg: string, level?: string) => Promise<void>): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+async function generateContent(prompt: string, apiKey: string, log?: (msg: string, level?: string) => Promise<void>): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`
   const estimatedTokens = Math.ceil(prompt.length / 4)
 
   if (estimatedTokens > 200_000) {
-    const warn = `[WARN] Prompt ~${estimatedTokens.toLocaleString()} tokens (free tier limit: 250K/min)`
+    const warn = `[WARN] Prompt ~${estimatedTokens.toLocaleString()} tokens`
     if (log) await log(warn, 'warn')
   }
 
@@ -1003,7 +1003,7 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Stage 1/${ps.total_chunks + 2}: Batch ${i + 1} of ${ps.total_chunks} (${chunks[i].length} files)...`)
 
       const analysisPrompt = buildAnalysisPrompt(chunks[i], i + 1, ps.total_chunks)
-      const analysis = await generateGemini(analysisPrompt, geminiKey, log)
+      const analysis = await generateContent(analysisPrompt, geminiKey, log)
 
       if (analysis) ps.analyses.push(analysis)
       else await log(`[${runId}] Batch ${i + 1} returned empty analysis`, 'warn')
@@ -1048,7 +1048,7 @@ Deno.serve(async (req) => {
           ps.structure.length > 5000 ? ps.structure.slice(0, 5000) + '\n... (truncated)' : ps.structure,
           ps.analyses.slice(from, to)
         )
-        const partialReport = await generateGemini(archPrompt, geminiKey, log) || ''
+        const partialReport = await generateContent(archPrompt, geminiKey, log) || ''
 
         ps.stage2_reports.push(partialReport)
         ps.current_chunk = batchDone + 1
@@ -1080,7 +1080,7 @@ Deno.serve(async (req) => {
         ps.structure.length > 10000 ? ps.structure.slice(0, 10000) + '\n... (truncated)' : ps.structure,
         ps.stage2_reports
       )
-      const architectureReport = await generateGemini(synthesisPrompt, geminiKey, log) || ''
+      const architectureReport = await generateContent(synthesisPrompt, geminiKey, log) || ''
 
       ps.architecture_report = architectureReport
       ps.phase = 'stage3'
@@ -1108,7 +1108,7 @@ Deno.serve(async (req) => {
         repo.full_name, repo.description, repo.language, repo.topics,
         ps.owner, ps.name, ps.commitSha, repo.default_branch, ps.structure, topFiles, ps.architecture_report || ''
       )
-      const documentation = await generateGemini(finalPrompt, geminiKey, log)
+      const documentation = await generateContent(finalPrompt, geminiKey, log)
 
       if (!documentation) {
         throw new Error('Gemini returned empty documentation')
