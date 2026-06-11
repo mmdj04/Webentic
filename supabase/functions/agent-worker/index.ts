@@ -4,8 +4,17 @@ const GITHUB_API = 'https://api.github.com'
 const MODEL = 'gemma-4-31b-it'
 const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
-const MAX_INPUT_FILES = 30
-const MAX_RETRIES = 3
+const CHUNK_SIZE = 25
+const MAX_SCORED_FILES = 150
+const MAX_RETRIES = 2
+
+const OUTPUT_TOKENS = {
+  stage1: 8_192,
+  stage2: 16_384,
+  stage3: 24_576,
+  stage4: 32_768,
+  stage5: 32_768,
+} as const
 
 const SOURCE_FILE_EXTENSIONS = new Set([
   // JavaScript ecosystem
@@ -96,14 +105,6 @@ const CODE_PRIORITY = new Set([
   'h', 'hpp', 'cs', 'swift', 'php',
 ])
 
-function chunkFiles(files: { path: string; content: string }[]): { path: string; content: string }[][] {
-  const chunks: { path: string; content: string }[][] = []
-  for (let i = 0; i < files.length; i += MAX_INPUT_FILES) {
-    chunks.push(files.slice(i, i + MAX_INPUT_FILES))
-  }
-  return chunks
-}
-
 function prioritizeFiles(files: { path: string; content: string }[]): { path: string; content: string }[] {
   // Score each file: code > config > docs/media
   const scored = files.map(f => {
@@ -123,7 +124,7 @@ function prioritizeFiles(files: { path: string; content: string }[]): { path: st
     return { ...f, score }
   })
   scored.sort((a, b) => b.score - a.score)
-  return scored.slice(0, MAX_INPUT_FILES * 4).map(({ score: _, ...f }) => f)
+  return scored.slice(0, MAX_SCORED_FILES).map(({ score: _, ...f }) => f)
 }
 
 function buildAnalysisPrompt(
@@ -138,14 +139,14 @@ function buildAnalysisPrompt(
   })
 
   return `<role>
-You are an expert Code Analyst — Stage 1 of 3 in our documentation pipeline.
-Your sole job is to analyze source files and produce exhaustive file-level breakdowns.
-You have the full 150s generation budget. Use it to analyze every function, type, import, and constant.
+You are an expert Code Analyst — Stage 1 of 5 in our documentation pipeline.
+Analyze source files and produce exhaustive file-level breakdowns.
+Use the full 150s budget. Analyze every function, type, import, and constant.
 </role>
 
 <stage_info>
-Stage 1/3 — Per-file Code Analysis (batch ${chunkIndex} of ${totalChunks})
-Your output will feed into Stage 2 (Architecture Analysis) and Stage 3 (Documentation Writer).
+Stage 1/5 — Per-file Code Analysis (batch ${chunkIndex} of ${totalChunks})
+Your output feeds into: Stage 2 (Module Synthesis) → Stage 5 (Final Wiki)
 </stage_info>
 
 <instructions>
@@ -178,16 +179,16 @@ Important constants, env vars, magic numbers, config keys.
 Design patterns, state management, event flow, callbacks, class hierarchies.
 
 ---
-Be exhaustive — no detail is too small. Stage 3 will read this as the authoritative source.
+Be exhaustive — no detail is too small. Stage 2 will read this to synthesize module reports.
 - **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>
 
 <files>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 15000)}\n</file>`).join('\n\n')}
 </files>`
 }
 
-function buildArchitecturePrompt(
+function buildModulePrompt(
   repoName: string,
   description: string | null,
   language: string | null,
@@ -196,19 +197,23 @@ function buildArchitecturePrompt(
   repo: string,
   commitSha: string,
   structure: string,
-  analyses: string[]
+  analyses: string[],
+  batchIndex: number,
+  totalBatches: number
 ): string {
   const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
 
   return `<role>
-You are an expert Architecture Analyst — Stage 2 of 3 in our documentation pipeline.
-Your job is to take per-file analyses from Stage 1 and synthesize them into a comprehensive architecture overview.
-You have the full 150s generation budget. Identify patterns, relationships, data flow, and design decisions.
+You are an expert Module Architect — Stage 2 of 5 in our documentation pipeline.
+Take detailed file-level analyses (Stage 1) and synthesize them into a coherent MODULE-LEVEL report.
+A module is a group of related files that implement a specific subsystem or feature.
 </role>
 
 <stage_info>
-Stage 2/3 — Cross-file Architecture & Dependency Analysis
-Your output will be the primary input for Stage 3 (Documentation Writer).
+Stage 2/5 — Module Synthesis (batch ${batchIndex} of ${totalBatches})
+Input: ${analyses.length} file analysis groups from Stage 1
+Output: Coherent module report
+Feeds into: Stage 3 (Architecture) + Stage 4 (Deep-Dives) + Stage 5 (Final Wiki)
 </stage_info>
 
 <repository_info>
@@ -221,76 +226,50 @@ Your output will be the primary input for Stage 3 (Documentation Writer).
 </repository_info>
 
 <file_structure>
-${structure}
+${structure.length > 8000 ? structure.slice(0, 8000) + '\n... (truncated)' : structure}
 </file_structure>
 
 <stage1_analyses>
-The following are detailed per-file analyses from Stage 1. Analyze them together to understand the full system.
-
-${analyses.map((a, i) => `<analysis_batch_${i + 1}>\n${a}\n</analysis_batch_${i + 1}>`).join('\n\n')}
+${analyses.map((a, i) => `<analysis_group_${i + 1}>\n${a}\n</analysis_group_${i + 1}>`).join('\n\n')}
 </stage1_analyses>
 
 <instructions>
-Produce a structured architecture report with these sections:
+Produce a structured MODULE REPORT. Group files by logical module (e.g., core, UI, API, data layer, utils).
+Identify which files belong to which module from the analyses. For each module found:
 
-## Project Classification
-- **Software Project** / **Curated Collection** / **Documentation Book**
-- Justify with evidence from Stage 1 analyses
+## Module: [Module Name]
 
-## Dependency Graph
-For each major module/component:
-- What it depends on (both internal and external)
-- What depends on it
-- Categorize: runtime dep, dev dep, optional dep
+### Overview
+What this module does, where it fits in the project.
 
-## Architectural Layers
-Identify the major layers of the project (e.g., API layer, business logic, data access, UI, config).
-For each layer:
-- Which files/modules belong to it
-- What responsibility it has
-- How it communicates with other layers
+### Files
+Table with columns: File | Role | Key Exports | Dependencies
+List every significant file in this module.
 
-## Data Flow
-How data moves through the system:
-- Entry points
-- Request/response lifecycle
-- State management
-- Events and event handlers
-- External API interactions
+### Key Components
+Every class, function, type that forms the public API of this module.
+For each: signature, line range, purpose, error handling.
 
-## Design Patterns
-Patterns used in the codebase (MVC, Observer, Factory, Singleton, Repository, etc.):
-- Where each pattern appears (file and line ranges)
-- Why it's used there
+### Internal Architecture
+How components within this module interact. Data flow, state, events.
 
-## Key Components Summary
-For each major component identified across all files:
-- **Name**: component/module name
-- **Files**: list of files that implement it
-- **Responsibility**: what it does
-- **Public API surface**: how other components interact with it
-- **Dependencies**: what it needs to function
+### Dependencies
+- **Internal**: which other modules this module depends on
+- **External**: third-party packages used
 
-## Configuration Architecture
-How the project is configured:
-- Config file formats and locations
-- Environment variables (required vs optional)
-- Build-time vs runtime configuration
-- Feature flags
+### Design Patterns
+Patterns used within this module (Singleton, Factory, Observer, etc.)
 
-## Testing Architecture
-- Testing framework
-- Test organization (unit vs integration vs e2e)
-- Mock/stub approach
-- CI pipeline testing stages
+### Notable Implementation Details
+Edge cases, performance considerations, threading, async patterns.
 
 ---
-Be exhaustive and technically precise. Stage 3 will use this report to write the final documentation.
+Be exhaustive. Resolve any cross-file relationships. Produce a report that Stage 3 can use for architecture synthesis.
 - **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>`
 }
 
-function buildSynthesisPrompt(
+function buildArchitecturePrompt(
   repoName: string,
   description: string | null,
   language: string | null,
@@ -299,14 +278,22 @@ function buildSynthesisPrompt(
   repo: string,
   commitSha: string,
   structure: string,
-  partialReports: string[]
+  moduleReports: string[]
 ): string {
   const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
 
   return `<role>
-You are an expert Architecture Synthesis Agent — the final step of Stage 2 in our documentation pipeline.
-Your job is to take multiple partial architecture reports (each analyzing a subset of source files) and merge them into ONE unified, comprehensive architecture report.
+You are an expert System Architecture Analyst — Stage 3 of 5 in our documentation pipeline.
+Take MODULE REPORTS (Stage 2) and synthesize them into a comprehensive system architecture report.
+Identify layers, dependency graphs, data flow, cross-cutting concerns, and design patterns ACROSS all modules.
 </role>
+
+<stage_info>
+Stage 3/5 — Architecture & Cross-Cutting Analysis
+Input: ${moduleReports.length} module reports from Stage 2
+Output: Unified architecture report + cross-cutting concerns
+Feeds into: Stage 4 (Deep-Dives) + Stage 5 (Final Wiki)
+</stage_info>
 
 <repository_info>
 - Name: ${repoName}
@@ -318,43 +305,322 @@ Your job is to take multiple partial architecture reports (each analyzing a subs
 </repository_info>
 
 <file_structure>
-${structure.length > 10000 ? structure.slice(0, 10000) + '\n... (truncated)' : structure}
+${structure.length > 15000 ? structure.slice(0, 15000) + '\n... (truncated)' : structure}
 </file_structure>
 
-<partial_architecture_reports>
-${partialReports.map((r, i) => `<partial_report_${i + 1}>\n${r}\n</partial_report_${i + 1}>`).join('\n\n')}
-</partial_architecture_reports>
+<module_reports>
+${moduleReports.map((r, i) => `<module_report_${i + 1}>\n${r}\n</module_report_${i + 1}>`).join('\n\n')}
+</module_reports>
 
 <instructions>
-Merge the partial reports above into ONE unified architecture report with these sections:
+Produce a unified architecture report with these sections:
 
-## Project Classification
-- **Software Project** / **Curated Collection** / **Documentation Book**
+## 1. Project Classification
+**Software Project** / **Curated Collection** / **Documentation Book**
+Justify with evidence from module reports.
 
-## Dependency Graph (Unified)
-Merged view of all dependencies across all partial reports.
+## 2. System Architecture Overview
+High-level description of the system, all modules, how they compose together.
+Include a Mermaid component diagram showing module relationships.
 
-## Architectural Layers
-Complete layers of the project, merging information from all partial reports.
+## 3. Architectural Layers
+Every layer in the system. For each: purpose, which modules belong, communication with other layers.
 
-## Data Flow
-Complete end-to-end data flow.
+## 4. Dependency Graph
+For each module: internal dependencies (other modules), external dependencies (third-party).
+Show the dependency direction and categorize (runtime / dev / optional).
 
-## Design Patterns
-All patterns found across the entire codebase.
+## 5. Data Flow
+End-to-end data flow: entry points → processing → storage → response.
+State management approach. Event system. Async patterns.
 
-## Key Components Summary
-Every major component, with cross-references resolved across partial reports.
+## 6. Design Patterns
+Every pattern found across the codebase. For each: pattern name, where used (which modules/files), why.
 
-## Configuration Architecture
+## 7. Cross-Cutting Concerns
+Concerns that span multiple modules:
+- **Configuration**: config files, env vars, feature flags, build vs runtime config
+- **Error Handling**: global error handling strategy, error types, fallbacks
+- **Logging / Telemetry**: logging framework, levels, monitoring
+- **Security**: auth, permissions, input validation, secrets
+- **Internationalization**: i18n approach, locale handling
+- **Testing**: framework, test organization, CI pipeline, coverage approach
+- **Performance**: caching, lazy loading, memoization, worker threads
 
-## Testing Architecture
+## 8. API Surface
+Public API of the project (if applicable): endpoints, function signatures, CLI commands.
+
+## 9. Configuration Architecture
+Config file formats, environment variables table, build configuration.
 
 ---
-Resolve any conflicts between partial reports. If partial reports contradict, use the most detailed analysis.
-Eliminate duplication. Produce a single cohesive report that Stage 3 can use directly.
+Resolve conflicts between module reports. Eliminate duplication. Produce ONE cohesive document.
 - **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>`
+}
+
+function buildComponentDeepDivePrompt(
+  repoName: string,
+  description: string | null,
+  language: string | null,
+  topics: string[],
+  owner: string,
+  repo: string,
+  commitSha: string,
+  structure: string,
+  moduleReport: string,
+  architectureReport: string,
+  files: { path: string; content: string }[],
+  moduleIndex: number,
+  totalModules: number
+): string {
+  const numberedFiles = files.map(f => {
+    const lines = f.content.split('\n')
+    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
+    return { path: f.path, content: numbered }
+  })
+
+  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
+
+  return `<role>
+You are an expert Technical Documentation Writer — Stage 4 of 5 in our documentation pipeline.
+Take a MODULE REPORT (Stage 2) and the ARCHITECTURE REPORT (Stage 3), then produce a beautiful, detailed COMPONENT DEEP-DIVE.
+This will be a major section in the final wiki page. Write with precision, depth, and source traceability.
+</role>
+
+<stage_info>
+Stage 4/5 — Component Deep-Dive (module ${moduleIndex} of ${totalModules})
+Input: Module report + Architecture report + Source files
+Output: Ready-to-include component documentation section
+Feeds into: Stage 5 (Final Wiki Assembly)
+</stage_info>
+
+<repository_info>
+- Name: ${repoName}
+- Description: ${description || 'N/A'}
+- Language: ${language || 'N/A'}
+- Topics: ${topics.join(', ') || 'N/A'}
+- Indexed commit: ${commitSha}
+- GitHub base URL: ${githubBase}
+</repository_info>
+
+<file_structure>
+${structure.length > 12000 ? structure.slice(0, 12000) + '\n... (truncated)' : structure}
+</file_structure>
+
+<architecture_report>
+${architectureReport.length > 12000 ? architectureReport.slice(0, 12000) + '\n... (truncated)' : architectureReport}
+</architecture_report>
+
+<module_report>
+${moduleReport}
+</module_report>
+
+<source_files>
+File contents include LINE NUMBERS (format "LINE_NUMBER:content"). Use these for precise source references.
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
+</source_files>
+
+<output_structure>
+Using the module report as your guide and the source files for precise references, generate:
+
+## [Module Name]
+
+### Overview
+What this module does, its role in the overall architecture, key capabilities.
+
+### Key Components Table
+| Component | File | Line Range | Description |
+|---|---|---|---|
+| (every key class/function/type) | | | |
+
+### API Reference
+For every exported function, class, interface, type, constant:
+- **Name**: \`symbolName\` (\`path/file.ts#L10-L50\`)
+- **Signature**: exact signature with types
+- **Purpose**: what it does, parameters, return value, side effects
+- **Error Handling**: what errors can occur
+- **Usage Example**: brief code snippet showing typical usage
+- **Dependencies**: what it calls internally
+
+### Architecture Diagram
+\`\`\`mermaid
+[... component-level diagram showing internal structure and relationships]
+\`\`\`
+
+### Internal Architecture
+How components within this module interact: data flow, event flow, state management, lifecycle.
+
+### Data Flow
+Walk through the main data path through this module. Entry point → processing → output.
+
+### Error Handling & Edge Cases
+Specific error conditions handled in this module, defensive coding patterns.
+
+### Configuration
+Configuration options specific to this module.
+
+### Dependencies
+- **Internal module dependencies**: which other modules this relies on
+- **External packages**: third-party deps
+
+### Source File Map
+Table of every significant file in this module: File | Role | Key Lines
+
+---
+Use the source files for every line reference. Use Markdown link syntax: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`.
+- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
+</output_structure>`
+}
+
+function buildAssemblyPrompt(
+  repoName: string,
+  description: string | null,
+  language: string | null,
+  topics: string[],
+  owner: string,
+  repo: string,
+  commitSha: string,
+  defaultBranch: string,
+  structure: string,
+  files: { path: string; content: string }[],
+  architectureReport: string,
+  componentDocs: string[]
+): string {
+  const numberedFiles = files.map(f => {
+    const lines = f.content.split('\n')
+    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
+    return { path: f.path, content: numbered }
+  })
+
+  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
+
+  return `<role>
+You are an expert Senior Technical Documentation Writer — Stage 5 of 5 in our documentation pipeline.
+This is the FINAL stage. Your job is to take the ARCHITECTURE REPORT (Stage 3) and all COMPONENT DEEP-DIVES (Stage 4),
+then assemble a beautiful, comprehensive, DeepWiki-style documentation page.
+You have the full 150s generation budget. Produce the highest quality wiki possible.
+</role>
+
+<stage_info>
+Stage 5/5 — Final Wiki Assembly
+Inputs: Architecture Report (Stage 3) + ${componentDocs.length} Component Deep-Dives (Stage 4) + Source files
+Output: Complete DeepWiki markdown page with diagrams, tables, and line-numbered references
+</stage_info>
+
+<repository_info>
+- Name: ${repoName}
+- Description: ${description || 'N/A'}
+- Language: ${language || 'N/A'}
+- Topics: ${topics.join(', ') || 'N/A'}
+- Indexed commit: ${commitSha}
+- Source files analyzed: ${files.length}
+- GitHub base URL: ${githubBase}
+</repository_info>
+
+<architecture_report>
+${architectureReport.length > 20000 ? architectureReport.slice(0, 20000) + '\n... (truncated)' : architectureReport}
+</architecture_report>
+
+<component_deep_dives>
+${componentDocs.map((d, i) => `<component_deep_dive_${i + 1}>\n${d}\n</component_deep_dive_${i + 1}>`).join('\n\n')}
+</component_deep_dives>
+
+<source_data>
+File contents include LINE NUMBERS. Use these for exact source references.
+<file_structure>
+${structure}
+</file_structure>
+
+<file_contents>
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 12000)}\n</file>`).join('\n\n')}
+</file_contents>
+</source_data>
+
+<output_structure>
+Generate a COMPLETE multi-section DeepWiki documentation page. Combine the architecture report with component deep-dives into one cohesive document.
+
+### Overview
+- What the project does and who it is for
+- Key features and capabilities (list with detail)
+- Problems it solves and use cases
+- Technology stack (languages, frameworks, runtime)
+- Reference source files throughout
+
+### Project Type
+State the classification (Software Project / Curated Collection / Documentation Book).
+
+### Quick Start
+Installation, prerequisites, and basic usage.
+**Only include commands that appear verbatim in source files.**
+
+### Architecture
+A Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships, data flow, and external dependencies.
+Detailed explanation of each architectural layer with file and line range references.
+Request/response lifecycle or data flow walkthrough.
+Design patterns used and why.
+"Sources:" bullet list of every file referenced.
+
+### Project Structure
+Table with columns: Directory | Purpose | Key Files | Notable Subdirectories.
+
+### Modules / Components
+For each major module identified in the deep-dives, include its documentation section.
+Integrate the component deep-dives from Stage 4 here, maintaining consistent formatting.
+
+### Key Data Structures
+For each important type/interface/class/struct:
+- **Structure Name** — \`path/file.ts#L10-L50\`
+- **Definition**: full type with line range
+- **Fields**: table with columns: Field | Type | Description | Default
+- **Methods**: table with columns: Method | Signature | Description | Line Range
+- **Usage**: which components create, consume, or extend this structure
+- **Relationships**: inheritance, composition, association
+
+### Configuration & Environment
+- Configuration files and formats
+- Environment variables: table with columns: Variable | Required | Default | Description
+- Build / CI configuration
+- Feature flags
+
+### API Reference
+If the project exposes an API: endpoints/functions with signatures, parameters, return values.
+Authentication, request/response examples, error codes.
+
+### Testing
+- Testing framework and tools
+- Test directory structure
+- How to run tests (only commands from source files)
+- CI pipeline testing stages
+
+### Dependencies
+- Runtime dependencies with purpose
+- Dev dependencies with purpose
+- Version constraints
+
+### Glossário
+Key terms, acronyms, and their definitions used in the codebase.
+
+### Last Indexed
+- **Commit:** \`${commitSha}\`
+- **Branch:** \`${defaultBranch}\`
+- **Source files analyzed:** ${files.length}
+- **Repository:** [${owner}/${repo}](${githubBase.replace('/blob/' + commitSha, '')})
+</output_structure>
+
+<formatting_rules>
+- Output valid GitHub-flavored Markdown
+- EVERY source file reference MUST include exact line ranges: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
+- Use Mermaid diagrams (\`\`\`mermaid ... \`\`\`) for architecture
+- Use tables for structured data with blank line before and after each table
+- Use \`\`\`language code blocks with correct language identifier
+- After each major section, add "Sources:" listing every file referenced with line ranges
+- Be technically exhaustive — cover every function, type, and component
+- **CRITICAL: Never invent terminal commands.** Only show commands that appear VERBATIM in source files.
+- **CRITICAL: Never invent software architecture.**
+- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
+- **CRITICAL: Use the architecture report and deep-dives as authoritative references.**
+</formatting_rules>`
 }
 
 interface GitHubRepo {
@@ -496,14 +762,8 @@ async function getSourceFiles(
   return { files, structure }
 }
 
-async function generateContent(prompt: string, apiKey: string, log?: (msg: string, level?: string) => Promise<void>): Promise<string> {
+async function generateContent(prompt: string, apiKey: string, log?: (msg: string, level?: string) => Promise<void>, maxTokens = 16_384): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`
-  const estimatedTokens = Math.ceil(prompt.length / 4)
-
-  if (estimatedTokens > 200_000) {
-    const warn = `[WARN] Prompt ~${estimatedTokens.toLocaleString()} tokens`
-    if (log) await log(warn, 'warn')
-  }
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const res = await fetch(url, {
@@ -512,7 +772,7 @@ async function generateContent(prompt: string, apiKey: string, log?: (msg: strin
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 65536,
+          maxOutputTokens: maxTokens,
           thinkingConfig: { thinkingLevel: 'HIGH' },
         },
       }),
@@ -543,10 +803,10 @@ async function generateContent(prompt: string, apiKey: string, log?: (msg: strin
       }
     }
 
-    throw new Error(`Gemini API error: ${res.status} ${errText}`)
+    throw new Error(`Model API error: ${res.status} ${errText}`)
   }
 
-  throw new Error('Gemini API error: max retries exceeded')
+  throw new Error('Model API error: max retries exceeded')
 }
 
 async function getLatestCommitSha(
@@ -570,209 +830,12 @@ async function getLatestCommitSha(
   return data.commit?.sha || null
 }
 
-function buildFinalPrompt(
-  repoName: string,
-  description: string | null,
-  language: string | null,
-  topics: string[],
-  owner: string,
-  repo: string,
-  commitSha: string,
-  defaultBranch: string,
-  structure: string,
-  files: { path: string; content: string }[],
-  architectureReport: string
-): string {
-  const numberedFiles = files.map(f => {
-    const lines = f.content.split('\n')
-    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
-    return { path: f.path, content: numbered }
-  })
 
-  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
-
-  return `<role>
-You are an expert Technical Documentation Writer — Stage 3 of 3 in our documentation pipeline.
-Your job is to take the Stage 2 architecture report and selected source files, then produce a beautiful, comprehensive DeepWiki-style wiki page.
-You have the full 150s generation budget. Use it to write deep, thorough documentation with precise source code traceability.
-</role>
-
-<stage_info>
-Stage 3/3 — Final Wiki Generation
-Inputs: Stage 2 Architecture Report + Top source files with line numbers
-Output: Complete DeepWiki markdown page
-</stage_info>
-
-<repository_info>
-- Name: ${repoName}
-- Description: ${description || 'N/A'}
-- Language: ${language || 'N/A'}
-- Topics: ${topics.join(', ') || 'N/A'}
-- Indexed commit: ${commitSha}
-- Source files analyzed: ${files.length}
-- GitHub base URL: ${githubBase}
-</repository_info>
-
-<stage2_architecture_report>
-${architectureReport}
-</stage2_architecture_report>
-
-<source_data>
-File contents include LINE NUMBERS (format "LINE_NUMBER:content"). Use these to reference exact source locations in the format \`[path/file.ts#L10-L30](${githubBase}/path/file.ts#L10-L30)\`.
-
-<file_structure>
-${structure}
-</file_structure>
-
-<file_contents>
-${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
-</file_contents>
-</source_data>
-
-<output_structure>
-Generate a multi-section DeepWiki-style documentation page with ALL of the following sections. Use the Stage 2 architecture report as your primary source of truth, and the source files for precise line-numbered references. Be exhaustive, technically detailed, and precise.
-
-### Relevant Source Files
-A comprehensive table with columns: File | Purpose | Key Elements | Dependencies.
-List ALL significant source files. After each file path, add a clickable Markdown link to the GitHub location with line range.
-Every important file must be listed here.
-
-### Overview
-- What the project does and who it is for
-- Key features and capabilities (list with detail)
-- Problems it solves and use cases
-- Technology stack (languages, frameworks, runtime)
-- Reference source files throughout
-
-### Project Type
-State the classification (Software Project / Curated Collection / Documentation Book).
-
-### Quick Start
-Installation, prerequisites, and basic usage. Show commands, API keys needed, environment setup.
-**Only include commands that appear verbatim in the source files.**
-
-### Architecture
-FOR SOFTWARE PROJECTS ONLY — generate this section with:
-1. A Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships, data flow, and external dependencies
-2. Detailed explanation of each architectural layer/module with file and line range references
-3. Request/response lifecycle or data flow walkthrough
-4. Design patterns used and why
-5. After the section, a "Sources:" bullet list of every file referenced
-
-FOR CURATED LISTS / BOOKS — skip Architecture, instead generate:
-### Content Organization
-- How the content is structured (categories, chapters, sections)
-- Navigation patterns
-- Contribution guidelines for adding content
-
-### Project Structure
-A detailed table with columns: Directory | Purpose | Key Files | Notable Subdirectories.
-Every major directory should be documented.
-
-### Core Components
-FOR SOFTWARE PROJECTS — exhaustive documentation of every major component:
-#### [Component Name]
-- **File:** \`path/file.ts#L10-L50\` (Markdown link to GitHub)
-- **Purpose:** What this component does
-- **Public API:** Every exported function/class/constant with signature, line range, and explanation
-- **Key Methods:** Table with columns: Method | Signature | Description | Line Range | Source
-- **Internal Logic:** How it works internally, algorithms, state management
-- **Error Handling:** What errors can occur and how they're handled
-- **Dependencies:** Internal and external dependencies
-- **Sources:** List of files this component touches with line ranges
-
-FOR CURATED LISTS — replace with:
-### Content Categories
-Detailed breakdown of each category/section in the list with what it contains.
-
-FOR BOOKS — replace with:
-### Chapter Overview
-Each chapter's content, length, and key topics covered.
-
-### Key Data Structures
-FOR SOFTWARE PROJECTS — for each important type/interface/class/struct:
-#### [Structure Name]
-- **File:** \`path/file.ts#L10-L50\`
-- **Definition:** Full type/interface/class definition with line range
-- **Fields:** Table with columns: Field | Type | Description | Default | Source
-- **Methods:** Table with columns: Method | Signature | Description | Line Range
-- **Usage:** Which components create, consume, or extend this structure
-- **Relationships:** Inheritance, composition, or association with other structures
-
-### Configuration & Environment
-- Configuration files and their formats
-- Environment variables: table with columns: Variable | Required | Default | Description | Source
-- Build / CI configuration
-- Feature flags or runtime configuration
-
-### API Reference
-If the project exposes an API (REST, GraphQL, library API, CLI commands):
-- Endpoints / functions with signatures, parameters, return values
-- Authentication and authorization
-- Request/response examples
-- Error codes
-
-### Testing
-- Testing framework and tools used
-- Test directory structure
-- How to run tests (only commands from source files)
-- Test coverage approach
-- CI pipeline testing steps
-
-### Dependencies
-- Runtime dependencies with purpose
-- Development dependencies with purpose
-- Version constraints
-
-### Contributing
-How to contribute — only what is documented in actual source files (CONTRIBUTING.md, pull request templates, etc.)
-
-### Last Indexed
-- **Commit:** \`${commitSha}\`
-- **Branch:** \`${defaultBranch}\`
-- **Source files analyzed:** ${files.length}
-- **Indexed at:** ${new Date().toISOString()}
-- **Repository:** [${owner}/${repo}](${githubBase.replace('/blob/' + commitSha, '')})
-</output_structure>
-
-<formatting_rules>
-- Output valid GitHub-flavored Markdown
-- EVERY source file reference MUST include exact line ranges (e.g., \`path/file.ts#L10-L50\`)
-- Use full Markdown link syntax: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
-- Use Mermaid diagrams (\`\`\`mermaid ... \`\`\`) for software projects with real architecture
-- Use tables for all structured data with blank line before and after each table
-- Use \`\`\`language code blocks for code examples with the correct language identifier
-- After each major section, add a "Sources:" line listing every file referenced in that section with line ranges
-- Be technically exhaustive — cover every function, type, and component in the relevant sections
-- Avoid inline HTML. Never use emojis, emoticons, or decorative characters.
-- **CRITICAL: Never invent terminal commands.** Only show a command if it appears VERBATIM in a source file.
-- **CRITICAL: Never invent software architecture.** If no source code exists, classify as curated list or book.
-- **CRITICAL: Never describe markdown templates as components, engines, pipelines, or frameworks.**
-- **CRITICAL: Use the Stage 2 architecture report as the authoritative reference for architecture and dependencies.**
-</formatting_rules>`
-}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface ProcessingState {
-  phase: 'fetching' | 'stage1' | 'stage2' | 'stage3' | 'idle'
-  processing_since: string | null
-  next_run?: string
-  repo: GitHubRepo
-  owner: string
-  name: string
-  commitSha: string
-  structure: string
-  files: { path: string; content: string }[]
-  current_chunk: number
-  total_chunks: number
-  analyses: string[]
-  architecture_report: string
-  stage2_reports: string[]
 }
 
 function now(): string {
@@ -936,7 +999,7 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Fetching latest commit SHA...`)
       const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
 
-      const totalChunks = Math.ceil(selectedFiles.length / MAX_INPUT_FILES)
+      const totalChunks = Math.ceil(selectedFiles.length / CHUNK_SIZE)
 
       // Save state and return — next invocation processes stage1
       await supabase.from('agent_configs').update({
@@ -953,28 +1016,20 @@ Deno.serve(async (req) => {
           files: selectedFiles,
           current_chunk: 0,
           total_chunks: totalChunks,
-          analyses: [],
+          file_analyses: [],
+          module_reports: [],
           architecture_report: '',
-          stage2_reports: [],
+          component_docs: [],
         } as ProcessingState,
       }).eq('id', agent_id)
 
       await log(`[${runId}] Files fetched. ${totalChunks} batches to process.`)
-      const cooldownMs1 = ps?.processing_since ? Math.max(0, new Date(ps.processing_since).getTime() - Date.now()) : 1000
-      scheduleNextCall(agent_id, cooldownMs1)
+      scheduleNextCall(agent_id, 1000)
       return new Response(JSON.stringify({ message: 'Files fetched, ready for stage 1' }), { headers: corsHeaders })
     }
 
     // ── PROCESS NEXT UNIT ─────────────────────────────────
-    const TIMEOUT_MS = 120_000
-
-    // Check cooldown (separate from processing lock)
-    if (ps.cooldown_until) {
-      if (new Date(ps.cooldown_until).getTime() > Date.now()) {
-        return new Response(JSON.stringify({ message: 'Cooldown' }), { headers: corsHeaders })
-      }
-      ps.cooldown_until = undefined
-    }
+    const TIMEOUT_MS = 145_000
 
     // Check if another invocation is already processing
     if (ps.processing_since) {
@@ -993,19 +1048,21 @@ Deno.serve(async (req) => {
       updated_at: now(),
     }).eq('id', agent_id)
 
-    const geminiKey = agent.gemini_api_key!
+    const apiKey = agent.gemini_api_key!
     const repo = ps.repo
 
     if (ps.phase === 'stage1') {
-      // ── STAGE 1: One batch ──────────────────────────────
-      const chunks = chunkFiles(ps.files)
+      // ── STAGE 1: File-Level Analysis ────────────────────
       const i = ps.current_chunk
-      await log(`[${runId}] Stage 1/${ps.total_chunks + 2}: Batch ${i + 1} of ${ps.total_chunks} (${chunks[i].length} files)...`)
+      const chunk = ps.files.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+      await log(`[${runId}] Stage 1/5: File analysis batch ${i + 1} of ${ps.total_chunks} (${chunk.length} files)...`)
 
-      const analysisPrompt = buildAnalysisPrompt(chunks[i], i + 1, ps.total_chunks)
-      const analysis = await generateContent(analysisPrompt, geminiKey, log)
+      const analysis = await generateContent(
+        buildAnalysisPrompt(chunk, i + 1, ps.total_chunks),
+        apiKey, log, OUTPUT_TOKENS.stage1
+      )
 
-      if (analysis) ps.analyses.push(analysis)
+      if (analysis) ps.file_analyses.push(analysis)
       else await log(`[${runId}] Batch ${i + 1} returned empty analysis`, 'warn')
 
       ps.current_chunk = i + 1
@@ -1014,17 +1071,15 @@ Deno.serve(async (req) => {
       if (ps.current_chunk >= ps.total_chunks) {
         ps.phase = 'stage2'
         ps.current_chunk = 0
-        ps.total_chunks = Math.ceil(ps.analyses.length / 2)
-        ps.stage2_reports = []
-        ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
-        await log(`[${runId}] All batches complete. Stage 2 will analyze ${ps.total_chunks} batches of 2 analyses each, after 65s cooldown...`)
+        ps.total_chunks = Math.ceil(ps.file_analyses.length / 2)
+        ps.module_reports = []
+        await log(`[${runId}] Stage 1 complete. ${ps.file_analyses.length} analyses ready. Stage 2: ${ps.total_chunks} module synthesis batches.`)
       } else {
         await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
       }
 
       await saveProcessingState(supabase, agent_id, ps)
-      const cooldownMs2 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
-      scheduleNextCall(agent_id, cooldownMs2)
+      scheduleNextCall(agent_id, 1500)
       return new Response(JSON.stringify({
         message: ps.phase === 'stage2' ? 'Stage 1 complete' : 'Batch processed',
         batch: i + 1,
@@ -1033,85 +1088,145 @@ Deno.serve(async (req) => {
     }
 
     if (ps.phase === 'stage2') {
-      const totalBatches = ps.total_chunks
-      const batchDone = ps.stage2_reports.length
+      // ── STAGE 2: Module Synthesis ───────────────────────
+      const batchDone = ps.module_reports.length
+      const isLastBatch = batchDone >= ps.total_chunks
 
-      if (batchDone < totalBatches) {
-        // ── STAGE 2: Process a batch of 2 analyses ────────
+      if (!isLastBatch) {
         const from = batchDone * 2
-        const to = Math.min(from + 2, ps.analyses.length)
-        await log(`[${runId}] Stage 2a/${totalBatches}: Analyzing analyses ${from + 1}-${to} of ${ps.analyses.length}...`)
+        const to = Math.min(from + 2, ps.file_analyses.length)
+        await log(`[${runId}] Stage 2/5: Module synthesis batch ${batchDone + 1} of ${ps.total_chunks} (analyses ${from + 1}-${to})...`)
 
-        const archPrompt = buildArchitecturePrompt(
-          repo.full_name, repo.description, repo.language, repo.topics,
-          ps.owner, ps.name, ps.commitSha,
-          ps.structure.length > 5000 ? ps.structure.slice(0, 5000) + '\n... (truncated)' : ps.structure,
-          ps.analyses.slice(from, to)
-        )
-        const partialReport = await generateContent(archPrompt, geminiKey, log) || ''
+        const report = await generateContent(
+          buildModulePrompt(
+            repo.full_name, repo.description, repo.language, repo.topics,
+            ps.owner, ps.name, ps.commitSha,
+            ps.structure.length > 8000 ? ps.structure.slice(0, 8000) + '\n... (truncated)' : ps.structure,
+            ps.file_analyses.slice(from, to),
+            batchDone + 1, ps.total_chunks
+          ),
+          apiKey, log, OUTPUT_TOKENS.stage2
+        ) || ''
 
-        ps.stage2_reports.push(partialReport)
+        ps.module_reports.push(report)
         ps.current_chunk = batchDone + 1
         ps.processing_since = null
 
-        if (ps.current_chunk >= totalBatches) {
-          ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
-          await log(`[${runId}] Stage 2 analyses complete. Running synthesis after 65s cooldown...`)
-        } else {
-          await log(`[${runId}] Stage 2a: Batch ${batchDone + 1}/${totalBatches} done. ${totalBatches - ps.current_chunk} remaining.`)
-        }
+        await log(`[${runId}] Module report ${batchDone + 1}/${ps.total_chunks} done.`)
 
         await saveProcessingState(supabase, agent_id, ps)
-        const cooldownMs3 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
-        scheduleNextCall(agent_id, cooldownMs3)
+        scheduleNextCall(agent_id, 1500)
         return new Response(JSON.stringify({
-          message: ps.current_chunk >= totalBatches ? 'Stage 2 analyses complete' : 'Stage 2 batch processed',
+          message: ps.current_chunk >= ps.total_chunks ? 'All module reports complete' : 'Module report done',
           batch: batchDone + 1,
-          total: totalBatches,
+          total: ps.total_chunks,
         }), { headers: corsHeaders })
       }
 
-      // ── STAGE 2: Synthesis of partial reports ─────────
-      await log(`[${runId}] Stage 2b: Synthesizing ${ps.stage2_reports.length} partial architecture reports...`)
-
-      const synthesisPrompt = buildSynthesisPrompt(
-        repo.full_name, repo.description, repo.language, repo.topics,
-        ps.owner, ps.name, ps.commitSha,
-        ps.structure.length > 10000 ? ps.structure.slice(0, 10000) + '\n... (truncated)' : ps.structure,
-        ps.stage2_reports
-      )
-      const architectureReport = await generateContent(synthesisPrompt, geminiKey, log) || ''
-
-      ps.architecture_report = architectureReport
+      // All module reports done → move to stage 3
       ps.phase = 'stage3'
-      ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
-
+      ps.current_chunk = 0
+      ps.total_chunks = 1
+      ps.processing_since = null
       await saveProcessingState(supabase, agent_id, ps)
-
-      if (!architectureReport) {
-        await log(`[${runId}] Stage 2 synthesis returned empty, proceeding without it`, 'warn')
-      } else {
-        await log(`[${runId}] Stage 2 complete. Moving to Stage 3 (final wiki) after 65s cooldown...`)
-      }
-
-      const cooldownMs4 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
-      scheduleNextCall(agent_id, cooldownMs4)
-      return new Response(JSON.stringify({ message: 'Architecture analysis complete' }), { headers: corsHeaders })
+      await log(`[${runId}] Stage 2 complete. ${ps.module_reports.length} module reports. Moving to Stage 3 (Architecture Synthesis)...`)
+      scheduleNextCall(agent_id, 1500)
+      return new Response(JSON.stringify({ message: 'Module synthesis complete, starting architecture' }), { headers: corsHeaders })
     }
 
     if (ps.phase === 'stage3') {
-      // ── STAGE 3: Final wiki generation ─────────────────
-      await log(`[${runId}] Stage 3/${ps.total_chunks + 2}: Generating final documentation...`)
+      // ── STAGE 3: Architecture & Cross-Cutting ────────────
+      await log(`[${runId}] Stage 3/5: Synthesizing ${ps.module_reports.length} module reports into architecture...`)
 
-      const topFiles = ps.files.slice(0, MAX_INPUT_FILES)
-      const finalPrompt = buildFinalPrompt(
-        repo.full_name, repo.description, repo.language, repo.topics,
-        ps.owner, ps.name, ps.commitSha, repo.default_branch, ps.structure, topFiles, ps.architecture_report || ''
+      const archReport = await generateContent(
+        buildArchitecturePrompt(
+          repo.full_name, repo.description, repo.language, repo.topics,
+          ps.owner, ps.name, ps.commitSha,
+          ps.structure.length > 15000 ? ps.structure.slice(0, 15000) + '\n... (truncated)' : ps.structure,
+          ps.module_reports
+        ),
+        apiKey, log, OUTPUT_TOKENS.stage3
+      ) || ''
+
+      ps.architecture_report = archReport
+      ps.phase = 'stage4'
+      ps.current_chunk = 0
+      ps.total_chunks = ps.module_reports.length
+      ps.component_docs = []
+      ps.processing_since = null
+      await saveProcessingState(supabase, agent_id, ps)
+
+      if (!archReport) {
+        await log(`[${runId}] Stage 3 returned empty architecture report`, 'warn')
+      } else {
+        await log(`[${runId}] Stage 3 complete. Moving to Stage 4 (${ps.total_chunks} component deep-dives)...`)
+      }
+      scheduleNextCall(agent_id, 1500)
+      return new Response(JSON.stringify({ message: 'Architecture synthesis complete' }), { headers: corsHeaders })
+    }
+
+    if (ps.phase === 'stage4') {
+      // ── STAGE 4: Component Deep-Dives ──────────────────
+      const i = ps.current_chunk
+      const moduleReport = ps.module_reports[i]
+      const topFiles = ps.files.slice(0, CHUNK_SIZE)
+      await log(`[${runId}] Stage 4/5: Deep-dive for module ${i + 1} of ${ps.total_chunks}...`)
+
+      const doc = await generateContent(
+        buildComponentDeepDivePrompt(
+          repo.full_name, repo.description, repo.language, repo.topics,
+          ps.owner, ps.name, ps.commitSha,
+          ps.structure.length > 12000 ? ps.structure.slice(0, 12000) + '\n... (truncated)' : ps.structure,
+          moduleReport,
+          ps.architecture_report,
+          topFiles,
+          i + 1, ps.total_chunks
+        ),
+        apiKey, log, OUTPUT_TOKENS.stage4
+      ) || ''
+
+      if (doc) ps.component_docs.push(doc)
+      else await log(`[${runId}] Module ${i + 1} deep-dive returned empty`, 'warn')
+
+      ps.current_chunk = i + 1
+      ps.processing_since = null
+
+      if (ps.current_chunk >= ps.total_chunks) {
+        ps.phase = 'stage5'
+        ps.current_chunk = 0
+        ps.total_chunks = 1
+        await log(`[${runId}] Stage 4 complete. ${ps.component_docs.length} deep-dives ready. Moving to Stage 5 (final assembly).`)
+      } else {
+        await log(`[${runId}] Deep-dive ${i + 1}/${ps.total_chunks} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
+      }
+
+      await saveProcessingState(supabase, agent_id, ps)
+      scheduleNextCall(agent_id, 1500)
+      return new Response(JSON.stringify({
+        message: ps.phase === 'stage5' ? 'All deep-dives complete' : 'Deep-dive done',
+        module: i + 1,
+        total: ps.total_chunks,
+      }), { headers: corsHeaders })
+    }
+
+    if (ps.phase === 'stage5') {
+      // ── STAGE 5: Final Wiki Assembly ────────────────────
+      await log(`[${runId}] Stage 5/5: Assembling final documentation...`)
+
+      const topFiles = ps.files.slice(0, CHUNK_SIZE)
+      const documentation = await generateContent(
+        buildAssemblyPrompt(
+          repo.full_name, repo.description, repo.language, repo.topics,
+          ps.owner, ps.name, ps.commitSha, repo.default_branch,
+          ps.structure, topFiles,
+          ps.architecture_report || '',
+          ps.component_docs
+        ),
+        apiKey, log, OUTPUT_TOKENS.stage5
       )
-      const documentation = await generateContent(finalPrompt, geminiKey, log)
 
       if (!documentation) {
-        throw new Error('Gemini returned empty documentation')
+        throw new Error('Model returned empty documentation')
       }
 
       await log(`[${runId}] Saving documentation to database...`)
@@ -1147,14 +1262,13 @@ Deno.serve(async (req) => {
         await supabase.from('repository_analyses').insert({ id: crypto.randomUUID(), ...docPayload })
       }
 
-      // Clear processing_state — files deleted from storage
       await supabase.from('agent_configs').update({
         status: 'stopped',
         processing_state: null,
         updated_at: now(),
       }).eq('id', agent_id)
 
-      await log(`[${runId}] ✅ Documentation published for ${ps.owner}/${ps.name}`)
+      await log(`[${runId}] Documentation published for ${ps.owner}/${ps.name}`)
       await log(`[${runId}] Agent run complete. Processing state cleared.`)
 
       setTimeout(() => scheduleAfterRun(supabase, agent_id), 0)
@@ -1166,12 +1280,11 @@ Deno.serve(async (req) => {
     const errMsg = err instanceof Error ? err.message : String(err)
     await log(`[${runId}] Error: ${errMsg}`, 'error')
 
-    // Clear processing_since and cooldown_until so next invocation can retry, but keep accumulated state
+    // Clear processing_since so next invocation can retry, but keep accumulated state
     if (ps) {
       ps.processing_since = null
-      ps.cooldown_until = undefined
       await saveProcessingState(supabase, agent_id, ps)
-      scheduleNextCall(agent_id, 5000)
+      scheduleNextCall(agent_id, 2500)
     } else {
       await supabase.from('agent_configs').update({ status: 'error', updated_at: now() }).eq('id', agent_id)
     }

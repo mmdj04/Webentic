@@ -544,6 +544,7 @@ function SettingsContent() {
                   <Zap className="size-5 text-foreground shrink-0" />
                   <CardTitle>AI Agent Configuration</CardTitle>
                   <Badge variant="warning">gemma-4-31b-it</Badge>
+                  <Badge variant="default">256K ctx</Badge>
                 </div>
               </CardHeader>
               {!isLoggedIn ? (
