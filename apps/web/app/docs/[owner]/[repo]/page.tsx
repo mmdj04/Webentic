@@ -125,9 +125,9 @@ export default function DocsPage() {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <BookOpen className="size-5 text-foreground shrink-0" />
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground min-w-0">
                 {doc.repo_owner}/{doc.repo_name}
               </h1>
               <Badge color="green">Documentation</Badge>
@@ -167,7 +167,7 @@ export default function DocsPage() {
           </Button>
         </div>
 
-        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100 overflow-x-auto">
+        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -180,6 +180,13 @@ export default function DocsPage() {
               },
               pre({ children }) {
                 return <pre className="bg-muted rounded-md p-4 overflow-x-auto text-sm">{children}</pre>
+              },
+              table({ children }) {
+                return (
+                  <div className="overflow-x-auto">
+                    <table>{children}</table>
+                  </div>
+                )
               },
             }}
           >
