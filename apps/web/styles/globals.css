@@ -149,6 +149,22 @@
     content: '';
     @apply absolute -inset-4 shadow-xl rounded-xl border;
   }
+
+  .shimmer {
+    background: linear-gradient(
+      to right,
+      hsl(var(--muted)) 4%,
+      hsl(var(--muted) / 0.4) 25%,
+      hsl(var(--muted)) 36%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
 }
 
 @media (max-width: 640px) {

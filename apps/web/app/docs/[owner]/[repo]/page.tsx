@@ -84,20 +84,20 @@ export default function DocsPage() {
           <div className="flex items-start justify-between mb-6">
             <div className="space-y-2 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="size-5 rounded-md animate-pulse bg-muted" />
-                <div className="h-7 w-48 rounded-md animate-pulse bg-muted" />
-                <div className="h-5 w-28 rounded-full animate-pulse bg-muted" />
+                <div className="size-5 rounded-md shimmer" />
+                <div className="h-7 w-48 rounded-md shimmer" />
+                <div className="h-5 w-28 rounded-full shimmer" />
               </div>
-              <div className="h-4 w-72 rounded-md animate-pulse bg-muted" />
+              <div className="h-4 w-72 rounded-md shimmer" />
               <div className="flex items-center gap-3 mt-1">
-                <div className="h-4 w-40 rounded-md animate-pulse bg-muted" />
-                <div className="h-4 w-16 rounded-md animate-pulse bg-muted" />
-                <div className="h-4 w-12 rounded-md animate-pulse bg-muted" />
+                <div className="h-4 w-40 rounded-md shimmer" />
+                <div className="h-4 w-16 rounded-md shimmer" />
+                <div className="h-4 w-12 rounded-md shimmer" />
               </div>
             </div>
-            <div className="h-7 w-28 rounded-md animate-pulse bg-muted shrink-0" />
+            <div className="h-7 w-28 rounded-md shimmer shrink-0" />
           </div>
-          <div className="w-full min-h-[400px] rounded-xl p-6 animate-pulse bg-muted" />
+          <div className="w-full min-h-[400px] rounded-xl p-6 shimmer" />
         </div>
       </div>
     )
