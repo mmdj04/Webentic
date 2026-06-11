@@ -123,10 +123,10 @@ export default function DocsPage() {
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="size-5 text-foreground" />
+              <BookOpen className="size-5 text-foreground shrink-0" />
               <h1 className="text-xl font-bold text-foreground">
                 {doc.repo_owner}/{doc.repo_name}
               </h1>
@@ -136,12 +136,12 @@ export default function DocsPage() {
               href={doc.repo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
+              className="text-xs text-foreground-lighter hover:text-foreground transition-colors break-all"
             >
-              {doc.repo_url} <ExternalLink className="size-3 inline" />
+              {doc.repo_url} <ExternalLink className="size-3 inline shrink-0" />
             </a>
             {sha ? (
-              <div className="mt-1 flex items-center gap-3 text-xs text-foreground-muted">
+              <div className="mt-1 flex items-center gap-3 text-xs text-foreground-muted flex-wrap">
                 <span>
                   Indexed at{' '}
                   <time dateTime={doc.created_at}>
@@ -162,12 +162,12 @@ export default function DocsPage() {
               </div>
             ) : null}
           </div>
-          <Button size="tiny" type="default" onClick={() => router.push('/search')}>
+          <Button size="tiny" type="default" onClick={() => router.push('/search')} className="self-start sm:self-auto">
             Back to Results
           </Button>
         </div>
 
-        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
+        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100 overflow-x-auto">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{

@@ -37,20 +37,17 @@ function SearchSkeleton() {
     <div className="flex flex-col gap-3">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="block rounded-xl border border-default p-5 bg-surface-100">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0 space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-20 rounded shimmer" />
-                <div className="h-4 w-32 rounded shimmer" />
-              </div>
-              <div className="h-4 w-full rounded shimmer" />
-              <div className="flex items-center gap-4">
-                <div className="h-3 w-16 rounded shimmer" />
-                <div className="h-3 w-12 rounded shimmer" />
-                <div className="h-3 w-12 rounded shimmer" />
-              </div>
+          <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-20 rounded shimmer" />
+              <div className="h-4 w-32 rounded shimmer" />
             </div>
-            <div className="h-8 w-24 rounded shimmer shrink-0" />
+            <div className="h-4 w-full rounded shimmer" />
+            <div className="flex items-center gap-4">
+              <div className="h-3 w-16 rounded shimmer" />
+              <div className="h-3 w-12 rounded shimmer" />
+              <div className="h-3 w-12 rounded shimmer" />
+            </div>
           </div>
         </div>
       ))}
@@ -80,48 +77,33 @@ function RepoCard({
       onMouseLeave={() => setHovered(false)}
       onClick={() => onSelect(analysis)}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm text-foreground-muted">{analysis.repo_owner}/</span>
-            <span className="text-sm font-semibold text-foreground">{analysis.repo_name}</span>
-          </div>
-          <p className="text-sm leading-relaxed mb-3 line-clamp-2 text-foreground-light">
-            {(data.description as string) || 'No description'}
-          </p>
-          <div className="flex items-center gap-4 flex-wrap">
-            {data.language && (
-              <span className="flex items-center gap-1 text-xs text-foreground-muted">
-                <span className="size-2.5 rounded-full inline-block bg-foreground-muted" />
-                {data.language as string}
-              </span>
-            )}
-            {stars != null && (
-              <span className="flex items-center gap-1 text-xs text-foreground-muted">
-                <Star className="size-3.5" />
-                {stars.toLocaleString()}
-              </span>
-            )}
-            {data.forks_count != null && (
-              <span className="flex items-center gap-1 text-xs text-foreground-muted">
-                <GitFork className="size-3.5" />
-                {(data.forks_count as number).toLocaleString()}
-              </span>
-            )}
-          </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm text-foreground-muted">{analysis.repo_owner}/</span>
+          <span className="text-sm font-semibold text-foreground">{analysis.repo_name}</span>
         </div>
-        <div className="flex flex-col gap-2 items-end shrink-0">
-          <Button
-            size="tiny"
-            type="primary"
-            icon={<BookOpen className="size-3" />}
-            onClick={(e) => {
-              e.stopPropagation()
-              onSelect(analysis)
-            }}
-          >
-            View Docs
-          </Button>
+        <p className="text-sm leading-relaxed mb-3 line-clamp-2 text-foreground-light">
+          {(data.description as string) || 'No description'}
+        </p>
+        <div className="flex items-center gap-4 flex-wrap">
+          {data.language && (
+            <span className="flex items-center gap-1 text-xs text-foreground-muted">
+              <span className="size-2.5 rounded-full inline-block bg-foreground-muted" />
+              {data.language as string}
+            </span>
+          )}
+          {stars != null && (
+            <span className="flex items-center gap-1 text-xs text-foreground-muted">
+              <Star className="size-3.5" />
+              {stars.toLocaleString()}
+            </span>
+          )}
+          {data.forks_count != null && (
+            <span className="flex items-center gap-1 text-xs text-foreground-muted">
+              <GitFork className="size-3.5" />
+              {(data.forks_count as number).toLocaleString()}
+            </span>
+          )}
         </div>
       </div>
     </div>
