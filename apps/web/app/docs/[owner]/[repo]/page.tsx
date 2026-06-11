@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ExternalLink, BookOpen } from 'lucide-react'
-import { Badge, Button } from 'ui'
+import { ExternalLink, BookOpen, ArrowLeft } from 'lucide-react'
+import { Badge, Button, Card, CardContent } from 'ui'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
 import { Mermaid } from 'ui-patterns/Mermaid'
 import { createClient } from '@/lib/supabase/client'
@@ -63,23 +63,28 @@ export default function DocsPage() {
     return (
       <div className="min-h-dvh bg-background">
         <div className="mx-auto max-w-4xl px-6 py-8">
-          <div className="flex items-start justify-between mb-6">
-            <div className="space-y-2 flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <div className="size-5 rounded-md shimmer" />
-                <div className="h-7 w-48 rounded-md shimmer" />
-                <div className="h-5 w-28 rounded-full shimmer" />
+          <Card>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="size-5 rounded-md shimmer" />
+                  <div className="h-7 w-48 rounded-md shimmer" />
+                  <div className="h-5 w-28 rounded-full shimmer" />
+                </div>
+                <div className="h-4 w-72 rounded-md shimmer" />
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="h-4 w-40 rounded-md shimmer" />
+                  <div className="h-4 w-16 rounded-md shimmer" />
+                  <div className="h-4 w-12 rounded-md shimmer" />
+                </div>
               </div>
-              <div className="h-4 w-72 rounded-md shimmer" />
-              <div className="flex items-center gap-3 mt-1">
-                <div className="h-4 w-40 rounded-md shimmer" />
-                <div className="h-4 w-16 rounded-md shimmer" />
-                <div className="h-4 w-12 rounded-md shimmer" />
-              </div>
-            </div>
-            <div className="h-7 w-28 rounded-md shimmer shrink-0" />
-          </div>
-          <div className="w-full min-h-[400px] rounded-xl p-6 shimmer" />
+            </CardContent>
+          </Card>
+          <Card className="mt-6">
+            <CardContent>
+              <div className="w-full min-h-[400px] shimmer" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
@@ -87,12 +92,19 @@ export default function DocsPage() {
 
   if (error || !doc) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-foreground-muted mb-4">{error || 'Documentation not found'}</p>
-          <Button size="tiny" type="default" onClick={() => router.push('/search')}>
-            Back to search
-          </Button>
+      <div className="min-h-dvh bg-background">
+        <div className="mx-auto max-w-4xl px-6 py-8">
+          <Card>
+            <CardContent>
+              <div className="text-center py-12">
+                <BookOpen className="size-8 text-foreground-muted mx-auto mb-3" />
+                <p className="text-foreground-muted mb-4">{error || 'Documentation not found'}</p>
+                <Button type="default" onClick={() => router.push('/search')}>
+                  Back to search
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
@@ -144,49 +156,52 @@ export default function DocsPage() {
               </div>
             ) : null}
           </div>
-          <Button size="tiny" type="default" onClick={() => router.push('/search')} className="self-start sm:self-auto">
+          <Button type="default" onClick={() => router.push('/search')} className="self-start sm:self-auto gap-2">
+            <ArrowLeft className="size-4" />
             Back to Results
           </Button>
         </div>
 
-        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100 break-words">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              code({ className, children }) {
-                const isMermaid = className === 'language-mermaid'
-                if (isMermaid) {
-                  return <Mermaid chart={String(children)} />
-                }
-                const match = /language-(\w+)/.exec(className || '')
-                if (match) {
+        <Card>
+          <CardContent className="prose prose-sm max-w-none break-words">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ className, children }) {
+                  const isMermaid = className === 'language-mermaid'
+                  if (isMermaid) {
+                    return <Mermaid chart={String(children)} />
+                  }
+                  const match = /language-(\w+)/.exec(className || '')
+                  if (match) {
+                    return (
+                      <CodeBlock className={className} language={match[1] as any}>
+                        {String(children).replace(/\n$/, '')}
+                      </CodeBlock>
+                    )
+                  }
                   return (
-                    <CodeBlock className={className} language={match[1] as any}>
-                      {String(children).replace(/\n$/, '')}
-                    </CodeBlock>
+                    <code className="bg-muted rounded px-1.5 py-0.5 text-sm font-mono text-foreground">
+                      {children}
+                    </code>
                   )
-                }
-                return (
-                  <code className="bg-muted rounded px-1.5 py-0.5 text-sm font-mono text-foreground">
-                    {children}
-                  </code>
-                )
-              },
-              pre({ children }) {
-                return <>{children}</>
-              },
-              table({ children }) {
-                return (
-                  <div className="overflow-x-auto">
-                    <table>{children}</table>
-                  </div>
-                )
-              },
-            }}
-          >
-            {doc.documentation || ''}
-          </ReactMarkdown>
-        </div>
+                },
+                pre({ children }) {
+                  return <>{children}</>
+                },
+                table({ children }) {
+                  return (
+                    <div className="overflow-x-auto">
+                      <table>{children}</table>
+                    </div>
+                  )
+                },
+              }}
+            >
+              {doc.documentation || ''}
+            </ReactMarkdown>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
