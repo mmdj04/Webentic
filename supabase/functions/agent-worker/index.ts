@@ -825,9 +825,13 @@ Deno.serve(async (req) => {
     // ── PROCESS NEXT UNIT ─────────────────────────────────
     const TIMEOUT_MS = 120_000
 
-    // Check if another invocation is already processing
+    // Check if another invocation is already processing or in cooldown
     if (ps.processing_since) {
-      const elapsed = Date.now() - new Date(ps.processing_since).getTime()
+      const lockTime = new Date(ps.processing_since).getTime()
+      if (lockTime > Date.now()) {
+        return new Response(JSON.stringify({ message: 'Cooldown' }), { headers: corsHeaders })
+      }
+      const elapsed = Date.now() - lockTime
       if (elapsed < TIMEOUT_MS) {
         return new Response(JSON.stringify({ message: 'Already processing' }), { headers: corsHeaders })
       }
@@ -861,7 +865,8 @@ Deno.serve(async (req) => {
 
       if (ps.current_chunk >= ps.total_chunks) {
         ps.phase = 'stage2'
-        await log(`[${runId}] All batches complete. Moving to Stage 2 (architecture synthesis)...`)
+        ps.processing_since = new Date(Date.now() + 65000).toISOString()
+        await log(`[${runId}] All batches complete. Stage 2 will start after 65s cooldown...`)
       } else {
         await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
       }
@@ -881,14 +886,14 @@ Deno.serve(async (req) => {
       const archPrompt = buildArchitecturePrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
         ps.owner, ps.name, ps.commitSha,
-        ps.structure.length > 20000 ? ps.structure.slice(0, 20000) + '\n... (truncated)' : ps.structure,
-        ps.analyses.map(a => a.length > 30000 ? a.slice(0, 30000) + '\n\n[...truncated]' : a)
+        ps.structure.length > 50000 ? ps.structure.slice(0, 50000) + '\n... (truncated)' : ps.structure,
+        ps.analyses.map(a => a.length > 220000 ? a.slice(0, 220000) + '\n\n[...truncated]' : a)
       )
       const architectureReport = await generateGemini(archPrompt, geminiKey, log) || ''
 
       ps.architecture_report = architectureReport
       ps.phase = 'stage3'
-      ps.processing_since = null
+      ps.processing_since = new Date(Date.now() + 65000).toISOString()
 
       await saveProcessingState(supabase, agent_id, ps)
 
@@ -906,9 +911,9 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Stage 3/${ps.total_chunks + 2}: Generating final documentation...`)
 
       const topFiles = ps.files.slice(0, MAX_INPUT_FILES)
-      const truncatedStructure = ps.structure.length > 15000 ? ps.structure.slice(0, 15000) + '\n... (truncated)' : ps.structure
-      const truncatedArchReport = (ps.architecture_report || '').length > 30000
-        ? ps.architecture_report!.slice(0, 30000) + '\n\n[...truncated]'
+      const truncatedStructure = ps.structure.length > 100000 ? ps.structure.slice(0, 100000) + '\n... (truncated)' : ps.structure
+      const truncatedArchReport = (ps.architecture_report || '').length > 100000
+        ? ps.architecture_report!.slice(0, 100000) + '\n\n[...truncated]'
         : ps.architecture_report
       const finalPrompt = buildFinalPrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
