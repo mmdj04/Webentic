@@ -18,7 +18,7 @@ export function Providers({ children }: PropsWithChildren) {
     <AuthProvider alwaysLoggedIn>
       <QueryClientProvider client={queryClient}>
         <JotaiProvider>
-          <ThemeProvider>
+          <ThemeProvider themes={['classic-dark']} defaultTheme="classic-dark" enableSystem={false}>
             <MobileMenuProvider>
               <FrameworkProvider>
                 <MobileSidebarProvider>

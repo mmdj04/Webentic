@@ -155,11 +155,11 @@ export default function DocsPage() {
                   href={`${doc.repo_url}/tree/${sha}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono hover:text-foreground transition-colors"
+                  className="font-mono hover:text-foreground transition-colors break-all"
                 >
                   {sha.slice(0, 7)}
                 </a>
-                {branch && <span>{branch}</span>}
+                {branch && <span className="break-all">{branch}</span>}
               </div>
             ) : null}
           </div>
@@ -168,7 +168,7 @@ export default function DocsPage() {
           </Button>
         </div>
 
-        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
+        <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100 break-words">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
