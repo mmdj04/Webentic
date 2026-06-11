@@ -449,7 +449,7 @@ Deno.serve(async (req) => {
 
     if (!repo) {
       await log(`[${runId}] All repositories have already been documented`, 'warn')
-      await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
+      await supabase.from('agent_configs').update({ status: 'stopped', updated_at: new Date().toISOString() }).eq('id', agent_id)
       return new Response(JSON.stringify({ message: 'No undocumented repos found' }), { headers: corsHeaders })
     }
 

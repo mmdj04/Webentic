@@ -263,6 +263,26 @@ function SettingsContent() {
     }
   }
 
+  const [pollingAgentId, setPollingAgentId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!pollingAgentId) return
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from('agent_configs')
+        .select('id, status')
+        .eq('id', pollingAgentId)
+        .single()
+      if (data && data.status !== 'running') {
+        clearInterval(interval)
+        setPollingAgentId(null)
+        fetchAgents()
+        if (selectedAgentId === data.id) fetchLogs(data.id)
+      }
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [pollingAgentId, supabase, selectedAgentId])
+
   const handleToggleAgent = async (agent: AgentConfig) => {
     const newStatus = agent.status === 'running' ? 'stopped' : 'running'
 
@@ -302,7 +322,9 @@ function SettingsContent() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ agent_id: agent.id }),
-    }).catch(() => {})
+    })
+      .then(() => setPollingAgentId(agent.id))
+      .catch(() => {})
   }
 
   const handleDeleteAgent = async (agent: AgentConfig) => {
