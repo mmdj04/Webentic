@@ -1,4 +1,3 @@
-import { blocks as vueBlocks } from '@webentic/vue-blocks'
 import { type Registry, type RegistryItem } from 'shadcn/schema'
 
 import { blocks } from './blocks'
@@ -9,12 +8,11 @@ import { examples } from '@/registry/examples'
 
 export const registry = {
   name: 'Webentic UI Library',
-  homepage: 'https://supabase.com/ui',
+  homepage: 'https://webentic.dev',
   items: [
     ...blocks,
     ...clients,
     ...platform,
-    ...vueBlocks,
     aiEditorRules as RegistryItem,
 
     // Internal use only.

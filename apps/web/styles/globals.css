@@ -2,9 +2,6 @@
 @import './../../../packages/ui/build/css/themes/classic-dark.css';
 
 @source '../app/**/*.{js,ts,jsx,tsx}';
-@source '../components/**/*.{js,ts,jsx,tsx}';
-@source '../registry/**/*.{js,ts,jsx,tsx}';
-@source '../content/**/*.mdx';
 @source './../../../packages/ui/src/**/*.{tsx,ts,js}';
 @source './../../../packages/ui-patterns/src/**/*.{tsx,ts,js}';
 
