@@ -112,8 +112,8 @@ function RepoCard({
             size="tiny"
             type="primary"
             icon={<BookOpen className="size-3" />}
-            onClick={() => {
-              setSelectedDoc(analysis)
+            onClick={(e) => {
+              e.stopPropagation()
               router.push(`/docs/${analysis.repo_owner}/${analysis.repo_name}`)
             }}
           >
@@ -336,10 +336,7 @@ function SearchContent() {
                   <RepoCard
                     key={analysis.id}
                     analysis={analysis}
-                    onSelect={(a) => {
-                      setSelectedDoc(a)
-                      router.push(`/docs/${a.repo_owner}/${a.repo_name}`)
-                    }}
+                    onSelect={(a) => router.push(`/docs/${a.repo_owner}/${a.repo_name}`)}
                     liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
                   />
                 ))}
