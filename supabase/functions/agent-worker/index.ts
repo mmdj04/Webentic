@@ -326,27 +326,39 @@ After each file path, add a clickable Markdown link to the GitHub location.
 ### Overview
 What the project does, key features, problems it solves. Reference source files.
 
+### Project Type
+First, determine the type of this repository:
+- **If the repo is a curated list / awesome list / collection of links** (few or no source code files, mainly a README.md with categorized links), classify it as a "Curated Resource Collection." Do NOT invent software architecture, do NOT generate a Mermaid diagram, and do NOT describe markdown files as "components" or "engines."
+- **If the repo is a software project** (has actual source code in languages like .ts, .py, .go, .rs, .java, .c, etc.), classify it as a "Software Project" and generate the Architecture section as normal.
+- **If the repo is a book / documentation project** (markdown chapters, e-book build system), classify it as a "Documentation / Book" and describe its structure accordingly.
+
 ### Architecture
-Include a Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships.
+Only generate this section if the repo is a "Software Project."
+If applicable, include a Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships.
 Then explain each component with source file and line range references.
 After this section, add a "Sources:" bullet list of all files referenced.
+**For curated lists or books, skip the Architecture section entirely or replace it with a "Content Organization" section describing how the content is structured.**
 
 ### Project Structure
 Table of main directories with columns: Directory, Purpose, Key Files.
 
 ### Getting Started
 Prerequisites, installation steps, basic usage examples with code blocks.
+**IMPORTANT: Only include terminal commands (npx, npm, pip, go install, etc.) if they EXACTLY appear in the provided source file contents. Never invent or guess commands.**
 
 ### Key Components
-For EACH major component/module/class:
+For a software project, describe each major component/module/class:
 #### Component Name
 - **File:** \`path/file.ts#L10-L50\` (as Markdown link to GitHub)
 - **Purpose:** What this component does
 - **Key Methods/Properties:** Table with columns: Name, Signature, Description, Source (file with line range)
 - **Sources:** List of files this component touches
+**For curated lists, replace this with "Content Categories" and describe the organization of the listed resources.**
+**For books, replace this with "Chapter Overview" and describe the chapters.**
 
 ### Configuration
-Table with columns: Key, Type, Default, Description, Source file link
+Table with columns: Key, Type, Default, Description, Source file link.
+Only include if the repo has actual configuration files.
 
 ### Key Data Structures
 For each important type/interface/class/struct:
@@ -354,9 +366,11 @@ For each important type/interface/class/struct:
 - **File:** \`path/file.ts#L10-L50\`
 - **Fields:** Table with columns: Field, Type, Description, Source link
 - **Used In:** References to components/files that consume this structure
+Only include for software projects with actual data structures.
 
 ### Testing
 Testing approach, how to run tests, test file locations.
+**Only include commands that appear verbatim in the source files.**
 
 ### Last Indexed
 - **Commit:** ${commitSha}
@@ -368,12 +382,15 @@ Testing approach, how to run tests, test file locations.
 - Output valid Markdown
 - EVERY source file reference MUST include line ranges (e.g., \`path/file.ts#L10-L50\`)
 - Use Markdown link syntax for source references: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
-- Include a Mermaid architecture diagram with \`\`\`mermaid blocks
+- Only generate a Mermaid diagram if the repo is a software project with actual code architecture
 - Use tables for all structured data (add blank line before and after)
 - Use \`\`\`language code blocks for code examples
 - After each major section, add a "Sources:" line listing files referenced with line ranges
 - Be technically detailed and precise
 - Avoid inline HTML and unnecessary emojis
+- **CRITICAL: Never invent terminal commands.** Only show a command if it is written verbatim in a source file (e.g., a Makefile, Dockerfile, CI config, or README). If no source file contains a command example, do not generate any code blocks with shell commands.
+- **CRITICAL: Do not invent software architecture.** If the repo has no source code (only markdown, config files, and documentation), describe it as a curated collection, list, or book — not as a software framework. Do not generate Mermaid diagrams for list/collection repos.
+- **CRITICAL: Do not describe markdown files or templates as "components," "engines," "pipelines," or "frameworks."** Files like CONTRIBUTING.md, pull_request_template.md, and ISSUE_TEMPLATE.md are documentation templates, not software modules.
 </formatting_rules>`
 }
 
