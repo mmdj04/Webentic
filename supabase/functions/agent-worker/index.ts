@@ -4,7 +4,7 @@ const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
-const MAX_INPUT_FILES = 50
+const MAX_INPUT_FILES = 30
 const MAX_RETRIES = 3
 
 const SOURCE_FILE_EXTENSIONS = new Set([
