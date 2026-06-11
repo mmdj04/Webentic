@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ExternalLink, BookOpen } from 'lucide-react'
-import { Badge, Button, Skeleton } from 'ui'
+import { Badge, Button } from 'ui'
+import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -81,15 +82,23 @@ export default function DocsPage() {
     return (
       <div className="min-h-dvh bg-background">
         <div className="mx-auto max-w-4xl px-6 py-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-48 rounded-md" />
-            <Skeleton className="h-5 w-28 rounded-full" />
+          <div className="flex items-start justify-between mb-6">
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <ShimmeringLoader className="size-5 rounded-md" />
+                <ShimmeringLoader className="h-7 w-48 rounded-md" />
+                <ShimmeringLoader className="h-5 w-28 rounded-full" />
+              </div>
+              <ShimmeringLoader className="h-4 w-72 rounded-md" />
+              <div className="flex items-center gap-3 mt-1">
+                <ShimmeringLoader className="h-4 w-40 rounded-md" />
+                <ShimmeringLoader className="h-4 w-16 rounded-md" />
+                <ShimmeringLoader className="h-4 w-12 rounded-md" />
+              </div>
+            </div>
+            <ShimmeringLoader className="h-7 w-28 rounded-md shrink-0" />
           </div>
-          <Skeleton className="h-4 w-72 rounded-md mb-2" />
-          <Skeleton className="h-4 w-96 rounded-md mb-6" />
-          <Skeleton className="h-5 w-64 rounded-md mb-8" />
-          <Skeleton className="h-[600px] w-full rounded-xl" />
+          <ShimmeringLoader className="w-full min-h-[400px] rounded-xl p-6" />
         </div>
       </div>
     )
