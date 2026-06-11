@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, Suspense, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -8,10 +8,9 @@ import {
   Search,
   Star,
   GitFork,
-  ExternalLink,
-  Loader2,
   FileText,
   BookOpen,
+  ChevronDown,
 } from 'lucide-react'
 import {
   InputGroup,
@@ -22,28 +21,6 @@ import {
   Badge,
 } from 'ui'
 import { createClient } from '@/lib/supabase/client'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import mermaid from 'mermaid'
-
-mermaid.initialize({ startOnLoad: false, theme: 'default' })
-
-function Mermaid({ chart }: { chart: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (ref.current) {
-      mermaid
-        .render('mermaid-' + Math.random().toString(36).slice(2), chart)
-        .then(({ svg }) => {
-          if (ref.current) ref.current.innerHTML = svg
-        })
-        .catch(() => {})
-    }
-  }, [chart])
-
-  return <div ref={ref} className="my-4 flex justify-center" />
-}
 
 interface AnalysisDoc {
   id: string
@@ -53,6 +30,32 @@ interface AnalysisDoc {
   documentation: string | null
   analysis_data: Record<string, unknown> | null
   created_at: string
+}
+
+function SearchSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="block rounded-xl border border-default p-5 bg-surface-100">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-20 rounded shimmer" />
+                <div className="h-4 w-32 rounded shimmer" />
+              </div>
+              <div className="h-4 w-full rounded shimmer" />
+              <div className="flex items-center gap-4">
+                <div className="h-3 w-16 rounded shimmer" />
+                <div className="h-3 w-12 rounded shimmer" />
+                <div className="h-3 w-12 rounded shimmer" />
+              </div>
+            </div>
+            <div className="h-8 w-24 rounded shimmer shrink-0" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function RepoCard({
@@ -114,7 +117,7 @@ function RepoCard({
             icon={<BookOpen className="size-3" />}
             onClick={(e) => {
               e.stopPropagation()
-              router.push(`/docs/${analysis.repo_owner}/${analysis.repo_name}`)
+              onSelect(analysis)
             }}
           >
             View Docs
@@ -125,6 +128,8 @@ function RepoCard({
   )
 }
 
+const PAGE_SIZE = 30
+
 function SearchContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -132,11 +137,11 @@ function SearchContent() {
   const [input, setInput] = useState(query)
   const [results, setResults] = useState<AnalysisDoc[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [liveStars, setLiveStars] = useState<Record<string, number>>({})
-
-  const [selectedDoc, setSelectedDoc] = useState<AnalysisDoc | null>(null)
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -144,14 +149,15 @@ function SearchContent() {
     setLoading(true)
     setError(null)
     setSearched(true)
-    setSelectedDoc(null)
+    setResults([])
+    setHasMore(false)
     try {
       let query = supabase
         .from('repository_analyses')
         .select('id, repo_owner, repo_name, repo_url, documentation, analysis_data, created_at')
         .eq('status', 'completed')
         .order('created_at', { ascending: false })
-        .limit(20)
+        .range(0, PAGE_SIZE - 1)
 
       if (q.trim()) {
         query = query.or(`repo_name.ilike.%${q}%,repo_owner.ilike.%${q}%`)
@@ -159,7 +165,9 @@ function SearchContent() {
 
       const { data, error } = await query
       if (error) throw error
-      setResults((data || []) as unknown as AnalysisDoc[])
+      const items = (data || []) as unknown as AnalysisDoc[]
+      setResults(items)
+      setHasMore(items.length === PAGE_SIZE)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load documentation')
       setResults([])
@@ -167,6 +175,35 @@ function SearchContent() {
       setLoading(false)
     }
   }, [supabase])
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const from = results.length
+      const to = from + PAGE_SIZE - 1
+      let supaQuery = supabase
+        .from('repository_analyses')
+        .select('id, repo_owner, repo_name, repo_url, documentation, analysis_data, created_at')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (query.trim()) {
+        supaQuery = supaQuery.or(`repo_name.ilike.%${query}%,repo_owner.ilike.%${query}%`)
+      }
+
+      const { data, error } = await supaQuery
+      if (error) throw error
+      const items = (data || []) as unknown as AnalysisDoc[]
+      setResults(prev => [...prev, ...items])
+      setHasMore(items.length === PAGE_SIZE)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load more')
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [supabase, query, results.length, hasMore, loadingMore])
 
   useEffect(() => {
     doSearch(query)
@@ -192,6 +229,10 @@ function SearchContent() {
     e.preventDefault()
     const q = input.trim()
     router.push(`/search?q=${encodeURIComponent(q)}`)
+  }
+
+  const navigateToDocs = (analysis: AnalysisDoc) => {
+    router.push(`/docs/${analysis.repo_owner}/${analysis.repo_name}`)
   }
 
   return (
@@ -221,155 +262,71 @@ function SearchContent() {
       </header>
 
       <main className="mx-auto px-6 py-8" style={{ maxWidth: 960 }}>
-        {selectedDoc && selectedDoc.documentation && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <BookOpen className="size-5 text-foreground" />
-                  <h1 className="text-xl font-bold text-foreground">
-                    {selectedDoc.repo_owner}/{selectedDoc.repo_name}
-                  </h1>
-                  <Badge color="green">Documentation</Badge>
-                </div>
-                <a
-                  href={selectedDoc.repo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-foreground-lighter hover:text-foreground transition-colors"
-                >
-                  {selectedDoc.repo_url} <ExternalLink className="size-3 inline" />
-                </a>
-                {(() => {
-                  const data = selectedDoc.analysis_data as Record<string, unknown> | null
-                  const sha = data?.indexed_commit_sha as string | undefined
-                  const branch = data?.default_branch as string | undefined
-                  return sha ? (
-                    <div className="mt-1 flex items-center gap-3 text-xs text-foreground-muted">
-                      <span>
-                        Indexed at{' '}
-                        <time dateTime={selectedDoc.created_at}>
-                          {new Date(selectedDoc.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'short', day: 'numeric',
-                          })}
-                        </time>
-                      </span>
-                      <a
-                        href={`${selectedDoc.repo_url}/tree/${sha}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono hover:text-foreground transition-colors"
-                      >
-                        {sha.slice(0, 7)}
-                      </a>
-                      {branch && <span>{branch}</span>}
-                    </div>
-                  ) : null
-                })()}
-              </div>
-              <div className="flex gap-2">
-                <Button size="tiny" type="default" onClick={() => {
-                  setSelectedDoc(null)
-                  router.push('/search')
-                }}>
-                  Back to Results
-                </Button>
-              </div>
-            </div>
+        <div className="flex items-baseline gap-2 mb-6">
+          <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
+            {loading
+              ? 'Loading...'
+              : query
+                ? `Results for "${query}"`
+                : 'All Documented Repositories'}
+          </span>
+          {!loading && (
+            <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
+              {results.length}{hasMore ? '+' : ''} repositories
+            </span>
+          )}
+        </div>
 
-            <div className="prose prose-sm max-w-none border rounded-xl p-6 bg-surface-100">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code({ className, children, ...props }) {
-                    const isMermaid = className === 'language-mermaid'
-                    if (isMermaid) {
-                      return <Mermaid chart={String(children)} />
-                    }
-                    return <code className={className} {...props}>{children}</code>
-                  },
-                  pre({ children }) {
-                    return <pre>{children}</pre>
-                  },
-                }}
-              >
-                {selectedDoc.documentation}
-              </ReactMarkdown>
-            </div>
+        {loading && <SearchSkeleton />}
+
+        {error && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-sm text-foreground-light">{error}</p>
           </div>
         )}
 
-        {!selectedDoc && (
-          <>
-            {searched && (
-              <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
-                  {loading
-                    ? 'Loading...'
-                    : query
-                      ? `Results for "${query}"`
-                      : 'All Documented Repositories'}
-                </span>
-                {!loading && (
-                  <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                    {results.length} repositories
-                  </span>
-                )}
+        {!loading && !error && results.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {results.map((analysis) => (
+              <RepoCard
+                key={analysis.id}
+                analysis={analysis}
+                onSelect={navigateToDocs}
+                liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
+              />
+            ))}
+            {hasMore && (
+              <div className="flex justify-center pt-2 pb-4">
+                <Button
+                  type="default"
+                  size="medium"
+                  icon={<ChevronDown className="size-4" />}
+                  loading={loadingMore}
+                  onClick={loadMore}
+                >
+                  Load More
+                </Button>
               </div>
             )}
+          </div>
+        )}
 
-            {loading && (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="size-6 animate-spin text-foreground-muted" />
-              </div>
-            )}
-
-            {error && (
-              <div className="flex flex-col items-center justify-center py-20">
-                <p className="text-sm text-foreground-light">{error}</p>
-              </div>
-            )}
-
-            {!loading && !error && results.length > 0 && (
-              <div className="flex flex-col gap-3">
-                {results.map((analysis) => (
-                  <RepoCard
-                    key={analysis.id}
-                    analysis={analysis}
-                    onSelect={(a) => router.push(`/docs/${a.repo_owner}/${a.repo_name}`)}
-                    liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
-                  />
-                ))}
-              </div>
-            )}
-
-            {!loading && !error && searched && results.length === 0 && (
-              <div className="text-center py-20">
-                <FileText className="size-8 text-foreground-muted mx-auto mb-3" />
-                <p className="text-sm" style={{ color: 'var(--foreground-light)' }}>
-                  {query
-                    ? `No documented repositories found for "${query}"`
-                    : 'No documented repositories yet'}
-                </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
-                  {query
-                    ? 'Try a different search term'
-                    : 'Documentation is generated automatically for popular repositories'}
-                </p>
-              </div>
-            )}
-
-            {!searched && (
-              <div className="text-center py-20">
-                <div className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground-default)' }}>
-                  Browse Documented Repositories
-                </div>
-                <div className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                  Search for repositories to view AI-generated documentation.
-                </div>
-              </div>
-            )}
-          </>
+        {!loading && !error && results.length === 0 && (
+          <div className="text-center py-20">
+            <FileText className="size-8 text-foreground-muted mx-auto mb-3" />
+            <p className="text-sm" style={{ color: 'var(--foreground-light)' }}>
+              {searched
+                ? (query
+                  ? `No documented repositories found for "${query}"`
+                  : 'No documented repositories yet')
+                : 'Browse Documented Repositories'}
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
+              {searched
+                ? (query ? 'Try a different search term' : 'Documentation is generated automatically for popular repositories')
+                : 'Search for repositories to view AI-generated documentation.'}
+            </p>
+          </div>
         )}
       </main>
     </div>
@@ -381,9 +338,7 @@ export default function SearchPage() {
     <Suspense
       fallback={
         <div className="min-h-dvh flex items-center justify-center bg-background">
-          <div className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-            Loading...
-          </div>
+          <SearchSkeleton />
         </div>
       }
     >
