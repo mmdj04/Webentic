@@ -28,13 +28,24 @@ import {
   Input,
   Badge,
   Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
   Separator,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from 'ui'
+import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -488,140 +499,164 @@ function SettingsContent() {
             </PageSectionSummary>
           </PageSectionMeta>
           <PageSectionContent>
-            <Card className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Zap className="size-5 text-foreground" />
-                <h2 className="text-base font-semibold text-foreground">AI Agent Configuration</h2>
-                <Badge color="amber">gemini-3.5-flash</Badge>
-              </div>
-
-              {!isLoggedIn ? (
-                <div className="py-6 text-center">
-                  <p className="text-sm text-foreground-muted">Sign in above to configure AI agents.</p>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Zap className="size-5 text-foreground shrink-0" />
+                  <CardTitle>AI Agent Configuration</CardTitle>
+                  <Badge variant="warning">gemini-3.5-flash</Badge>
                 </div>
+              </CardHeader>
+              {!isLoggedIn ? (
+                <CardContent>
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-foreground-muted">Sign in above to configure AI agents.</p>
+                  </div>
+                </CardContent>
               ) : (
               <>
-              {agents.length >= 5 && (
-                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-                  <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
-                    Maximum of 5 agents reached. Delete an existing agent to add a new one.
-                  </p>
-                </div>
-              )}
+              <CardContent>
+                {agents.length >= 5 && (
+                  <div className="mb-4 p-3 bg-warning/10 border border-warning-500 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
+                    <p className="text-xs text-warning">
+                      Maximum of 5 agents reached. Delete an existing agent to add a new one.
+                    </p>
+                  </div>
+                )}
 
-              <form onSubmit={handleSaveAgent} className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    Agent Name
-                  </label>
-                  <Input
-                    placeholder="My Documentation Agent"
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                    required
-                    disabled={agents.length >= 5}
-                  />
-                </div>
-                <Separator className="w-full" />
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <Key className="size-3 mr-1" />
-                    Gemini API Key
-                  </label>
-                  <p className="text-xs text-foreground-muted mb-2">
-                    Get your key from{' '}
-                    <a
-                      href="https://aistudio.google.com/apikey"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-foreground"
-                    >
-                      aistudio.google.com
-                    </a>
-                  </p>
-                  <div className="relative">
+                <form id="agent-form" onSubmit={handleSaveAgent} className="space-y-6">
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label="Agent Name"
+                    description="Give your AI agent a recognizable name."
+                  >
                     <Input
-                      type={showGeminiKey ? 'text' : 'password'}
-                      placeholder="AIzaSy..."
-                      value={geminiKey}
-                      onChange={(e) => setGeminiKey(e.target.value)}
+                      placeholder="My Documentation Agent"
+                      value={agentName}
+                      onChange={(e) => setAgentName(e.target.value)}
+                      required
                       disabled={agents.length >= 5}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowGeminiKey(!showGeminiKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                    >
-                      {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Separator className="w-full" />
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <Github className="size-3 mr-1" />
-                    GitHub Token
-                  </label>
-                  <p className="text-xs text-foreground-muted mb-2">
-                    Create a token at{' '}
-                    <a
-                      href="https://github.com/settings/tokens"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-foreground"
-                    >
-                      github.com/settings/tokens
-                    </a>
-                    {' '}(repo scope recommended)
-                  </p>
-                  <div className="relative">
-                    <Input
-                      type={showGithubToken ? 'text' : 'password'}
-                      placeholder="ghp_..."
-                      value={githubToken}
-                      onChange={(e) => setGithubToken(e.target.value)}
-                      disabled={agents.length >= 5}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowGithubToken(!showGithubToken)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                    >
-                      {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Separator className="w-full" />
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <Clock className="size-3 mr-1" />
-                    Generation Frequency
-                  </label>
-                  <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FREQUENCIES.map((f) => (
-                        <SelectItem key={f.value} value={f.value}>
-                          {f.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Separator className="w-full" />
+                  </FormItemLayout>
+
+                  <Separator className="w-full" />
+
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={<span><Key className="size-3 mr-1 inline" />Gemini API Key</span>}
+                    description={
+                      <span>
+                        Get your key from{' '}
+                        <a
+                          href="https://aistudio.google.com/apikey"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-foreground"
+                        >
+                          aistudio.google.com
+                        </a>
+                      </span>
+                    }
+                  >
+                    <div className="relative">
+                      <Input
+                        type={showGeminiKey ? 'text' : 'password'}
+                        placeholder="AIzaSy..."
+                        value={geminiKey}
+                        onChange={(e) => setGeminiKey(e.target.value)}
+                        disabled={agents.length >= 5}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowGeminiKey(!showGeminiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                      >
+                        {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </FormItemLayout>
+
+                  <Separator className="w-full" />
+
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={<span><Github className="size-3 mr-1 inline" />GitHub Token</span>}
+                    description={
+                      <span>
+                        Create a token at{' '}
+                        <a
+                          href="https://github.com/settings/tokens"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-foreground"
+                        >
+                          github.com/settings/tokens
+                        </a>
+                        {' '}(repo scope recommended)
+                      </span>
+                    }
+                  >
+                    <div className="relative">
+                      <Input
+                        type={showGithubToken ? 'text' : 'password'}
+                        placeholder="ghp_..."
+                        value={githubToken}
+                        onChange={(e) => setGithubToken(e.target.value)}
+                        disabled={agents.length >= 5}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowGithubToken(!showGithubToken)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                      >
+                        {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </FormItemLayout>
+
+                  <Separator className="w-full" />
+
+                  <FormItemLayout
+                    layout="flex-row-reverse"
+                    label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency</span>}
+                    description="How often the agent should generate documentation."
+                  >
+                    <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FREQUENCIES.map((f) => (
+                          <SelectItem key={f.value} value={f.value}>
+                            {f.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemLayout>
+                </form>
+              </CardContent>
+
+              <CardFooter className="justify-end space-x-2">
+                <Button
+                  type="default"
+                  disabled={!agentName.trim() && !geminiKey && !githubToken}
+                  onClick={() => { setAgentName(''); setGeminiKey(''); setGithubToken(''); setFrequency('manual') }}
+                >
+                  Cancel
+                </Button>
                 <Button
                   type="primary"
                   htmlType="submit"
+                  form="agent-form"
                   icon={<Plus className="size-4" />}
                   loading={agentSaving}
                   disabled={!agentName.trim() || agents.length >= 5}
                 >
                   Create Agent
                 </Button>
-              </form>
+              </CardFooter>
               </>
               )}
             </Card>
@@ -639,56 +674,65 @@ function SettingsContent() {
             </PageSectionSummary>
           </PageSectionMeta>
           <PageSectionContent>
-            <Card className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <List className="size-5 text-foreground" />
-                <h2 className="text-base font-semibold text-foreground">Agents</h2>
-                <Badge color="scale">
-                  {agents.length}/5
-                </Badge>
-              </div>
-
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <List className="size-5 text-foreground shrink-0" />
+                  <CardTitle>Agents</CardTitle>
+                  <Badge variant="default">{agents.length}/5</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
               {!isLoggedIn ? (
-                <div className="py-6 text-center">
+                <div className="py-6 text-center px-(--card-padding-x)">
                   <p className="text-sm text-foreground-muted">Sign in above to view and manage your agents.</p>
                 </div>
-              ) : (
-              <>
-              {agentsLoading ? (
-                <div className="flex justify-center py-8">
+              ) : agentsLoading ? (
+                <div className="flex justify-center py-8 px-(--card-padding-x)">
                   <Loader2 className="size-5 animate-spin text-foreground-muted" />
                 </div>
               ) : agents.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 px-(--card-padding-x)">
                   <p className="text-sm text-foreground-muted">No agents configured yet</p>
                   <p className="text-xs text-foreground-lighter mt-1">
                     Create an agent above to get started
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {agents.map((agent) => (
-                    <div key={agent.id} className="border rounded-lg p-4 bg-surface-100">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
-                          <p className="text-xs text-foreground-muted mt-0.5">
-                            Created {format(new Date(agent.created_at), 'MMM d, yyyy HH:mm')}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>API</TableHead>
+                      <TableHead>Frequency</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {agents.map((agent) => (
+                      <TableRow key={agent.id}>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm text-foreground">{agent.name}</span>
+                            <span className="text-xs text-foreground-lighter">
+                              Created {format(new Date(agent.created_at), 'MMM d, yyyy HH:mm')}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <Badge
-                            color={
+                            variant={
                               agent.status === 'running'
-                                ? 'green'
+                                ? 'success'
                                 : agent.status === 'error'
-                                  ? 'red'
-                                  : 'scale'
+                                  ? 'destructive'
+                                  : 'default'
                             }
                           >
                             {agent.status === 'running' ? (
                               <span className="flex items-center gap-1">
-                                <span className="size-1.5 bg-green-500 rounded-full animate-pulse" />
+                                <span className="size-1.5 bg-brand-600 rounded-full animate-pulse" />
                                 Running
                               </span>
                             ) : agent.status === 'error' ? (
@@ -697,104 +741,98 @@ function SettingsContent() {
                               'Stopped'
                             )}
                           </Badge>
-                          <Button
-                            size="tiny"
-                            type={agent.status === 'running' ? 'danger' : 'default'}
-                            icon={agent.status === 'running' ? <Square className="size-3" /> : <Play className="size-3" />}
-                            onClick={() => handleToggleAgent(agent)}
-                          />
-                          <Button
-                            size="tiny"
-                            type="default"
-                            icon={<Trash2 className="size-3" />}
-                            onClick={() => handleDeleteAgent(agent)}
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4 text-xs">
-                        <div>
-                          <span className="text-foreground-lighter">API</span>
-                          <p className="text-foreground-light mt-0.5">{agent.api_used}</p>
-                        </div>
-                        <div>
-                          <span className="text-foreground-lighter">Model</span>
-                          <p className="text-foreground-light mt-0.5">{agent.model_type}</p>
-                        </div>
-                        <div>
-                          <span className="text-foreground-lighter">Frequency</span>
-                          <p className="text-foreground-light mt-0.5 capitalize">
-                            {FREQUENCIES.find((f) => f.value === agent.generation_frequency)?.label ??
-                              agent.generation_frequency}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <Button
-                          size="tiny"
-                          type="default"
-                          icon={<RefreshCw className="size-3" />}
-                          onClick={() => handleViewLogs(agent.id)}
-                        >
-                          {selectedAgentId === agent.id ? 'Refresh Logs' : 'View Logs'}
-                        </Button>
-                      </div>
-                      {selectedAgentId === agent.id && (
-                        <div className="mt-4 border-t pt-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const text = logs
-                                    .map((l) => `[${format(new Date(l.created_at), 'HH:mm:ss')}] [${l.level.toUpperCase()}] ${l.message}`)
-                                    .join('\n')
-                                  navigator.clipboard.writeText(text)
-                                }}
-                                className="text-foreground-lighter hover:text-foreground transition-colors"
-                                title="Copy logs"
-                              >
-                                <ClipboardCopy className="size-3.5" />
-                              </button>
-                              <Badge color="scale" className="text-[10px]">
-                                <span className="size-1.5 bg-green-500 rounded-full inline-block mr-1 animate-pulse" />
-                                Live
-                              </Badge>
-                            </div>
+                        </TableCell>
+                        <TableCell className="text-foreground-light">{agent.api_used}</TableCell>
+                        <TableCell className="text-foreground-light capitalize">
+                          {FREQUENCIES.find((f) => f.value === agent.generation_frequency)?.label ??
+                            agent.generation_frequency}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="tiny"
+                              type="default"
+                              icon={<RefreshCw className="size-3" />}
+                              onClick={() => handleViewLogs(agent.id)}
+                              className={selectedAgentId === agent.id ? 'bg-surface-200' : ''}
+                            >
+                              Logs
+                            </Button>
+                            <Button
+                              size="tiny"
+                              type={agent.status === 'running' ? 'danger' : 'default'}
+                              icon={agent.status === 'running' ? <Square className="size-3" /> : <Play className="size-3" />}
+                              onClick={() => handleToggleAgent(agent)}
+                            />
+                            <Button
+                              size="tiny"
+                              type="default"
+                              icon={<Trash2 className="size-3" />}
+                              onClick={() => handleDeleteAgent(agent)}
+                            />
                           </div>
-                          {logsLoading ? (
-                            <div className="flex justify-center py-4">
-                              <Loader2 className="size-4 animate-spin text-foreground-muted" />
-                            </div>
-                          ) : logs.length === 0 ? (
-                            <p className="text-xs text-foreground-muted text-center py-4">No logs yet</p>
-                          ) : (
-                            <div className="max-h-48 overflow-y-auto space-y-1">
-                              {logs.map((log) => (
-                                <div key={log.id} className="flex items-start gap-2 py-1.5 px-2 rounded bg-muted/50 text-xs font-mono">
-                                  <span className="text-foreground-lighter shrink-0">
-                                    {format(new Date(log.created_at), 'HH:mm:ss')}
-                                  </span>
-                                  <span className={`shrink-0 font-medium ${
-                                    log.level === 'error' ? 'text-red-500'
-                                    : log.level === 'warn' ? 'text-amber-500'
-                                    : log.level === 'debug' ? 'text-foreground-lighter'
-                                    : 'text-foreground-light'
-                                  }`}>
-                                    [{log.level.toUpperCase()}]
-                                  </span>
-                                  <span className="text-foreground-light break-all">{log.message}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
-              </>
+              </CardContent>
+
+              {/* Real-time Logs */}
+              {selectedAgentId && (
+                <div className="border-t">
+                  <div className="px-(--card-padding-x) py-3 flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = logs
+                            .map((l) => `[${format(new Date(l.created_at), 'HH:mm:ss')}] [${l.level.toUpperCase()}] ${l.message}`)
+                            .join('\n')
+                          navigator.clipboard.writeText(text)
+                        }}
+                        className="text-foreground-lighter hover:text-foreground transition-colors"
+                        title="Copy logs"
+                      >
+                        <ClipboardCopy className="size-3.5" />
+                      </button>
+                      <Badge variant="default" className="text-[10px]">
+                        <span className="size-1.5 bg-brand-600 rounded-full inline-block mr-1 animate-pulse" />
+                        Live
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="px-(--card-padding-x) pb-3">
+                    {logsLoading ? (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="size-4 animate-spin text-foreground-muted" />
+                      </div>
+                    ) : logs.length === 0 ? (
+                      <p className="text-xs text-foreground-muted text-center py-4">No logs yet</p>
+                    ) : (
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {logs.map((log) => (
+                          <div key={log.id} className="flex items-start gap-2 py-1.5 px-2 rounded bg-muted/50 text-xs font-mono">
+                            <span className="text-foreground-lighter shrink-0">
+                              {format(new Date(log.created_at), 'HH:mm:ss')}
+                            </span>
+                            <span className={`shrink-0 font-medium ${
+                              log.level === 'error' ? 'text-red-500'
+                              : log.level === 'warn' ? 'text-amber-500'
+                              : log.level === 'debug' ? 'text-foreground-lighter'
+                              : 'text-foreground-light'
+                            }`}>
+                              [{log.level.toUpperCase()}]
+                            </span>
+                            <span className="text-foreground-light break-all">{log.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </Card>
           </PageSectionContent>
