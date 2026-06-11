@@ -24,6 +24,15 @@ import {
   EyeOff,
 } from 'lucide-react'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Button,
   Input,
   Badge,
@@ -420,9 +429,25 @@ function SettingsContent() {
                         <p className="text-xs text-foreground-lighter">Signed in</p>
                       </div>
                     </div>
-                    <Button type="outline" size="tiny" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
-                      Sign Out
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="outline" size="tiny" icon={<LogOut className="size-3" />}>
+                          Sign Out
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Sign Out</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to sign out? You will need to sign in again to manage your agents.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               )}
@@ -778,12 +803,29 @@ function SettingsContent() {
                               icon={agent.status === 'running' ? <Square className="size-3" /> : <Play className="size-3" />}
                               onClick={() => handleToggleAgent(agent)}
                             />
-                            <Button
-                              size="tiny"
-                              type="default"
-                              icon={<Trash2 className="size-3" />}
-                              onClick={() => handleDeleteAgent(agent)}
-                            />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="tiny"
+                                  type="default"
+                                  icon={<Trash2 className="size-3" />}
+                                />
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete the agent "{agent.name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteAgent(agent)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </TableCell>
                       </TableRow>
