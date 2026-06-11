@@ -9,17 +9,18 @@ import {
   Star,
   GitFork,
   FileText,
-  BookOpen,
   ChevronDown,
 } from 'lucide-react'
 import {
+  Button,
+  Card,
+  CardContent,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  Button,
-  Badge,
 } from 'ui'
+import { PageContainer } from 'ui-patterns/PageContainer'
 import { createClient } from '@/lib/supabase/client'
 
 interface AnalysisDoc {
@@ -36,20 +37,22 @@ function SearchSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-        <div key={i} className="block rounded-xl border border-default p-5 bg-surface-100">
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-20 rounded shimmer" />
-              <div className="h-4 w-32 rounded shimmer" />
+        <Card key={i}>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-20 rounded shimmer" />
+                <div className="h-4 w-32 rounded shimmer" />
+              </div>
+              <div className="h-4 w-full rounded shimmer" />
+              <div className="flex items-center gap-4">
+                <div className="h-3 w-16 rounded shimmer" />
+                <div className="h-3 w-12 rounded shimmer" />
+                <div className="h-3 w-12 rounded shimmer" />
+              </div>
             </div>
-            <div className="h-4 w-full rounded shimmer" />
-            <div className="flex items-center gap-4">
-              <div className="h-3 w-16 rounded shimmer" />
-              <div className="h-3 w-12 rounded shimmer" />
-              <div className="h-3 w-12 rounded shimmer" />
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
@@ -69,15 +72,15 @@ function RepoCard({
   const stars = liveStars ?? data.stargazers_count as number | undefined
 
   return (
-    <div
-      className={`block rounded-xl border p-5 transition-colors cursor-pointer ${
-        hovered ? 'bg-surface-200 border-strong' : 'bg-surface-100 border-default'
+    <Card
+      className={`cursor-pointer transition-colors ${
+        hovered ? 'bg-surface-200 border-strong' : ''
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onSelect(analysis)}
     >
-      <div className="flex-1 min-w-0">
+      <CardContent>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm text-foreground-muted">{analysis.repo_owner}/</span>
           <span className="text-sm font-semibold text-foreground">{analysis.repo_name}</span>
@@ -105,8 +108,8 @@ function RepoCard({
             </span>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -225,9 +228,9 @@ function SearchContent() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header style={{ borderBottom: '1px solid var(--border-default)' }}>
-        <div className="mx-auto flex items-center gap-4 px-6 py-4" style={{ maxWidth: 780 }}>
-          <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0" style={{ color: 'var(--foreground-light)' }}>
+      <header className="border-b border-default">
+        <PageContainer size="small" className="flex items-center gap-4 py-4">
+          <Link href="/" className="flex items-center gap-2 no-underline text-sm shrink-0 text-foreground-light hover:text-foreground transition-colors">
             <ArrowLeft className="size-4" />
             Home
           </Link>
@@ -235,7 +238,7 @@ function SearchContent() {
             <InputGroup className="w-full">
               <InputGroupAddon align="inline-start">
                 <InputGroupButton size="tiny" disabled className="bg-transparent border-none cursor-default">
-                  <Search className="size-4" style={{ color: 'var(--foreground-muted)' }} />
+                  <Search className="size-4 text-foreground-muted" />
                 </InputGroupButton>
               </InputGroupAddon>
               <InputGroupInput
@@ -246,10 +249,10 @@ function SearchContent() {
               />
             </InputGroup>
           </form>
-        </div>
+        </PageContainer>
       </header>
 
-      <main className="mx-auto px-6 py-8" style={{ maxWidth: 960 }}>
+      <PageContainer size="small" className="py-8">
         {!ready && <SearchSkeleton />}
 
         {error && (
@@ -261,12 +264,12 @@ function SearchContent() {
         {ready && !error && results.length > 0 && (
           <>
             <div className="flex items-baseline gap-2 mb-6">
-              <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
+              <span className="text-lg font-semibold text-foreground">
                 {query
                   ? `Results for "${query}"`
                   : 'All Documented Repositories'}
               </span>
-              <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
+              <span className="text-sm text-foreground-muted">
                 {results.length}{hasMore ? '+' : ''} repositories
               </span>
             </div>
@@ -299,21 +302,21 @@ function SearchContent() {
         {ready && !error && results.length === 0 && (
           <div className="text-center py-20">
             <FileText className="size-8 text-foreground-muted mx-auto mb-3" />
-            <p className="text-sm" style={{ color: 'var(--foreground-light)' }}>
+            <p className="text-sm text-foreground-light">
               {searched
                 ? (query
                   ? `No documented repositories found for "${query}"`
                   : 'No documented repositories yet')
                 : 'Browse Documented Repositories'}
             </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
+            <p className="text-xs mt-1 text-foreground-muted">
               {searched
                 ? (query ? 'Try a different search term' : 'Documentation is generated automatically for popular repositories')
                 : 'Search for repositories to view AI-generated documentation.'}
             </p>
           </div>
         )}
-      </main>
+      </PageContainer>
     </div>
   )
 }
