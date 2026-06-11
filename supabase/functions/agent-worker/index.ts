@@ -288,6 +288,72 @@ Be exhaustive and technically precise. Stage 3 will use this report to write the
 </instructions>`
 }
 
+function buildSynthesisPrompt(
+  repoName: string,
+  description: string | null,
+  language: string | null,
+  topics: string[],
+  owner: string,
+  repo: string,
+  commitSha: string,
+  structure: string,
+  partialReports: string[]
+): string {
+  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
+
+  return `<role>
+You are an expert Architecture Synthesis Agent — the final step of Stage 2 in our documentation pipeline.
+Your job is to take multiple partial architecture reports (each analyzing a subset of source files) and merge them into ONE unified, comprehensive architecture report.
+</role>
+
+<repository_info>
+- Name: ${repoName}
+- Description: ${description || 'N/A'}
+- Language: ${language || 'N/A'}
+- Topics: ${topics.join(', ') || 'N/A'}
+- Indexed commit: ${commitSha}
+- GitHub base URL: ${githubBase}
+</repository_info>
+
+<file_structure>
+${structure.length > 10000 ? structure.slice(0, 10000) + '\n... (truncated)' : structure}
+</file_structure>
+
+<partial_architecture_reports>
+${partialReports.map((r, i) => `<partial_report_${i + 1}>\n${r}\n</partial_report_${i + 1}>`).join('\n\n')}
+</partial_architecture_reports>
+
+<instructions>
+Merge the partial reports above into ONE unified architecture report with these sections:
+
+## Project Classification
+- **Software Project** / **Curated Collection** / **Documentation Book**
+
+## Dependency Graph (Unified)
+Merged view of all dependencies across all partial reports.
+
+## Architectural Layers
+Complete layers of the project, merging information from all partial reports.
+
+## Data Flow
+Complete end-to-end data flow.
+
+## Design Patterns
+All patterns found across the entire codebase.
+
+## Key Components Summary
+Every major component, with cross-references resolved across partial reports.
+
+## Configuration Architecture
+
+## Testing Architecture
+
+---
+Resolve any conflicts between partial reports. If partial reports contradict, use the most detailed analysis.
+Eliminate duplication. Produce a single cohesive report that Stage 3 can use directly.
+</instructions>`
+}
+
 interface GitHubRepo {
   full_name: string
   name: string
@@ -702,6 +768,7 @@ interface ProcessingState {
   total_chunks: number
   analyses: string[]
   architecture_report: string
+  stage2_reports: string[]
 }
 
 function now(): string {
@@ -815,6 +882,7 @@ Deno.serve(async (req) => {
           total_chunks: totalChunks,
           analyses: [],
           architecture_report: '',
+          stage2_reports: [],
         } as ProcessingState,
       }).eq('id', agent_id)
 
@@ -865,8 +933,11 @@ Deno.serve(async (req) => {
 
       if (ps.current_chunk >= ps.total_chunks) {
         ps.phase = 'stage2'
+        ps.current_chunk = 0
+        ps.total_chunks = Math.ceil(ps.analyses.length / 2)
+        ps.stage2_reports = []
         ps.processing_since = new Date(Date.now() + 65000).toISOString()
-        await log(`[${runId}] All batches complete. Stage 2 will start after 65s cooldown...`)
+        await log(`[${runId}] All batches complete. Stage 2 will analyze ${ps.total_chunks} batches of 2 analyses each, after 65s cooldown...`)
       } else {
         await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
       }
@@ -880,16 +951,52 @@ Deno.serve(async (req) => {
     }
 
     if (ps.phase === 'stage2') {
-      // ── STAGE 2: Architecture synthesis ────────────────
-      await log(`[${runId}] Stage 2/${ps.total_chunks + 2}: Synthesizing architecture from ${ps.analyses.length} analyses...`)
+      const totalBatches = ps.total_chunks
+      const batchDone = ps.stage2_reports.length
 
-      const archPrompt = buildArchitecturePrompt(
+      if (batchDone < totalBatches) {
+        // ── STAGE 2: Process a batch of 2 analyses ────────
+        const from = batchDone * 2
+        const to = Math.min(from + 2, ps.analyses.length)
+        await log(`[${runId}] Stage 2a/${totalBatches}: Analyzing analyses ${from + 1}-${to} of ${ps.analyses.length}...`)
+
+        const archPrompt = buildArchitecturePrompt(
+          repo.full_name, repo.description, repo.language, repo.topics,
+          ps.owner, ps.name, ps.commitSha,
+          ps.structure.length > 5000 ? ps.structure.slice(0, 5000) + '\n... (truncated)' : ps.structure,
+          ps.analyses.slice(from, to)
+        )
+        const partialReport = await generateGemini(archPrompt, geminiKey, log) || ''
+
+        ps.stage2_reports.push(partialReport)
+        ps.current_chunk = batchDone + 1
+        ps.processing_since = null
+
+        if (ps.current_chunk >= totalBatches) {
+          ps.processing_since = new Date(Date.now() + 65000).toISOString()
+          await log(`[${runId}] Stage 2 analyses complete. Running synthesis after 65s cooldown...`)
+        } else {
+          await log(`[${runId}] Stage 2a: Batch ${batchDone + 1}/${totalBatches} done. ${totalBatches - ps.current_chunk} remaining.`)
+        }
+
+        await saveProcessingState(supabase, agent_id, ps)
+        return new Response(JSON.stringify({
+          message: ps.current_chunk >= totalBatches ? 'Stage 2 analyses complete' : 'Stage 2 batch processed',
+          batch: batchDone + 1,
+          total: totalBatches,
+        }), { headers: corsHeaders })
+      }
+
+      // ── STAGE 2: Synthesis of partial reports ─────────
+      await log(`[${runId}] Stage 2b: Synthesizing ${ps.stage2_reports.length} partial architecture reports...`)
+
+      const synthesisPrompt = buildSynthesisPrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
         ps.owner, ps.name, ps.commitSha,
-        ps.structure.length > 50000 ? ps.structure.slice(0, 50000) + '\n... (truncated)' : ps.structure,
-        ps.analyses.map(a => a.length > 220000 ? a.slice(0, 220000) + '\n\n[...truncated]' : a)
+        ps.structure.length > 10000 ? ps.structure.slice(0, 10000) + '\n... (truncated)' : ps.structure,
+        ps.stage2_reports
       )
-      const architectureReport = await generateGemini(archPrompt, geminiKey, log) || ''
+      const architectureReport = await generateGemini(synthesisPrompt, geminiKey, log) || ''
 
       ps.architecture_report = architectureReport
       ps.phase = 'stage3'
@@ -898,9 +1005,9 @@ Deno.serve(async (req) => {
       await saveProcessingState(supabase, agent_id, ps)
 
       if (!architectureReport) {
-        await log(`[${runId}] Stage 2 returned empty report, proceeding without it`, 'warn')
+        await log(`[${runId}] Stage 2 synthesis returned empty, proceeding without it`, 'warn')
       } else {
-        await log(`[${runId}] Stage 2 complete. Moving to Stage 3 (final wiki)...`)
+        await log(`[${runId}] Stage 2 complete. Moving to Stage 3 (final wiki) after 65s cooldown...`)
       }
 
       return new Response(JSON.stringify({ message: 'Architecture analysis complete' }), { headers: corsHeaders })
@@ -911,13 +1018,9 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Stage 3/${ps.total_chunks + 2}: Generating final documentation...`)
 
       const topFiles = ps.files.slice(0, MAX_INPUT_FILES)
-      const truncatedStructure = ps.structure.length > 100000 ? ps.structure.slice(0, 100000) + '\n... (truncated)' : ps.structure
-      const truncatedArchReport = (ps.architecture_report || '').length > 100000
-        ? ps.architecture_report!.slice(0, 100000) + '\n\n[...truncated]'
-        : ps.architecture_report
       const finalPrompt = buildFinalPrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
-        ps.owner, ps.name, ps.commitSha, repo.default_branch, truncatedStructure, topFiles, truncatedArchReport
+        ps.owner, ps.name, ps.commitSha, repo.default_branch, ps.structure, topFiles, ps.architecture_report || ''
       )
       const documentation = await generateGemini(finalPrompt, geminiKey, log)
 
