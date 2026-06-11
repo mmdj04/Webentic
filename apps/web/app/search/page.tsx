@@ -3,6 +3,7 @@
 import { useState, Suspense, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   Search,
@@ -114,9 +115,14 @@ function RepoCard({
           >
             <ExternalLink className="size-4" />
           </a>
-          <Button size="tiny" type="primary" icon={<BookOpen className="size-3" />}>
-            View Docs
-          </Button>
+          <Link
+            href={`/docs/${analysis.repo_owner}/${analysis.repo_name}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button size="tiny" type="primary" icon={<BookOpen className="size-3" />}>
+              View Docs
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
@@ -221,8 +227,42 @@ function SearchContent() {
                 >
                   {selectedDoc.repo_url} <ExternalLink className="size-3 inline" />
                 </a>
+                {(() => {
+                  const data = selectedDoc.analysis_data as Record<string, unknown> | null
+                  const sha = data?.indexed_commit_sha as string | undefined
+                  const branch = data?.default_branch as string | undefined
+                  return sha ? (
+                    <div className="mt-1 flex items-center gap-3 text-xs text-foreground-muted">
+                      <span>
+                        Indexed at{' '}
+                        <time dateTime={selectedDoc.created_at}>
+                          {new Date(selectedDoc.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'short', day: 'numeric',
+                          })}
+                        </time>
+                      </span>
+                      <a
+                        href={`${selectedDoc.repo_url}/tree/${sha}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono hover:text-foreground transition-colors"
+                      >
+                        {sha.slice(0, 7)}
+                      </a>
+                      {branch && <span>{branch}</span>}
+                    </div>
+                  ) : null
+                })()}
               </div>
               <div className="flex gap-2">
+                <Link
+                  href={`/docs/${selectedDoc.repo_owner}/${selectedDoc.repo_name}`}
+                  className="no-underline"
+                >
+                  <Button size="tiny" type="primary" icon={<ExternalLink className="size-3" />}>
+                    Open full page
+                  </Button>
+                </Link>
                 <Button size="tiny" type="default" onClick={() => setSelectedDoc(null)}>
                   Back to Results
                 </Button>

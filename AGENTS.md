@@ -22,10 +22,22 @@
 - RLS: anyone can SELECT completed analyses (anon policy); INSERT/UPDATE restricted to owner
 - Agent (background worker) handles: search GitHub → filter 1k+ stars & file types → fetch source files → Gemini generation → store in `repository_analyses`
 - User only browses/view docs; no user-triggered generation in search page
-- `repository_analyses.analysis_data` jsonb stores repo metadata (stars, forks, description, language, topics)
+- `repository_analyses.analysis_data` jsonb stores repo metadata (stars, forks, description, language, topics, indexed_commit_sha, default_branch)
 
 ## Vercel Deploy
 - Push to `mmdj04/Webentic` → auto-deploys `webentic-ui` (production)
 - Config: `vercel.json` (root), Node 24.x, pnpm 10.24.0
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_API_URL`, etc.
 - No `rootDirectory` in vercel.json (set in Vercel project settings)
+
+## Routes
+- `/search` — Browse and search documented repositories
+- `/docs/{owner}/{repo}` — Dedicated wiki page with sidebar TOC, Mermaid diagrams, commit SHA display
+- `/settings` — Agent config management (create, start, stop agents; view live logs)
+
+## Edge Function (agent-worker)
+- `supabase/functions/agent-worker/index.ts` — Deno/TypeScript
+- Fetches repo source files, adds line numbers to content, generates DeepWiki-style docs via Gemini
+- Stores commit SHA (`indexed_commit_sha`) and `default_branch` in `analysis_data`
+- Deployed via `npx supabase functions deploy agent-worker` (683.8kB)
+- Builder uses Deno runtime with `jsr:@supabase/supabase-js@2`

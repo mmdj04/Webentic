@@ -248,16 +248,49 @@ async function generateGemini(prompt: string, apiKey: string): Promise<string> {
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
 }
 
+async function getLatestCommitSha(
+  owner: string,
+  repo: string,
+  branch: string,
+  token?: string
+): Promise<string | null> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'Webentic-Agent',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  const res = await fetch(
+    `${GITHUB_API}/repos/${owner}/${repo}/branches/${branch}`,
+    { headers }
+  )
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.commit?.sha || null
+}
+
 function buildPrompt(
   repoName: string,
   description: string | null,
   language: string | null,
   topics: string[],
+  owner: string,
+  repo: string,
+  commitSha: string,
   structure: string,
   files: { path: string; content: string }[]
 ): string {
+  // Add line numbers to file contents for accurate source line references
+  const numberedFiles = files.map(f => {
+    const lines = f.content.split('\n')
+    const numbered = lines.map((line, i) => `${i + 1}:${line}`).join('\n')
+    return { path: f.path, content: numbered }
+  })
+
+  const githubBase = `https://github.com/${owner}/${repo}/blob/${commitSha}`
+
   return `<role>
-You are an expert technical documentation writer. Generate comprehensive, well-structured documentation for the open-source repository.
+You are an expert technical documentation writer. Generate comprehensive, well-structured documentation in the style of DeepWiki for this open-source repository. Focus on accuracy, technical depth, and traceability to source code.
 </role>
 
 <repository_info>
@@ -265,71 +298,82 @@ You are an expert technical documentation writer. Generate comprehensive, well-s
 - Description: ${description || 'N/A'}
 - Language: ${language || 'N/A'}
 - Topics: ${topics.join(', ') || 'N/A'}
+- Indexed commit: ${commitSha}
+- Source files analyzed: ${files.length}
+- GitHub base URL: ${githubBase}
 </repository_info>
 
 <source_data>
-The following is the file structure and contents of the repository:
+File contents include LINE NUMBERS (format "LINE_NUMBER:content"). Use these to reference exact source locations.
 
 <file_structure>
 ${structure}
 </file_structure>
 
 <file_contents>
-${files.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 8000)}\n</file>`).join('\n\n')}
+${numberedFiles.map((f) => `<file path="${f.path}">\n${f.content.slice(0, 10000)}\n</file>`).join('\n\n')}
 </file_contents>
 </source_data>
 
 <output_structure>
-Generate documentation with these sections:
+Generate a single-page DeepWiki-style wiki with sections in this order:
 
-1. ## 📋 Overview
-   - Brief description of what the project does
-   - Key features and capabilities
+### Relevant Source Files
+Table with columns: File, Purpose, Key Elements.
+List the most important source files identified in the repository.
+After each file path, add a clickable Markdown link to the GitHub location.
 
-2. ## 🏗️ Architecture
-   - High-level architecture overview
-   - Use a Mermaid diagram to show component relationships
+### Overview
+What the project does, key features, problems it solves. Reference source files.
 
-3. ## 📁 Project Structure
-   - Table of the main directories and their purposes
+### Architecture
+Include a Mermaid diagram (\`\`\`mermaid ... \`\`\`) showing component/module relationships.
+Then explain each component with source file and line range references.
+After this section, add a "Sources:" bullet list of all files referenced.
 
-4. ## 🚀 Getting Started
-   - Prerequisites
-   - Installation steps
-   - Basic usage example
+### Project Structure
+Table of main directories with columns: Directory, Purpose, Key Files.
 
-5. ## 🧩 Key Components
-   - For each major component/class/function:
-     - Name and purpose
-     - Source file reference (with line numbers)
-     - Key methods and their signatures
-     - Usage example
+### Getting Started
+Prerequisites, installation steps, basic usage examples with code blocks.
 
-6. ## 🔧 Configuration
-   - Environment variables
-   - Configuration options
+### Key Components
+For EACH major component/module/class:
+#### Component Name
+- **File:** \`path/file.ts#L10-L50\` (as Markdown link to GitHub)
+- **Purpose:** What this component does
+- **Key Methods/Properties:** Table with columns: Name, Signature, Description, Source (file with line range)
+- **Sources:** List of files this component touches
 
-7. ## 📊 API Reference (if applicable)
-   - Endpoints
-   - Request/Response formats
-   - Authentication
+### Configuration
+Table with columns: Key, Type, Default, Description, Source file link
 
-8. ## 🧪 Testing
-   - How to run tests
-   - Testing structure
+### Key Data Structures
+For each important type/interface/class/struct:
+#### Structure Name
+- **File:** \`path/file.ts#L10-L50\`
+- **Fields:** Table with columns: Field, Type, Description, Source link
+- **Used In:** References to components/files that consume this structure
 
-9. ## 🤝 Contributing
-   - Guidelines for contributors
+### Testing
+Testing approach, how to run tests, test file locations.
+
+### Last Indexed
+- **Commit:** ${commitSha}
+- **Source files analyzed:** ${files.length}
+- **Indexed at:** ${new Date().toISOString()}
 </output_structure>
 
 <formatting_rules>
-- Use proper Markdown throughout
-- Include a Mermaid diagram in the Architecture section using \`\`\`mermaid blocks
-- Use tables for structured data (configuration options, API endpoints, component lists)
-- Reference source files with their exact paths and line numbers where relevant
-- Use code blocks with language identifiers for all code examples
-- Keep descriptions clear and concise
-- Use emojis sparingly for section headers only
+- Output valid Markdown
+- EVERY source file reference MUST include line ranges (e.g., \`path/file.ts#L10-L50\`)
+- Use Markdown link syntax for source references: \`[path/file.ts#L10-L50](${githubBase}/path/file.ts#L10-L50)\`
+- Include a Mermaid architecture diagram with \`\`\`mermaid blocks
+- Use tables for all structured data (add blank line before and after)
+- Use \`\`\`language code blocks for code examples
+- After each major section, add a "Sources:" line listing files referenced with line ranges
+- Be technically detailed and precise
+- Avoid inline HTML and unnecessary emojis
 </formatting_rules>`
 }
 
@@ -413,12 +457,16 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ message: 'No source files found' }), { headers: corsHeaders })
     }
 
+    await log(`[${runId}] Fetching latest commit SHA...`)
+
+    const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
+
     await log(`[${runId}] Generating documentation via Gemini...`)
 
     // Set status to running before Gemini (longest operation, may timeout)
     await supabase.from('agent_configs').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', agent_id)
 
-    const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, structure, files)
+    const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, owner, name, commitSha, structure, files)
     const documentation = await generateGemini(prompt, agent.gemini_api_key!)
 
     if (!documentation) {
@@ -440,6 +488,8 @@ Deno.serve(async (req) => {
         description: repo.description,
         language: repo.language,
         topics: repo.topics,
+        indexed_commit_sha: commitSha,
+        default_branch: repo.default_branch,
       },
       documentation,
       status: 'completed',

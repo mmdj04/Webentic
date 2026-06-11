@@ -21,6 +21,9 @@ skills-lock.json
 apps/web/app/\(app\)/docs
 apps/web/app/design-system
 apps/web/app/docs
+# Exception: the DeepWiki-style doc viewer route
+!apps/web/app/docs/
+!apps/web/app/docs/**/*
 apps/web/content
 apps/web/components/mdx-components.tsx
 apps/web/components/source-panel.tsx
