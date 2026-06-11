@@ -290,26 +290,8 @@ function SettingsContent() {
       )
       .subscribe()
 
-    const interval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      if (!token) return
-
-      const baseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '')
-      const functionUrl = `${baseUrl}/functions/v1/agent-worker`
-      fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ agent_id: pollingAgentId }),
-      }).catch(() => {})
-    }, 5000)
-
     return () => {
       supabase.removeChannel(channel)
-      clearInterval(interval)
     }
   }, [pollingAgentId, supabase, selectedAgentId])
 
