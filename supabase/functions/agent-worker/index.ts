@@ -689,6 +689,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface ProcessingState {
+  phase: 'fetching' | 'stage1' | 'stage2' | 'stage3'
+  processing_since: string | null
+  repo: GitHubRepo
+  owner: string
+  name: string
+  commitSha: string
+  structure: string
+  files: { path: string; content: string }[]
+  current_chunk: number
+  total_chunks: number
+  analyses: string[]
+  architecture_report: string
+}
+
+function now(): string {
+  return new Date().toISOString()
+}
+
+async function saveProcessingState(
+  supabase: ReturnType<typeof createClient>,
+  agentId: string,
+  state: ProcessingState | null
+): Promise<void> {
+  await supabase
+    .from('agent_configs')
+    .update({ processing_state: state as any, updated_at: now() })
+    .eq('id', agentId)
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -729,121 +759,209 @@ Deno.serve(async (req) => {
   }
 
   const runId = Date.now().toString(36)
+  const ps = agent.processing_state as ProcessingState | null
 
   try {
-    await log(`[${runId}] Agent started: ${agent.name}`)
-    await log(`[${runId}] Searching for undocumented repos with 1k+ stars...`)
+    if (!ps) {
+      // ── FETCH PHASE ──────────────────────────────────────
+      await log(`[${runId}] Agent started: ${agent.name}`)
+      await log(`[${runId}] Searching for undocumented repos with 1k+ stars...`)
 
-    const repo = await findUndocumentedRepo(supabase, agent.github_token || undefined)
+      const repo = await findUndocumentedRepo(supabase, agent.github_token || undefined)
 
-    if (!repo) {
-      await log(`[${runId}] All repositories have already been documented`, 'warn')
-      await supabase.from('agent_configs').update({ status: 'stopped', updated_at: new Date().toISOString() }).eq('id', agent_id)
-      return new Response(JSON.stringify({ message: 'No undocumented repos found' }), { headers: corsHeaders })
+      if (!repo) {
+        await log(`[${runId}] All repositories have already been documented`, 'warn')
+        await supabase.from('agent_configs').update({ status: 'stopped', updated_at: now() }).eq('id', agent_id)
+        return new Response(JSON.stringify({ message: 'No undocumented repos found' }), { headers: corsHeaders })
+      }
+
+      const [owner, name] = repo.full_name.split('/')
+
+      await log(`[${runId}] Selected: ${repo.full_name} ⭐ ${repo.stargazers_count}`)
+      await log(`[${runId}] Fetching source files...`)
+
+      const { files, structure } = await getSourceFiles(owner, name, repo.default_branch, agent.github_token || undefined, 60_000)
+
+      await log(`[${runId}] Retrieved ${files.length} source files`)
+
+      if (files.length === 0) {
+        await log(`[${runId}] No source files found`, 'error')
+        await supabase.from('agent_configs').update({ status: 'error', updated_at: now() }).eq('id', agent_id)
+        return new Response(JSON.stringify({ message: 'No source files found' }), { headers: corsHeaders })
+      }
+
+      const selectedFiles = prioritizeFiles(files)
+      await log(`[${runId}] Selected ${selectedFiles.length} files for context (from ${files.length} total)`)
+
+      await log(`[${runId}] Fetching latest commit SHA...`)
+      const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
+
+      const totalChunks = Math.ceil(selectedFiles.length / MAX_INPUT_FILES)
+
+      // Save state and return — next invocation processes stage1
+      await supabase.from('agent_configs').update({
+        status: 'running',
+        updated_at: now(),
+        processing_state: {
+          phase: 'stage1',
+          processing_since: null,
+          repo,
+          owner,
+          name,
+          commitSha,
+          structure,
+          files: selectedFiles,
+          current_chunk: 0,
+          total_chunks: totalChunks,
+          analyses: [],
+          architecture_report: '',
+        } as ProcessingState,
+      }).eq('id', agent_id)
+
+      await log(`[${runId}] Files fetched. ${totalChunks} batches to process.`)
+      return new Response(JSON.stringify({ message: 'Files fetched, ready for stage 1' }), { headers: corsHeaders })
     }
 
-    const [owner, name] = repo.full_name.split('/')
+    // ── PROCESS NEXT UNIT ─────────────────────────────────
+    const TIMEOUT_MS = 120_000
 
-    await log(`[${runId}] Selected: ${repo.full_name} ⭐ ${repo.stargazers_count} (not yet documented)`)
-    await log(`[${runId}] Fetching source files from ${repo.full_name}...`)
-
-    const { files, structure } = await getSourceFiles(
-      owner,
-      name,
-      repo.default_branch,
-      agent.github_token || undefined,
-      60_000
-    )
-
-    await log(`[${runId}] Retrieved ${files.length} source files`)
-
-    if (files.length === 0) {
-      await log(`[${runId}] No source files found`, 'error')
-      await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
-      return new Response(JSON.stringify({ message: 'No source files found' }), { headers: corsHeaders })
+    // Check if another invocation is already processing
+    if (ps.processing_since) {
+      const elapsed = Date.now() - new Date(ps.processing_since).getTime()
+      if (elapsed < TIMEOUT_MS) {
+        return new Response(JSON.stringify({ message: 'Already processing' }), { headers: corsHeaders })
+      }
+      await log(`[${runId}] Reclaiming stale processing (${Math.round(elapsed / 1000)}s old)`, 'warn')
     }
 
-    const selectedFiles = prioritizeFiles(files)
-    await log(`[${runId}] Selected ${selectedFiles.length} most relevant files for context (from ${files.length} total)`)
+    // Mark as processing
+    ps.processing_since = now()
+    await supabase.from('agent_configs').update({
+      processing_state: ps as any,
+      updated_at: now(),
+    }).eq('id', agent_id)
 
-    await log(`[${runId}] Fetching latest commit SHA...`)
+    const geminiKey = agent.gemini_api_key!
+    const repo = ps.repo
+    const repo = ps.repo
 
-    const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
+    if (ps.phase === 'stage1') {
+      // ── STAGE 1: One batch ──────────────────────────────
+      const chunks = chunkFiles(ps.files)
+      const i = ps.current_chunk
+      await log(`[${runId}] Stage 1/${ps.total_chunks + 2}: Batch ${i + 1} of ${ps.total_chunks} (${chunks[i].length} files)...`)
 
-    await log(`[${runId}] Generating documentation via 3-stage Gemini pipeline...`)
+      const analysisPrompt = buildAnalysisPrompt(chunks[i], i + 1, ps.total_chunks)
+      const analysis = await generateGemini(analysisPrompt, geminiKey, log)
 
-    // Set status to running before Gemini (longest operation, may timeout)
-    await supabase.from('agent_configs').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', agent_id)
+      if (analysis) ps.analyses.push(analysis)
+      else await log(`[${runId}] Batch ${i + 1} returned empty analysis`, 'warn')
 
-    // Stage 1: Per-file code analysis (one call per chunk, each has own 150s + 250K tokens)
-    const chunks = chunkFiles(selectedFiles)
-    const analyses: string[] = []
+      ps.current_chunk = i + 1
+      ps.processing_since = null
 
-    for (let i = 0; i < chunks.length; i++) {
-      await log(`[${runId}] Stage 1/${chunks.length + 2}: Analyzing batch ${i + 1} of ${chunks.length} (${chunks[i].length} files)...`)
-      const analysisPrompt = buildAnalysisPrompt(chunks[i], i + 1, chunks.length)
-      const analysis = await generateGemini(analysisPrompt, agent.gemini_api_key!, log)
-      if (analysis) analyses.push(analysis)
-      else await log(`[${runId}] Stage 1 batch ${i + 1} returned empty analysis`, 'warn')
+      if (ps.current_chunk >= ps.total_chunks) {
+        ps.phase = 'stage2'
+        await log(`[${runId}] All batches complete. Moving to Stage 2 (architecture synthesis)...`)
+      } else {
+        await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
+      }
+
+      await saveProcessingState(supabase, agent_id, ps)
+      return new Response(JSON.stringify({
+        message: ps.phase === 'stage2' ? 'Stage 1 complete' : 'Batch processed',
+        batch: i + 1,
+        total: ps.total_chunks,
+      }), { headers: corsHeaders })
     }
 
-    // Stage 2: Architecture synthesis from all Stage 1 analyses
-    await log(`[${runId}] Stage 2/${chunks.length + 2}: Synthesizing architecture from ${analyses.length} analyses...`)
-    const archPrompt = buildArchitecturePrompt(
-      repo.full_name, repo.description, repo.language, repo.topics,
-      owner, name, commitSha, structure, analyses
-    )
-    const architectureReport = await generateGemini(archPrompt, agent.gemini_api_key!, log) || ''
+    if (ps.phase === 'stage2') {
+      // ── STAGE 2: Architecture synthesis ────────────────
+      await log(`[${runId}] Stage 2/${ps.total_chunks + 2}: Synthesizing architecture from ${ps.analyses.length} analyses...`)
 
-    if (!architectureReport) {
-      await log(`[${runId}] Stage 2 returned empty architecture report, proceeding without it`, 'warn')
+      const archPrompt = buildArchitecturePrompt(
+        repo.full_name, repo.description, repo.language, repo.topics,
+        ps.owner, ps.name, ps.commitSha, ps.structure, ps.analyses
+      )
+      const architectureReport = await generateGemini(archPrompt, geminiKey, log) || ''
+
+      ps.architecture_report = architectureReport
+      ps.phase = 'stage3'
+      ps.processing_since = null
+
+      await saveProcessingState(supabase, agent_id, ps)
+
+      if (!architectureReport) {
+        await log(`[${runId}] Stage 2 returned empty report, proceeding without it`, 'warn')
+      } else {
+        await log(`[${runId}] Stage 2 complete. Moving to Stage 3 (final wiki)...`)
+      }
+
+      return new Response(JSON.stringify({ message: 'Architecture analysis complete' }), { headers: corsHeaders })
     }
 
-    // Stage 3: Final wiki generation from architecture report + top files for line-numbered refs
-    const topFiles = selectedFiles.slice(0, MAX_INPUT_FILES)
-    await log(`[${runId}] Stage 3/${chunks.length + 2}: Generating final documentation...`)
-    const finalPrompt = buildFinalPrompt(
-      repo.full_name, repo.description, repo.language, repo.topics,
-      owner, name, commitSha, repo.default_branch, structure, topFiles, architectureReport
-    )
-    const documentation = await generateGemini(finalPrompt, agent.gemini_api_key!, log)
+    if (ps.phase === 'stage3') {
+      // ── STAGE 3: Final wiki generation ─────────────────
+      await log(`[${runId}] Stage 3/${ps.total_chunks + 2}: Generating final documentation...`)
 
-    if (!documentation) {
-      throw new Error('Gemini returned empty documentation')
+      const topFiles = ps.files.slice(0, MAX_INPUT_FILES)
+      const finalPrompt = buildFinalPrompt(
+        repo.full_name, repo.description, repo.language, repo.topics,
+        ps.owner, ps.name, ps.commitSha, repo.default_branch, ps.structure, topFiles, ps.architecture_report
+      )
+      const documentation = await generateGemini(finalPrompt, geminiKey, log)
+
+      if (!documentation) {
+        throw new Error('Gemini returned empty documentation')
+      }
+
+      await log(`[${runId}] Saving documentation to database...`)
+
+      await supabase.from('repository_analyses').upsert({
+        id: crypto.randomUUID(),
+        user_id: agent.user_id,
+        repo_owner: ps.owner,
+        repo_name: ps.name,
+        repo_url: repo.html_url,
+        analysis_data: {
+          stars: repo.stargazers_count,
+          forks: repo.forks_count,
+          description: repo.description,
+          language: repo.language,
+          topics: repo.topics,
+          indexed_commit_sha: ps.commitSha,
+          default_branch: repo.default_branch,
+        },
+        documentation,
+        status: 'completed',
+      })
+
+      // Clear processing_state — files deleted from storage
+      await supabase.from('agent_configs').update({
+        status: 'stopped',
+        processing_state: null,
+        updated_at: now(),
+      }).eq('id', agent_id)
+
+      await log(`[${runId}] ✅ Documentation published for ${ps.owner}/${ps.name}`)
+      await log(`[${runId}] Agent run complete. Processing state cleared.`)
+
+      return new Response(JSON.stringify({ message: 'Documentation complete', repo: repo.full_name }), { headers: corsHeaders })
     }
 
-    // Log progress: about to save
-    await log(`[${runId}] Saving documentation to database...`)
-
-    await supabase.from('repository_analyses').upsert({
-      id: crypto.randomUUID(),
-      user_id: agent.user_id,
-      repo_owner: owner,
-      repo_name: name,
-      repo_url: repo.html_url,
-      analysis_data: {
-        stars: repo.stargazers_count,
-        forks: repo.forks_count,
-        description: repo.description,
-        language: repo.language,
-        topics: repo.topics,
-        indexed_commit_sha: commitSha,
-        default_branch: repo.default_branch,
-      },
-      documentation,
-      status: 'completed',
-    })
-
-    await log(`[${runId}] ✅ Documentation published for ${repo.full_name}`)
-    await log(`[${runId}] Agent run complete`)
-
-    await supabase.from('agent_configs').update({ status: 'stopped', updated_at: new Date().toISOString() }).eq('id', agent_id)
-
-    return new Response(JSON.stringify({ message: 'Agent run complete', repo: repo.full_name }), { headers: corsHeaders })
+    throw new Error(`Unknown phase: ${ps.phase}`)
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err)
-    await log(`[${runId}] Fatal error: ${errMsg}`, 'error')
-    await supabase.from('agent_configs').update({ status: 'error', updated_at: new Date().toISOString() }).eq('id', agent_id)
+    await log(`[${runId}] Error: ${errMsg}`, 'error')
+
+    // Clear processing_since so next invocation can retry, but keep accumulated state
+    if (ps) {
+      ps.processing_since = null
+      await saveProcessingState(supabase, agent_id, ps)
+    } else {
+      await supabase.from('agent_configs').update({ status: 'error', updated_at: now() }).eq('id', agent_id)
+    }
+
     return new Response(JSON.stringify({ error: errMsg }), { status: 500, headers: corsHeaders })
   }
 })

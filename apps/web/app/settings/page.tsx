@@ -267,20 +267,48 @@ function SettingsContent() {
 
   useEffect(() => {
     if (!pollingAgentId) return
+    const channel = supabase
+      .channel(`agent-status-${pollingAgentId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'agent_configs',
+          filter: `id=eq.${pollingAgentId}`,
+        },
+        (payload: any) => {
+          const status = payload.new?.status
+          if (status !== 'running') {
+            supabase.removeChannel(channel)
+            setPollingAgentId(null)
+            fetchAgents()
+            if (selectedAgentId === payload.new.id) fetchLogs(payload.new.id)
+          }
+        }
+      )
+      .subscribe()
+
     const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from('agent_configs')
-        .select('id, status')
-        .eq('id', pollingAgentId)
-        .single()
-      if (data && data.status !== 'running') {
-        clearInterval(interval)
-        setPollingAgentId(null)
-        fetchAgents()
-        if (selectedAgentId === data.id) fetchLogs(data.id)
-      }
-    }, 3000)
-    return () => clearInterval(interval)
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
+
+      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-worker`
+      fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ agent_id: pollingAgentId }),
+      }).catch(() => {})
+    }, 5000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(interval)
+    }
   }, [pollingAgentId, supabase, selectedAgentId])
 
   const handleToggleAgent = async (agent: AgentConfig) => {
