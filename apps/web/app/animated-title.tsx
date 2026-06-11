@@ -9,18 +9,20 @@ interface Stage {
 
 const STAGES: Stage[] = [
   {
-    chars: ['W', 'E', 'B', '+', 'A', 'E', 'N', 'T', 'I', 'C'],
-    visible: [true, true, true, false, false, true, true, true, true, true],
+    chars: ['W', 'E', 'B', '+', 'A', 'G', 'E', 'N', 'T', 'I', 'C'],
+    visible: [true, true, true, false, false, false, true, true, true, true, true],
   },
   {
-    chars: ['W', 'E', 'B', '+', 'A', 'E', 'N', 'T', 'I', 'C'],
-    visible: [true, true, true, true, false, true, true, true, true, true],
+    chars: ['W', 'E', 'B', '+', 'A', 'G', 'E', 'N', 'T', 'I', 'C'],
+    visible: [true, true, true, true, false, false, true, true, true, true, true],
   },
   {
-    chars: ['W', 'E', 'B', '+', 'A', 'E', 'N', 'T', 'I', 'C'],
-    visible: [true, true, true, true, true, true, true, true, true, true],
+    chars: ['W', 'E', 'B', '+', 'A', 'G', 'E', 'N', 'T', 'I', 'C'],
+    visible: [true, true, true, true, true, true, true, true, true, true, true],
   },
 ]
+
+const NEW_INDICES: number[][] = [[], [3], [4, 5]]
 
 export function AnimatedTitle() {
   const [stage, setStage] = useState(0)
@@ -33,6 +35,7 @@ export function AnimatedTitle() {
   }, [stage])
 
   const { chars, visible } = STAGES[stage]
+  const newIndices = NEW_INDICES[stage]
 
   return (
     <>
@@ -58,15 +61,14 @@ export function AnimatedTitle() {
       `}</style>
       <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground uppercase tracking-wide">
         {chars.map((ch, i) => {
-          const isNewlyVisible =
-            stage > 0 && visible[i] && !STAGES[0].visible[i]
+          const isNew = newIndices.includes(i)
           const isPlus = ch === '+' && visible[i]
           const bGlow = ch === 'B' && stage === 0
           return (
             <span
               key={i}
               className={`inline-block transition-all duration-500 ${
-                isNewlyVisible ? 'char-new' : ''
+                isNew ? 'char-new' : ''
               } ${isPlus ? 'char-plus' : ''} ${bGlow ? 'char-b-glow' : ''}`}
               style={{
                 opacity: visible[i] ? 1 : 0,
