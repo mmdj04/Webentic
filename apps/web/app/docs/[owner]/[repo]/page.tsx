@@ -46,9 +46,11 @@ export default function DocsPage() {
   const [doc, setDoc] = useState<AnalysisDoc | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
+    const start = Date.now()
     supabase
       .from('repository_analyses')
       .select('id, repo_owner, repo_name, repo_url, documentation, analysis_data, created_at')
@@ -65,10 +67,17 @@ export default function DocsPage() {
           setDoc(data[0] as AnalysisDoc)
         }
         setLoading(false)
+        const elapsed = Date.now() - start
+        const remaining = Math.max(0, 3000 - elapsed)
+        setTimeout(() => setReady(true), remaining)
+      }).catch(() => {
+        setError('Failed to load')
+        setLoading(false)
+        setTimeout(() => setReady(true), 3000)
       })
   }, [owner, repo])
 
-  if (loading) {
+  if (!ready) {
     return (
       <div className="min-h-dvh bg-background">
         <div className="mx-auto max-w-4xl px-6 py-8">
