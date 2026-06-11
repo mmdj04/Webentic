@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import { InputGroup, InputGroupInput } from 'ui'
+import { GitHubStars } from './github-stars'
 
 export default function HomePage() {
   const [query, setQuery] = useState('')
@@ -19,6 +20,7 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="fixed top-4 right-4 flex items-center gap-1">
+        <GitHubStars />
         <Link
           href="/settings"
           className="flex items-center justify-center size-9 rounded-full text-foreground-lighter hover:text-foreground hover:bg-muted transition-colors"
