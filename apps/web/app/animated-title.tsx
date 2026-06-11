@@ -71,6 +71,7 @@ export function AnimatedTitle() {
                 isNew ? 'char-new' : ''
               } ${isPlus ? 'char-plus' : ''} ${bGlow ? 'char-b-glow' : ''}`}
               style={{
+                verticalAlign: 'middle',
                 opacity: visible[i] ? 1 : 0,
                 transform: visible[i] ? 'scale(1)' : 'scale(0.5)',
                 width: visible[i] ? 'auto' : '0',
