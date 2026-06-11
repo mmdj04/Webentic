@@ -35,7 +35,7 @@ interface AnalysisDoc {
 function SearchSkeleton() {
   return (
     <div className="flex flex-col gap-3">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="block rounded-xl border border-default p-5 bg-surface-100">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0 space-y-3">
@@ -141,16 +141,19 @@ function SearchContent() {
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
   const [hasMore, setHasMore] = useState(false)
+  const [ready, setReady] = useState(true)
   const [liveStars, setLiveStars] = useState<Record<string, number>>({})
 
   const supabase = useMemo(() => createClient(), [])
 
   const doSearch = useCallback(async (q: string) => {
     setLoading(true)
+    setReady(false)
     setError(null)
     setSearched(true)
     setResults([])
     setHasMore(false)
+    const start = Date.now()
     try {
       let query = supabase
         .from('repository_analyses')
@@ -173,6 +176,9 @@ function SearchContent() {
       setResults([])
     } finally {
       setLoading(false)
+      const elapsed = Date.now() - start
+      const remaining = Math.max(0, 3000 - elapsed)
+      setTimeout(() => setReady(true), remaining)
     }
   }, [supabase])
 
@@ -262,22 +268,7 @@ function SearchContent() {
       </header>
 
       <main className="mx-auto px-6 py-8" style={{ maxWidth: 960 }}>
-        <div className="flex items-baseline gap-2 mb-6">
-          <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
-            {loading
-              ? 'Loading...'
-              : query
-                ? `Results for "${query}"`
-                : 'All Documented Repositories'}
-          </span>
-          {!loading && (
-            <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-              {results.length}{hasMore ? '+' : ''} repositories
-            </span>
-          )}
-        </div>
-
-        {loading && <SearchSkeleton />}
+        {!ready && <SearchSkeleton />}
 
         {error && (
           <div className="flex flex-col items-center justify-center py-20">
@@ -285,33 +276,45 @@ function SearchContent() {
           </div>
         )}
 
-        {!loading && !error && results.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {results.map((analysis) => (
-              <RepoCard
-                key={analysis.id}
-                analysis={analysis}
-                onSelect={navigateToDocs}
-                liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
-              />
-            ))}
-            {hasMore && (
-              <div className="flex justify-center pt-2 pb-4">
-                <Button
-                  type="default"
-                  size="medium"
-                  icon={<ChevronDown className="size-4" />}
-                  loading={loadingMore}
-                  onClick={loadMore}
-                >
-                  Load More
-                </Button>
-              </div>
-            )}
-          </div>
+        {ready && !error && results.length > 0 && (
+          <>
+            <div className="flex items-baseline gap-2 mb-6">
+              <span className="text-lg font-semibold" style={{ color: 'var(--foreground-default)' }}>
+                {query
+                  ? `Results for "${query}"`
+                  : 'All Documented Repositories'}
+              </span>
+              <span className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
+                {results.length}{hasMore ? '+' : ''} repositories
+              </span>
+            </div>
+            <div className="flex flex-col gap-3">
+              {results.map((analysis) => (
+                <RepoCard
+                  key={analysis.id}
+                  analysis={analysis}
+                  onSelect={navigateToDocs}
+                  liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
+                />
+              ))}
+              {hasMore && (
+                <div className="flex justify-center pt-2 pb-4">
+                  <Button
+                    type="default"
+                    size="medium"
+                    icon={<ChevronDown className="size-4" />}
+                    loading={loadingMore}
+                    onClick={loadMore}
+                  >
+                    Load More
+                  </Button>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
-        {!loading && !error && results.length === 0 && (
+        {ready && !error && results.length === 0 && (
           <div className="text-center py-20">
             <FileText className="size-8 text-foreground-muted mx-auto mb-3" />
             <p className="text-sm" style={{ color: 'var(--foreground-light)' }}>
