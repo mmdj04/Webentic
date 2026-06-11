@@ -3,14 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Moon, Settings, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { Settings } from 'lucide-react'
 import { InputGroup, InputGroupInput } from 'ui'
 
 export default function HomePage() {
   const [query, setQuery] = useState('')
   const router = useRouter()
-  const { theme, setTheme } = useTheme()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,13 +19,6 @@ export default function HomePage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <div className="fixed top-4 right-4 flex items-center gap-1">
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="flex items-center justify-center size-9 rounded-full text-foreground-lighter hover:text-foreground hover:bg-muted transition-colors"
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
-        </button>
         <Link
           href="/settings"
           className="flex items-center justify-center size-9 rounded-full text-foreground-lighter hover:text-foreground hover:bg-muted transition-colors"

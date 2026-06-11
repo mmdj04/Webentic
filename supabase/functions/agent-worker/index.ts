@@ -890,6 +890,9 @@ Deno.serve(async (req) => {
 
   try {
     if (!ps || ps.phase === 'idle') {
+      if (agent.status !== 'running') {
+        return new Response(JSON.stringify({ message: 'Agent is not running' }), { headers: corsHeaders })
+      }
       if (ps?.phase === 'idle') {
         if (ps.next_run && new Date(ps.next_run).getTime() > Date.now()) {
           const waitMs = new Date(ps.next_run).getTime() - Date.now()
@@ -962,12 +965,17 @@ Deno.serve(async (req) => {
     // ── PROCESS NEXT UNIT ─────────────────────────────────
     const TIMEOUT_MS = 120_000
 
-    // Check if another invocation is already processing or in cooldown
-    if (ps.processing_since) {
-      const lockTime = new Date(ps.processing_since).getTime()
-      if (lockTime > Date.now()) {
+    // Check cooldown (separate from processing lock)
+    if (ps.cooldown_until) {
+      if (new Date(ps.cooldown_until).getTime() > Date.now()) {
         return new Response(JSON.stringify({ message: 'Cooldown' }), { headers: corsHeaders })
       }
+      ps.cooldown_until = undefined
+    }
+
+    // Check if another invocation is already processing
+    if (ps.processing_since) {
+      const lockTime = new Date(ps.processing_since).getTime()
       const elapsed = Date.now() - lockTime
       if (elapsed < TIMEOUT_MS) {
         return new Response(JSON.stringify({ message: 'Already processing' }), { headers: corsHeaders })
@@ -1005,14 +1013,14 @@ Deno.serve(async (req) => {
         ps.current_chunk = 0
         ps.total_chunks = Math.ceil(ps.analyses.length / 2)
         ps.stage2_reports = []
-        ps.processing_since = new Date(Date.now() + 65000).toISOString()
+        ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
         await log(`[${runId}] All batches complete. Stage 2 will analyze ${ps.total_chunks} batches of 2 analyses each, after 65s cooldown...`)
       } else {
         await log(`[${runId}] Batch ${i + 1} done. ${ps.total_chunks - ps.current_chunk} remaining.`)
       }
 
       await saveProcessingState(supabase, agent_id, ps)
-      const cooldownMs2 = ps.processing_since ? Math.max(0, new Date(ps.processing_since).getTime() - Date.now()) : 1000
+      const cooldownMs2 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
       scheduleNextCall(agent_id, cooldownMs2)
       return new Response(JSON.stringify({
         message: ps.phase === 'stage2' ? 'Stage 1 complete' : 'Batch processed',
@@ -1044,14 +1052,14 @@ Deno.serve(async (req) => {
         ps.processing_since = null
 
         if (ps.current_chunk >= totalBatches) {
-          ps.processing_since = new Date(Date.now() + 65000).toISOString()
+          ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
           await log(`[${runId}] Stage 2 analyses complete. Running synthesis after 65s cooldown...`)
         } else {
           await log(`[${runId}] Stage 2a: Batch ${batchDone + 1}/${totalBatches} done. ${totalBatches - ps.current_chunk} remaining.`)
         }
 
         await saveProcessingState(supabase, agent_id, ps)
-        const cooldownMs3 = ps.processing_since ? Math.max(0, new Date(ps.processing_since).getTime() - Date.now()) : 1000
+        const cooldownMs3 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
         scheduleNextCall(agent_id, cooldownMs3)
         return new Response(JSON.stringify({
           message: ps.current_chunk >= totalBatches ? 'Stage 2 analyses complete' : 'Stage 2 batch processed',
@@ -1073,7 +1081,7 @@ Deno.serve(async (req) => {
 
       ps.architecture_report = architectureReport
       ps.phase = 'stage3'
-      ps.processing_since = new Date(Date.now() + 65000).toISOString()
+      ps.cooldown_until = new Date(Date.now() + 65000).toISOString()
 
       await saveProcessingState(supabase, agent_id, ps)
 
@@ -1083,7 +1091,7 @@ Deno.serve(async (req) => {
         await log(`[${runId}] Stage 2 complete. Moving to Stage 3 (final wiki) after 65s cooldown...`)
       }
 
-      const cooldownMs4 = ps.processing_since ? Math.max(0, new Date(ps.processing_since).getTime() - Date.now()) : 1000
+      const cooldownMs4 = ps.cooldown_until ? Math.max(0, new Date(ps.cooldown_until).getTime() - Date.now()) : 1000
       scheduleNextCall(agent_id, cooldownMs4)
       return new Response(JSON.stringify({ message: 'Architecture analysis complete' }), { headers: corsHeaders })
     }
@@ -1105,8 +1113,14 @@ Deno.serve(async (req) => {
 
       await log(`[${runId}] Saving documentation to database...`)
 
-      await supabase.from('repository_analyses').upsert({
-        id: crypto.randomUUID(),
+      const { data: existingDoc } = await supabase
+        .from('repository_analyses')
+        .select('id')
+        .eq('repo_owner', ps.owner)
+        .eq('repo_name', ps.name)
+        .single()
+
+      const docPayload = {
         user_id: agent.user_id,
         repo_owner: ps.owner,
         repo_name: ps.name,
@@ -1122,7 +1136,13 @@ Deno.serve(async (req) => {
         },
         documentation,
         status: 'completed',
-      })
+      }
+
+      if (existingDoc) {
+        await supabase.from('repository_analyses').update(docPayload).eq('id', existingDoc.id)
+      } else {
+        await supabase.from('repository_analyses').insert({ id: crypto.randomUUID(), ...docPayload })
+      }
 
       // Clear processing_state — files deleted from storage
       await supabase.from('agent_configs').update({
@@ -1143,9 +1163,10 @@ Deno.serve(async (req) => {
     const errMsg = err instanceof Error ? err.message : String(err)
     await log(`[${runId}] Error: ${errMsg}`, 'error')
 
-    // Clear processing_since so next invocation can retry, but keep accumulated state
+    // Clear processing_since and cooldown_until so next invocation can retry, but keep accumulated state
     if (ps) {
       ps.processing_since = null
+      ps.cooldown_until = undefined
       await saveProcessingState(supabase, agent_id, ps)
       scheduleNextCall(agent_id, 5000)
     } else {
