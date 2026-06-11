@@ -37,6 +37,10 @@ export default function HomePage() {
             <AnimatedTitle />
           </h1>
 
+          <p className="text-center text-sm text-foreground-lighter mb-10 -mt-10">
+            Desenvolvido por Matheus Moraes
+          </p>
+
           <form onSubmit={handleSearch} className="w-full max-w-lg">
             <InputGroup className="w-full">
               <InputGroupInput
