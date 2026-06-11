@@ -46,6 +46,7 @@ import {
   TableRow,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import { FormProvider, useForm } from 'react-hook-form'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -134,6 +135,7 @@ function SettingsContent() {
 
   const [profileEmail, setProfileEmail] = useState('')
   const [profileName, setProfileName] = useState('')
+  const agentConfigForm = useForm()
 
   const fetchAgents = useCallback(async () => {
     if (!session?.user?.id) return
@@ -525,6 +527,7 @@ function SettingsContent() {
                   </div>
                 )}
 
+                <FormProvider {...agentConfigForm}>
                 <form id="agent-form" onSubmit={handleSaveAgent} className="space-y-6">
                   <FormItemLayout
                     layout="flex-row-reverse"
@@ -636,6 +639,7 @@ function SettingsContent() {
                     </Select>
                   </FormItemLayout>
                 </form>
+                </FormProvider>
               </CardContent>
 
               <CardFooter className="justify-end space-x-2">
