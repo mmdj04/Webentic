@@ -41,3 +41,8 @@
 - Stores commit SHA (`indexed_commit_sha`) and `default_branch` in `analysis_data`
 - Deployed via `npx supabase functions deploy agent-worker` (683.8kB)
 - Builder uses Deno runtime with `jsr:@supabase/supabase-js@2`
+
+## Webentic Backup
+- Two repos: **public** `mmdj04/Webentic` (production, respects `.gitignore`) and **private** `mmdj04/Webentic-backup` (full local backup with ALL files)
+- Backup includes `node_modules`, `.next`, `.turbo`, `supabase/.temp` — everything
+- Branch: `master` (not `main`); synced by copying all files → fresh `git init` → force push
