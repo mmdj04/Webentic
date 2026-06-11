@@ -50,6 +50,7 @@ interface AgentConfig {
   gemini_api_key: string | null
   github_token: string | null
   generation_frequency: string
+  processing_state: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
