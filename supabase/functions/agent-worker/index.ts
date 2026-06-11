@@ -1,4 +1,4 @@
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
@@ -842,7 +842,6 @@ Deno.serve(async (req) => {
     }).eq('id', agent_id)
 
     const geminiKey = agent.gemini_api_key!
-    const repo = ps.repo
     const repo = ps.repo
 
     if (ps.phase === 'stage1') {
