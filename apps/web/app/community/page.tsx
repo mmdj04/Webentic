@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import {
-  Search,
   MessageCircle,
   Users,
   BookOpen,
@@ -13,7 +12,6 @@ import {
   Share2,
   ArrowRight,
   ChevronRight,
-  Home,
 } from 'lucide-react'
 import { Button, Card, CardContent, Badge, InputGroup, InputGroupInput } from 'ui'
 import { PageContainer } from 'ui-patterns/PageContainer'
@@ -135,33 +133,6 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-dvh flex flex-col bg-background">
-      {/* ── Navigation ── */}
-      <header className="border-b border-muted">
-        <PageContainer className="flex items-center justify-between h-14">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Home className="size-4" />
-              <span>Webentic</span>
-            </Link>
-            <nav className="hidden sm:flex items-center gap-1">
-              <Button asChild type="text" size="small">
-                <Link href="/community">Community</Link>
-              </Button>
-              <Button asChild type="text" size="small">
-                <Link href="/search">Docs</Link>
-              </Button>
-              <Button asChild type="text" size="small">
-                <Link href="/settings">Settings</Link>
-              </Button>
-            </nav>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button asChild type="default" size="small">
-              <Link href="/settings">Sign in</Link>
-            </Button>
-          </div>
-        </PageContainer>
-      </header>
 
       {/* ── Hero ── */}
       <section className="border-b border-muted">
@@ -300,23 +271,6 @@ export default function CommunityPage() {
         </PageContainer>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="mt-auto border-t border-muted">
-        <PageContainer>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 text-xs text-foreground-lighter">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="hover:text-foreground transition-colors">Webentic</Link>
-              <Link href="/search" className="hover:text-foreground transition-colors">Docs</Link>
-              <Link href="/settings" className="hover:text-foreground transition-colors">Settings</Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <span>&copy; {new Date().getFullYear()} Webentic</span>
-              <Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link>
-            </div>
-          </div>
-        </PageContainer>
-      </footer>
     </div>
   )
 }
