@@ -331,6 +331,8 @@ function SettingsContent() {
       return
     }
 
+    await supabase.from('agent_logs').delete().eq('agent_id', agent.id)
+
     await supabase
       .from('agent_configs')
       .update({ status: 'running', updated_at: new Date().toISOString() })
