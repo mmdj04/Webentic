@@ -32,7 +32,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Separator,
   Select,
   SelectContent,
   SelectItem,
@@ -447,7 +446,7 @@ function SettingsContent() {
                 </CardContent>
               ) : (
               <>
-              <CardContent className="space-y-6">
+              <CardContent>
                 <FormItemLayout
                   layout="flex-row-reverse"
                   label={<span><Mail className="size-3 mr-1 inline" />Email</span>}
@@ -455,9 +454,9 @@ function SettingsContent() {
                 >
                   <Input value={profileEmail} disabled className="opacity-60" />
                 </FormItemLayout>
+              </CardContent>
 
-                <Separator className="w-full" />
-
+              <CardContent>
                 <FormItemLayout
                   layout="flex-row-reverse"
                   label={<span><User className="size-3 mr-1 inline" />Display Name</span>}
@@ -469,9 +468,9 @@ function SettingsContent() {
                     placeholder="Your display name"
                   />
                 </FormItemLayout>
+              </CardContent>
 
-                <Separator className="w-full" />
-
+              <CardContent>
                 <div className="flex items-center gap-3 text-sm">
                   <Calendar className="size-4 text-foreground-lighter shrink-0" />
                   <span className="text-foreground-lighter">Member since</span>
@@ -520,9 +519,10 @@ function SettingsContent() {
                 </CardContent>
               ) : (
               <>
+              <form id="agent-form" onSubmit={handleSaveAgent}>
               <CardContent>
                 {agents.length >= 5 && (
-                  <div className="mb-4 p-3 bg-warning/10 border border-warning-500 rounded-lg flex items-start gap-2">
+                  <div className="p-3 bg-warning/10 border border-warning-500 rounded-lg flex items-start gap-2">
                     <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
                     <p className="text-xs text-warning">
                       Maximum of 5 agents reached. Delete an existing agent to add a new one.
@@ -530,118 +530,117 @@ function SettingsContent() {
                   </div>
                 )}
 
-                <form id="agent-form" onSubmit={handleSaveAgent} className="space-y-6">
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label="Agent Name"
-                    description="Give your AI agent a recognizable name."
-                  >
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label="Agent Name"
+                  description="Give your AI agent a recognizable name."
+                >
+                  <Input
+                    placeholder="My Documentation Agent"
+                    value={agentName}
+                    onChange={(e) => setAgentName(e.target.value)}
+                    required
+                    disabled={agents.length >= 5}
+                  />
+                </FormItemLayout>
+              </CardContent>
+
+              <CardContent>
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label={<span><Key className="size-3 mr-1 inline" />Gemini API Key</span>}
+                  description={
+                    <span>
+                      Get your key from{' '}
+                      <a
+                        href="https://aistudio.google.com/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-foreground"
+                      >
+                        aistudio.google.com
+                      </a>
+                    </span>
+                  }
+                >
+                  <div className="relative">
                     <Input
-                      placeholder="My Documentation Agent"
-                      value={agentName}
-                      onChange={(e) => setAgentName(e.target.value)}
-                      required
+                      type={showGeminiKey ? 'text' : 'password'}
+                      placeholder="AIzaSy..."
+                      value={geminiKey}
+                      onChange={(e) => setGeminiKey(e.target.value)}
                       disabled={agents.length >= 5}
                     />
-                  </FormItemLayout>
-
-                  <Separator className="w-full" />
-
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={<span><Key className="size-3 mr-1 inline" />Gemini API Key</span>}
-                    description={
-                      <span>
-                        Get your key from{' '}
-                        <a
-                          href="https://aistudio.google.com/apikey"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-foreground"
-                        >
-                          aistudio.google.com
-                        </a>
-                      </span>
-                    }
-                  >
-                    <div className="relative">
-                      <Input
-                        type={showGeminiKey ? 'text' : 'password'}
-                        placeholder="AIzaSy..."
-                        value={geminiKey}
-                        onChange={(e) => setGeminiKey(e.target.value)}
-                        disabled={agents.length >= 5}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowGeminiKey(!showGeminiKey)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                      >
-                        {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                      </button>
-                    </div>
-                  </FormItemLayout>
-
-                  <Separator className="w-full" />
-
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={<span><Github className="size-3 mr-1 inline" />GitHub Token</span>}
-                    description={
-                      <span>
-                        Create a token at{' '}
-                        <a
-                          href="https://github.com/settings/tokens"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-foreground"
-                        >
-                          github.com/settings/tokens
-                        </a>
-                        {' '}(repo scope recommended)
-                      </span>
-                    }
-                  >
-                    <div className="relative">
-                      <Input
-                        type={showGithubToken ? 'text' : 'password'}
-                        placeholder="ghp_..."
-                        value={githubToken}
-                        onChange={(e) => setGithubToken(e.target.value)}
-                        disabled={agents.length >= 5}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowGithubToken(!showGithubToken)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                      >
-                        {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                      </button>
-                    </div>
-                  </FormItemLayout>
-
-                  <Separator className="w-full" />
-
-                  <FormItemLayout
-                    layout="flex-row-reverse"
-                    label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency</span>}
-                    description="How often the agent should generate documentation."
-                  >
-                    <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select frequency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FREQUENCIES.map((f) => (
-                          <SelectItem key={f.value} value={f.value}>
-                            {f.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItemLayout>
-                </form>
+                    <button
+                      type="button"
+                      onClick={() => setShowGeminiKey(!showGeminiKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                    >
+                      {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </FormItemLayout>
               </CardContent>
+
+              <CardContent>
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label={<span><Github className="size-3 mr-1 inline" />GitHub Token</span>}
+                  description={
+                    <span>
+                      Create a token at{' '}
+                      <a
+                        href="https://github.com/settings/tokens"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-foreground"
+                      >
+                        github.com/settings/tokens
+                      </a>
+                      {' '}(repo scope recommended)
+                    </span>
+                  }
+                >
+                  <div className="relative">
+                    <Input
+                      type={showGithubToken ? 'text' : 'password'}
+                      placeholder="ghp_..."
+                      value={githubToken}
+                      onChange={(e) => setGithubToken(e.target.value)}
+                      disabled={agents.length >= 5}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGithubToken(!showGithubToken)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                    >
+                      {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </FormItemLayout>
+              </CardContent>
+
+              <CardContent>
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency</span>}
+                  description="How often the agent should generate documentation."
+                >
+                  <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FREQUENCIES.map((f) => (
+                        <SelectItem key={f.value} value={f.value}>
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItemLayout>
+              </CardContent>
+              </form>
 
               <CardFooter className="justify-end space-x-2">
                 <Button

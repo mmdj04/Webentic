@@ -41,7 +41,7 @@ export function AccountLayout({ children }: PropsWithChildren) {
   )
 
   return (
-    <div className="flex flex-col md:flex-row min-h-dvh">
+    <div className="flex flex-col md:flex-row h-dvh">
       {/* Mobile top bar */}
       <div className="md:hidden flex h-12 items-center border-b px-4 border-default bg-background">
         <Link
