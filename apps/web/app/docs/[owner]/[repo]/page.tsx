@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { Badge, Button } from 'ui'
-import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
+import { cn } from 'ui/lib/utils/cn'
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -85,20 +85,20 @@ export default function DocsPage() {
           <div className="flex items-start justify-between mb-6">
             <div className="space-y-2 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <ShimmeringLoader className="size-5 rounded-md" />
-                <ShimmeringLoader className="h-7 w-48 rounded-md" />
-                <ShimmeringLoader className="h-5 w-28 rounded-full" />
+                <div className="size-5 rounded-md animate-pulse bg-muted" />
+                <div className="h-7 w-48 rounded-md animate-pulse bg-muted" />
+                <div className="h-5 w-28 rounded-full animate-pulse bg-muted" />
               </div>
-              <ShimmeringLoader className="h-4 w-72 rounded-md" />
+              <div className="h-4 w-72 rounded-md animate-pulse bg-muted" />
               <div className="flex items-center gap-3 mt-1">
-                <ShimmeringLoader className="h-4 w-40 rounded-md" />
-                <ShimmeringLoader className="h-4 w-16 rounded-md" />
-                <ShimmeringLoader className="h-4 w-12 rounded-md" />
+                <div className="h-4 w-40 rounded-md animate-pulse bg-muted" />
+                <div className="h-4 w-16 rounded-md animate-pulse bg-muted" />
+                <div className="h-4 w-12 rounded-md animate-pulse bg-muted" />
               </div>
             </div>
-            <ShimmeringLoader className="h-7 w-28 rounded-md shrink-0" />
+            <div className="h-7 w-28 rounded-md animate-pulse bg-muted shrink-0" />
           </div>
-          <ShimmeringLoader className="w-full min-h-[400px] rounded-xl p-6" />
+          <div className="w-full min-h-[400px] rounded-xl p-6 animate-pulse bg-muted" />
         </div>
       </div>
     )
