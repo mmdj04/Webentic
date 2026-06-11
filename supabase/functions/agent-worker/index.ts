@@ -179,6 +179,7 @@ Design patterns, state management, event flow, callbacks, class hierarchies.
 
 ---
 Be exhaustive — no detail is too small. Stage 3 will read this as the authoritative source.
+- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>
 
 <files>
@@ -285,6 +286,7 @@ How the project is configured:
 
 ---
 Be exhaustive and technically precise. Stage 3 will use this report to write the final documentation.
+- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>`
 }
 
@@ -351,6 +353,7 @@ Every major component, with cross-references resolved across partial reports.
 ---
 Resolve any conflicts between partial reports. If partial reports contradict, use the most detailed analysis.
 Eliminate duplication. Produce a single cohesive report that Stage 3 can use directly.
+- **CRITICAL: Never use emojis, emoticons, or decorative characters.**
 </instructions>`
 }
 
@@ -741,7 +744,7 @@ How to contribute — only what is documented in actual source files (CONTRIBUTI
 - Use \`\`\`language code blocks for code examples with the correct language identifier
 - After each major section, add a "Sources:" line listing every file referenced in that section with line ranges
 - Be technically exhaustive — cover every function, type, and component in the relevant sections
-- Avoid inline HTML and unnecessary emojis
+- Avoid inline HTML. Never use emojis, emoticons, or decorative characters.
 - **CRITICAL: Never invent terminal commands.** Only show a command if it appears VERBATIM in a source file.
 - **CRITICAL: Never invent software architecture.** If no source code exists, classify as curated list or book.
 - **CRITICAL: Never describe markdown templates as components, engines, pipelines, or frameworks.**

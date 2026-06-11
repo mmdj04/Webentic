@@ -1,33 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { Badge, Button } from 'ui'
 import { CodeBlock } from 'ui-patterns/CodeBlock'
+import { Mermaid } from 'ui-patterns/Mermaid'
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import mermaid from 'mermaid'
-
-mermaid.initialize({ startOnLoad: false, theme: 'default' })
-
-function Mermaid({ chart }: { chart: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (ref.current) {
-      mermaid
-        .render('mermaid-' + Math.random().toString(36).slice(2), chart)
-        .then(({ svg }) => {
-          if (ref.current) ref.current.innerHTML = svg
-        })
-        .catch(() => {})
-    }
-  }, [chart])
-
-  return <div ref={ref} className="my-4 flex justify-center" />
-}
 
 interface AnalysisDoc {
   id: string
