@@ -4,7 +4,6 @@
   "buildCommand": "npx --yes pnpm@10.24.0 run build",
   "installCommand": "npx --yes pnpm@10.24.0 install",
   "outputDirectory": ".next",
-  "ignoreCommand": "npx --yes turbo-ignore",
   "github": {
     "silent": true,
     "autoJobCancelation": true
