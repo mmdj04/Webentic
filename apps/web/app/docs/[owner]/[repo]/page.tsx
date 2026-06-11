@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ExternalLink, BookOpen } from 'lucide-react'
 import { Badge, Button } from 'ui'
+import { CodeBlock } from 'ui-patterns/CodeBlock'
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -171,15 +172,27 @@ export default function DocsPage() {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              code({ className, children, ...props }) {
+              code({ className, children }) {
                 const isMermaid = className === 'language-mermaid'
                 if (isMermaid) {
                   return <Mermaid chart={String(children)} />
                 }
-                return <code className={className} {...props}>{children}</code>
+                const match = /language-(\w+)/.exec(className || '')
+                if (match) {
+                  return (
+                    <CodeBlock className={className} language={match[1] as any}>
+                      {String(children).replace(/\n$/, '')}
+                    </CodeBlock>
+                  )
+                }
+                return (
+                  <code className="bg-muted rounded px-1.5 py-0.5 text-sm font-mono text-foreground">
+                    {children}
+                  </code>
+                )
               },
               pre({ children }) {
-                return <pre className="bg-muted rounded-md p-4 overflow-x-auto text-sm">{children}</pre>
+                return <>{children}</>
               },
               table({ children }) {
                 return (
