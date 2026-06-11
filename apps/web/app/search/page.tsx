@@ -3,7 +3,6 @@
 import { useState, Suspense, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   Search,
@@ -59,12 +58,15 @@ interface AnalysisDoc {
 function RepoCard({
   analysis,
   onSelect,
+  liveStars,
 }: {
   analysis: AnalysisDoc
   onSelect: (analysis: AnalysisDoc) => void
+  liveStars?: number
 }) {
   const [hovered, setHovered] = useState(false)
   const data = analysis.analysis_data || {}
+  const stars = liveStars ?? data.stargazers_count as number | undefined
 
   return (
     <div
@@ -91,10 +93,10 @@ function RepoCard({
                 {data.language as string}
               </span>
             )}
-            {data.stargazers_count != null && (
+            {stars != null && (
               <span className="flex items-center gap-1 text-xs text-foreground-muted">
                 <Star className="size-3.5" />
-                {(data.stargazers_count as number).toLocaleString()}
+                {stars.toLocaleString()}
               </span>
             )}
             {data.forks_count != null && (
@@ -106,15 +108,6 @@ function RepoCard({
           </div>
         </div>
         <div className="flex flex-col gap-2 items-end shrink-0">
-          <a
-            href={analysis.repo_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground-lighter hover:text-foreground transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExternalLink className="size-4" />
-          </a>
           <Link
             href={`/docs/${analysis.repo_owner}/${analysis.repo_name}`}
             onClick={(e) => e.stopPropagation()}
@@ -138,6 +131,7 @@ function SearchContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
+  const [liveStars, setLiveStars] = useState<Record<string, number>>({})
 
   const [selectedDoc, setSelectedDoc] = useState<AnalysisDoc | null>(null)
 
@@ -174,6 +168,22 @@ function SearchContent() {
   useEffect(() => {
     doSearch(query)
   }, [query, doSearch])
+
+  useEffect(() => {
+    if (results.length === 0) return
+    const keys = results.map(r => `${r.repo_owner}/${r.repo_name}`)
+    keys.forEach(key => {
+      const [owner, repo] = key.split('/')
+      fetch(`https://api.github.com/repos/${owner}/${repo}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.stargazers_count != null) {
+            setLiveStars(prev => ({ ...prev, [key]: data.stargazers_count }))
+          }
+        })
+        .catch(() => {})
+    })
+  }, [results])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -329,6 +339,7 @@ function SearchContent() {
                     key={analysis.id}
                     analysis={analysis}
                     onSelect={(a) => setSelectedDoc(a)}
+                    liveStars={liveStars[`${analysis.repo_owner}/${analysis.repo_name}`]}
                   />
                 ))}
               </div>
