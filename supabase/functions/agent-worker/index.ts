@@ -880,7 +880,9 @@ Deno.serve(async (req) => {
 
       const archPrompt = buildArchitecturePrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
-        ps.owner, ps.name, ps.commitSha, ps.structure, ps.analyses
+        ps.owner, ps.name, ps.commitSha,
+        ps.structure.length > 20000 ? ps.structure.slice(0, 20000) + '\n... (truncated)' : ps.structure,
+        ps.analyses.map(a => a.length > 30000 ? a.slice(0, 30000) + '\n\n[...truncated]' : a)
       )
       const architectureReport = await generateGemini(archPrompt, geminiKey, log) || ''
 
@@ -904,9 +906,13 @@ Deno.serve(async (req) => {
       await log(`[${runId}] Stage 3/${ps.total_chunks + 2}: Generating final documentation...`)
 
       const topFiles = ps.files.slice(0, MAX_INPUT_FILES)
+      const truncatedStructure = ps.structure.length > 15000 ? ps.structure.slice(0, 15000) + '\n... (truncated)' : ps.structure
+      const truncatedArchReport = (ps.architecture_report || '').length > 30000
+        ? ps.architecture_report!.slice(0, 30000) + '\n\n[...truncated]'
+        : ps.architecture_report
       const finalPrompt = buildFinalPrompt(
         repo.full_name, repo.description, repo.language, repo.topics,
-        ps.owner, ps.name, ps.commitSha, repo.default_branch, ps.structure, topFiles, ps.architecture_report
+        ps.owner, ps.name, ps.commitSha, repo.default_branch, truncatedStructure, topFiles, truncatedArchReport
       )
       const documentation = await generateGemini(finalPrompt, geminiKey, log)
 
