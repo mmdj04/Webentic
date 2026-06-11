@@ -46,7 +46,6 @@ import {
   TableRow,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
-import { FormProvider, useForm } from 'react-hook-form'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -135,7 +134,6 @@ function SettingsContent() {
 
   const [profileEmail, setProfileEmail] = useState('')
   const [profileName, setProfileName] = useState('')
-  const agentConfigForm = useForm()
 
   const fetchAgents = useCallback(async () => {
     if (!session?.user?.id) return
@@ -434,57 +432,62 @@ function SettingsContent() {
             </PageSectionSummary>
           </PageSectionMeta>
           <PageSectionContent>
-            <Card className="p-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <User className="size-5 text-foreground shrink-0" />
+                  <CardTitle>Account</CardTitle>
+                </div>
+              </CardHeader>
               {!isLoggedIn ? (
-                <div className="py-6 text-center">
-                  <p className="text-sm text-foreground-muted">Sign in above to manage your account settings.</p>
-                </div>
-              ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <Mail className="size-3 mr-1" />
-                    Email
-                  </label>
-                  <Input value={profileEmail} disabled className="opacity-60" />
-                </div>
-                <Separator className="w-full" />
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <User className="size-3 mr-1" />
-                    Display Name
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={profileName}
-                      onChange={(e) => setProfileName(e.target.value)}
-                      placeholder="Your display name"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="primary"
-                      size="tiny"
-                      icon={<Save className="size-3" />}
-                      loading={saving}
-                      onClick={handleUpdateProfile}
-                    >
-                      Save
-                    </Button>
+                <CardContent>
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-foreground-muted">Sign in above to manage your account settings.</p>
                   </div>
-                </div>
+                </CardContent>
+              ) : (
+              <>
+              <CardContent className="space-y-6">
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label={<span><Mail className="size-3 mr-1 inline" />Email</span>}
+                  description="Your email address is read-only."
+                >
+                  <Input value={profileEmail} disabled className="opacity-60" />
+                </FormItemLayout>
+
                 <Separator className="w-full" />
-                <div>
-                  <label className="text-xs font-medium mb-1 block text-foreground-light">
-                    <Calendar className="size-3 mr-1" />
-                    Member since
-                  </label>
-                  <p className="text-sm text-foreground-muted">
+
+                <FormItemLayout
+                  layout="flex-row-reverse"
+                  label={<span><User className="size-3 mr-1 inline" />Display Name</span>}
+                  description="Your display name shown across the dashboard."
+                >
+                  <Input
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="Your display name"
+                  />
+                </FormItemLayout>
+
+                <Separator className="w-full" />
+
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar className="size-4 text-foreground-lighter shrink-0" />
+                  <span className="text-foreground-lighter">Member since</span>
+                  <span className="text-foreground-light">
                     {session?.user?.created_at
                       ? format(new Date(session.user.created_at), 'MMM d, yyyy')
                       : 'N/A'}
-                  </p>
+                  </span>
                 </div>
-              </div>
+              </CardContent>
+              <CardFooter className="justify-end space-x-2">
+                <Button type="primary" icon={<Save className="size-3" />} loading={saving} onClick={handleUpdateProfile}>
+                  Save
+                </Button>
+              </CardFooter>
+              </>
               )}
             </Card>
           </PageSectionContent>
@@ -527,7 +530,6 @@ function SettingsContent() {
                   </div>
                 )}
 
-                <FormProvider {...agentConfigForm}>
                 <form id="agent-form" onSubmit={handleSaveAgent} className="space-y-6">
                   <FormItemLayout
                     layout="flex-row-reverse"
@@ -639,7 +641,6 @@ function SettingsContent() {
                     </Select>
                   </FormItemLayout>
                 </form>
-                </FormProvider>
               </CardContent>
 
               <CardFooter className="justify-end space-x-2">
