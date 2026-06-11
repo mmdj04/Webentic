@@ -108,14 +108,14 @@ function RepoCard({
           </div>
         </div>
         <div className="flex flex-col gap-2 items-end shrink-0">
-          <Link
-            href={`/docs/${analysis.repo_owner}/${analysis.repo_name}`}
-            onClick={(e) => e.stopPropagation()}
+          <Button
+            size="tiny"
+            type="primary"
+            icon={<BookOpen className="size-3" />}
+            onClick={() => setSelectedDoc(analysis)}
           >
-            <Button size="tiny" type="primary" icon={<BookOpen className="size-3" />}>
-              View Docs
-            </Button>
-          </Link>
+            View Docs
+          </Button>
         </div>
       </div>
     </div>
@@ -265,14 +265,6 @@ function SearchContent() {
                 })()}
               </div>
               <div className="flex gap-2">
-                <Link
-                  href={`/docs/${selectedDoc.repo_owner}/${selectedDoc.repo_name}`}
-                  className="no-underline"
-                >
-                  <Button size="tiny" type="primary" icon={<ExternalLink className="size-3" />}>
-                    Open full page
-                  </Button>
-                </Link>
                 <Button size="tiny" type="default" onClick={() => setSelectedDoc(null)}>
                   Back to Results
                 </Button>
