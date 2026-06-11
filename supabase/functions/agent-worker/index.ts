@@ -4,6 +4,8 @@ const GITHUB_API = 'https://api.github.com'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
+const MAX_INPUT_FILES = 30
+const MAX_RETRIES = 3
 
 const SOURCE_FILE_EXTENSIONS = new Set([
   // JavaScript ecosystem
@@ -87,6 +89,36 @@ const EXCLUDED_DIRS = new Set([
   'coverage', '.nyc_output', '.turbo',
   '.vercel', '.serverless', '.webpack',
 ])
+
+const CODE_PRIORITY = new Set([
+  'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'mts', 'cts',
+  'py', 'go', 'rs', 'java', 'kt', 'scala', 'rb', 'c', 'cpp',
+  'h', 'hpp', 'cs', 'swift', 'php',
+])
+
+function prioritizeFiles(files: { path: string; content: string }[]): { path: string; content: string }[] {
+  // Score each file: code > config > docs/media
+  const scored = files.map(f => {
+    const ext = f.path.split('.').pop()?.toLowerCase() || ''
+    const basename = f.path.split('/').pop()?.toLowerCase() || ''
+    const isConfig = ['json', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'editorconfig', 'gitattributes'].includes(ext)
+    const isDoc = ['md', 'mdx', 'txt', 'rst', 'license', 'readme'].includes(ext) ||
+                  ['license', 'readme', 'contributing', 'code-of-conduct'].includes(basename)
+    const isBuild = ext === 'sh' || ext === 'makefile' || ['dockerfile', 'makefile'].includes(basename)
+    let score = 0
+    if (CODE_PRIORITY.has(ext)) score = 3
+    else if (isBuild || isConfig) score = 2
+    else if (isDoc) score = 1
+    // Prefer files in src/ or lib/ directories
+    if (f.path.startsWith('src/') || f.path.startsWith('lib/') || f.path.startsWith('packages/')) score += 1
+    // Prefer shorter paths (deeper = less likely to be core)
+    const depth = f.path.split('/').length
+    score -= depth * 0.1
+    return { ...f, score }
+  })
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, MAX_INPUT_FILES).map(({ score: _, ...f }) => f)
+}
 
 interface GitHubRepo {
   full_name: string
@@ -227,25 +259,54 @@ async function getSourceFiles(
   return { files, structure }
 }
 
-async function generateGemini(prompt: string, apiKey: string): Promise<string> {
+async function generateGemini(prompt: string, apiKey: string, log?: (msg: string, level?: string) => Promise<void>): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+  const estimatedTokens = Math.ceil(prompt.length / 4)
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 65536 },
-    }),
-  })
+  if (estimatedTokens > 200_000) {
+    const warn = `[WARN] Prompt ~${estimatedTokens.toLocaleString()} tokens (free tier limit: 250K/min)`
+    if (log) await log(warn, 'warn')
+  }
 
-  if (!res.ok) {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 65536 },
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    }
+
     const errText = await res.text()
+
+    // Check if it's a quota error with a retry delay
+    if (res.status === 429) {
+      let delayMs = 60_000 // default 60s
+      try {
+        const errBody = JSON.parse(errText)
+        const retryStr = errBody?.error?.details?.find((d: any) => d.retryDelay)?.retryDelay || '60s'
+        const seconds = parseInt(retryStr) || 60
+        delayMs = seconds * 1000 + 2000 // add 2s buffer
+      } catch { /* use default */ }
+
+      if (attempt < MAX_RETRIES) {
+        const msg = `[RETRY ${attempt}/${MAX_RETRIES}] Quota exceeded, waiting ${Math.round(delayMs / 1000)}s...`
+        if (log) await log(msg, 'warn')
+        await new Promise(r => setTimeout(r, delayMs))
+        continue
+      }
+    }
+
     throw new Error(`Gemini API error: ${res.status} ${errText}`)
   }
 
-  const data = await res.json()
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+  throw new Error('Gemini API error: max retries exceeded')
 }
 
 async function getLatestCommitSha(
@@ -474,6 +535,9 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ message: 'No source files found' }), { headers: corsHeaders })
     }
 
+    const selectedFiles = prioritizeFiles(files)
+    await log(`[${runId}] Selected ${selectedFiles.length} most relevant files for context (from ${files.length} total)`)
+
     await log(`[${runId}] Fetching latest commit SHA...`)
 
     const commitSha = await getLatestCommitSha(owner, name, repo.default_branch, agent.github_token || undefined) || 'HEAD'
@@ -483,8 +547,8 @@ Deno.serve(async (req) => {
     // Set status to running before Gemini (longest operation, may timeout)
     await supabase.from('agent_configs').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', agent_id)
 
-    const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, owner, name, commitSha, structure, files)
-    const documentation = await generateGemini(prompt, agent.gemini_api_key!)
+    const prompt = buildPrompt(repo.full_name, repo.description, repo.language, repo.topics, owner, name, commitSha, structure, selectedFiles)
+    const documentation = await generateGemini(prompt, agent.gemini_api_key!, log)
 
     if (!documentation) {
       throw new Error('Gemini returned empty documentation')
