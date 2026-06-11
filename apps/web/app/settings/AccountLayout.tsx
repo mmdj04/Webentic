@@ -21,9 +21,9 @@ interface SidebarSection {
 
 function SidebarContent({ sections }: { sections: SidebarSection[] }) {
   return (
-    <div className="h-full bg-dash-sidebar flex flex-col justify-between hide-scrollbar w-full md:w-64 md:border-r border-default">
+    <div className="min-h-dvh bg-dash-sidebar flex flex-col justify-between hide-scrollbar w-full md:w-64 md:border-r border-default">
       <div className="flex-1 flex flex-col">
-        <div className="shrink-0 hidden md:block">
+        <div className="shrink-0">
           <div className="flex h-12 max-h-12 items-center border-b px-6 border-default">
             <Link
               href="/"
@@ -89,7 +89,7 @@ export function AccountLayout({ children }: PropsWithChildren) {
   )
 
   return (
-    <div className="flex flex-col md:flex-row h-full">
+    <div className="flex flex-col md:flex-row min-h-dvh">
       <SidebarContent sections={sections} />
       <div className="flex flex-1 flex-col">
         <div className="flex-1 grow overflow-y-auto">{children}</div>

@@ -1,9 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   Save,
   Key,
   Github,
@@ -22,6 +20,8 @@ import {
   AlertCircle,
   RefreshCw,
   ClipboardCopy,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import {
   Button,
@@ -34,11 +34,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Form,
-  FormControl,
-  FormField,
 } from 'ui'
-import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -393,25 +389,23 @@ function SettingsContent() {
             </PageSectionSummary>
           </PageSectionMeta>
           <PageSectionContent>
-            <Card>
-              <Card className="p-6">
-                {!isLoggedIn ? (
-                  <SignInForm onSubmit={handleAuth} isSubmitting={authLoading} authError={authError} />
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <User className="size-5 text-foreground" />
-                      <div>
-                        <p className="text-sm text-foreground">{session?.user?.email}</p>
-                        <p className="text-xs text-foreground-lighter">Signed in</p>
-                      </div>
+            <Card className="p-6">
+              {!isLoggedIn ? (
+                <SignInForm onSubmit={handleAuth} isSubmitting={authLoading} authError={authError} />
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <User className="size-5 text-foreground" />
+                    <div>
+                      <p className="text-sm text-foreground">{session?.user?.email}</p>
+                      <p className="text-xs text-foreground-lighter">Signed in</p>
                     </div>
-                    <Button type="outline" size="tiny" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
-                      Sign Out
-                    </Button>
                   </div>
-                )}
-              </Card>
+                  <Button type="outline" size="tiny" icon={<LogOut className="size-3" />} onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </div>
+              )}
             </Card>
           </PageSectionContent>
         </PageSection>
