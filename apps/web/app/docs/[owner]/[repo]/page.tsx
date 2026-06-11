@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, BookOpen, Loader2 } from 'lucide-react'
-import { Badge, Button } from 'ui'
+import { ExternalLink, BookOpen } from 'lucide-react'
+import { Badge, Button, Skeleton } from 'ui'
 import { createClient } from '@/lib/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -70,8 +70,18 @@ export default function DocsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-background">
-        <Loader2 className="size-6 animate-spin text-foreground-muted" />
+      <div className="min-h-dvh bg-background">
+        <div className="mx-auto max-w-4xl px-6 py-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Skeleton className="h-7 w-7 rounded-md" />
+            <Skeleton className="h-7 w-48 rounded-md" />
+            <Skeleton className="h-5 w-28 rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-72 rounded-md mb-2" />
+          <Skeleton className="h-4 w-96 rounded-md mb-6" />
+          <Skeleton className="h-5 w-64 rounded-md mb-8" />
+          <Skeleton className="h-[600px] w-full rounded-xl" />
+        </div>
       </div>
     )
   }
