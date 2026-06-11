@@ -6,7 +6,7 @@ const MAX_FILE_SIZE = 100_000
 const PER_PAGE = 100
 const CHUNK_SIZE = 25
 const MAX_SCORED_FILES = 150
-const MAX_RETRIES = 2
+const MAX_RETRIES = 3
 
 const OUTPUT_TOKENS = {
   stage1: 8_192,
@@ -794,18 +794,21 @@ async function generateContent(prompt: string, apiKey: string, log?: (msg: strin
 
     const errText = await res.text()
 
-    // Check if it's a quota error with a retry delay
-    if (res.status === 429) {
-      let delayMs = 60_000 // default 60s
+    // Retry on quota errors (429) or service unavailability (503)
+    if (res.status === 429 || res.status === 503) {
+      let delayMs = res.status === 503 ? 20_000 : 60_000
       try {
         const errBody = JSON.parse(errText)
-        const retryStr = errBody?.error?.details?.find((d: any) => d.retryDelay)?.retryDelay || '60s'
-        const seconds = parseInt(retryStr) || 60
-        delayMs = seconds * 1000 + 2000 // add 2s buffer
+        const retryStr = errBody?.error?.details?.find((d: any) => d.retryDelay)?.retryDelay
+        if (retryStr) {
+          const seconds = parseInt(retryStr) || (res.status === 503 ? 10 : 60)
+          delayMs = seconds * 1000 + 2000
+        }
       } catch { /* use default */ }
 
       if (attempt < MAX_RETRIES) {
-        const msg = `[RETRY ${attempt}/${MAX_RETRIES}] Quota exceeded, waiting ${Math.round(delayMs / 1000)}s...`
+        const label = res.status === 503 ? 'Service unavailable' : 'Quota exceeded'
+        const msg = `[RETRY ${attempt}/${MAX_RETRIES}] ${label}, waiting ${Math.round(delayMs / 1000)}s...`
         if (log) await log(msg, 'warn')
         await new Promise(r => setTimeout(r, delayMs))
         continue
