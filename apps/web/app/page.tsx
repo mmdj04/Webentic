@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Settings } from 'lucide-react'
+import { MessageCircle, Search, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -24,6 +24,11 @@ export default function HomePage() {
         <div />
         <div className="flex items-center gap-1">
           <GitHubStars />
+          <Button asChild type="text" size="small" className="rounded-full">
+            <Link href="/community" aria-label="Community">
+              <MessageCircle className="size-5" />
+            </Link>
+          </Button>
           <Button asChild type="text" size="small" className="rounded-full">
             <Link href="/settings" aria-label="Settings">
               <Settings className="size-5" />
