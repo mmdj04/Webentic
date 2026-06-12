@@ -58,7 +58,11 @@ import {
   TooltipTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
-import { InfoTooltip } from 'ui-patterns/info-tooltip'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from 'ui'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -673,7 +677,7 @@ function SettingsContent() {
               <CardContent>
                 <FormItemLayout
                   layout="flex-row-reverse"
-                  label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency <InfoTooltip side="top">How often the agent automatically generates documentation for tracked repositories.</InfoTooltip></span>}
+                  label={<span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Clock className="size-3" />Generation Frequency<Popover><PopoverTrigger type="button" className="inline-flex items-center text-foreground-muted hover:text-foreground-lighter transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="size-4"><path d="M15 8A7 7 0 1 1 1 8a7 7 0 0 1 14 0ZM9 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6.75 8a.75.75 0 0 0 0 1.5h.75v1.75a.75.75 0 0 0 1.5 0v-2.5A.75.75 0 0 0 8.25 8h-1.5Z" clipRule="evenodd" fillRule="evenodd" /></svg></PopoverTrigger><PopoverContent side="top" className="w-72 text-xs text-foreground-light leading-relaxed p-3">How often the agent automatically generates documentation for tracked repositories.</PopoverContent></Popover></span>}
                   description="How often the agent should generate documentation."
                 >
                   <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
