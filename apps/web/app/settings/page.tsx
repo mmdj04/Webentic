@@ -52,8 +52,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import { InfoTooltip } from 'ui-patterns/info-tooltip'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -376,6 +381,7 @@ function SettingsContent() {
   const isLoggedIn = !!session
 
   return (
+    <TooltipProvider delayDuration={400}>
     <div className="min-h-dvh bg-background">
       <PageHeader size="small">
         <PageHeaderMeta>
@@ -543,8 +549,6 @@ function SettingsContent() {
                 <div className="flex items-center gap-3">
                   <Zap className="size-5 text-foreground shrink-0" />
                   <CardTitle>AI Agent Configuration</CardTitle>
-                  <Badge variant="warning">gemma-4-31b-it</Badge>
-                  <Badge variant="default">256K ctx</Badge>
                 </div>
               </CardHeader>
               {!isLoggedIn ? (
@@ -607,13 +611,18 @@ function SettingsContent() {
                       onChange={(e) => setGeminiKey(e.target.value)}
                       disabled={agents.length >= 5}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowGeminiKey(!showGeminiKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                    >
-                      {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => setShowGeminiKey(!showGeminiKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                        >
+                          {showGeminiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{showGeminiKey ? 'Hide' : 'Show'} API key</TooltipContent>
+                    </Tooltip>
                   </div>
                 </FormItemLayout>
               </CardContent>
@@ -645,13 +654,18 @@ function SettingsContent() {
                       onChange={(e) => setGithubToken(e.target.value)}
                       disabled={agents.length >= 5}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowGithubToken(!showGithubToken)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
-                    >
-                      {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => setShowGithubToken(!showGithubToken)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-lighter hover:text-foreground"
+                        >
+                          {showGithubToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{showGithubToken ? 'Hide' : 'Show'} token</TooltipContent>
+                    </Tooltip>
                   </div>
                 </FormItemLayout>
               </CardContent>
@@ -659,7 +673,7 @@ function SettingsContent() {
               <CardContent>
                 <FormItemLayout
                   layout="flex-row-reverse"
-                  label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency</span>}
+                  label={<span><Clock className="size-3 mr-1 inline" />Generation Frequency <InfoTooltip side="top">How often the agent automatically generates documentation for tracked repositories.</InfoTooltip></span>}
                   description="How often the agent should generate documentation."
                 >
                   <Select value={frequency} onValueChange={setFrequency} disabled={agents.length >= 5}>
@@ -789,28 +803,45 @@ function SettingsContent() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button
-                              size="tiny"
-                              type="default"
-                              icon={<RefreshCw className="size-3" />}
-                              onClick={() => handleViewLogs(agent.id)}
-                              className={selectedAgentId === agent.id ? 'bg-surface-200' : ''}
-                            >
-                              Logs
-                            </Button>
-                            <Button
-                              size="tiny"
-                              type={agent.status === 'running' ? 'danger' : 'default'}
-                              icon={agent.status === 'running' ? <Square className="size-3" /> : <Play className="size-3" />}
-                              onClick={() => handleToggleAgent(agent)}
-                            />
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                                 <Button
                                   size="tiny"
                                   type="default"
-                                  icon={<Trash2 className="size-3" />}
+                                  icon={<RefreshCw className="size-3" />}
+                                  onClick={() => handleViewLogs(agent.id)}
+                                  className={selectedAgentId === agent.id ? 'bg-surface-200' : ''}
+                                >
+                                  Logs
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">View real-time logs</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="tiny"
+                                  type={agent.status === 'running' ? 'danger' : 'default'}
+                                  icon={agent.status === 'running' ? <Square className="size-3" /> : <Play className="size-3" />}
+                                  onClick={() => handleToggleAgent(agent)}
                                 />
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                {agent.status === 'running' ? 'Stop agent' : 'Start agent'}
+                              </TooltipContent>
+                            </Tooltip>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="tiny"
+                                      type="default"
+                                      icon={<Trash2 className="size-3" />}
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Delete agent</TooltipContent>
+                                </Tooltip>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -842,19 +873,23 @@ function SettingsContent() {
                   <div className="px-(--card-padding-x) py-3 flex items-center justify-between">
                     <h4 className="text-xs font-semibold text-foreground">Real-time Logs</h4>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const text = logs
-                            .map((l) => `[${format(new Date(l.created_at), 'HH:mm:ss')}] [${l.level.toUpperCase()}] ${l.message}`)
-                            .join('\n')
-                          navigator.clipboard.writeText(text)
-                        }}
-                        className="text-foreground-lighter hover:text-foreground transition-colors"
-                        title="Copy logs"
-                      >
-                        <ClipboardCopy className="size-3.5" />
-                      </button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const text = logs
+                                .map((l) => `[${format(new Date(l.created_at), 'HH:mm:ss')}] [${l.level.toUpperCase()}] ${l.message}`)
+                                .join('\n')
+                              navigator.clipboard.writeText(text)
+                            }}
+                            className="text-foreground-lighter hover:text-foreground transition-colors"
+                          >
+                            <ClipboardCopy className="size-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Copy logs to clipboard</TooltipContent>
+                      </Tooltip>
                       <Badge variant="default" className="text-[10px]">
                         <span className="size-1.5 bg-brand-600 rounded-full inline-block mr-1 animate-pulse" />
                         Live
@@ -896,6 +931,7 @@ function SettingsContent() {
         </PageSection>
       </PageContainer>
     </div>
+    </TooltipProvider>
   )
 }
 
